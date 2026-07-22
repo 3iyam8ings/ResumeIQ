@@ -1,0 +1,28 @@
+# 🗣️ Sprint 4 Complete: Give It a Voice
+
+We've successfully completed Sprint 4 and added our first generative AI feature! The app can now intelligently rewrite resume bullet points to make them stronger, using the job description as context.
+
+## What was built:
+
+### 1. The AI Agent (`JobAnalyzerAgent.java`)
+We added a new `rewriteBulletPoint` method to our LangChain4j AI Service. 
+**The Guardrails:** To ensure the AI doesn't hallucinate fake achievements, we gave it a strict `@SystemMessage`:
+> *"CRITICAL RULE: Do NOT fabricate or invent any numbers, metrics, tools, or experiences that the user did not explicitly mention. Only use the provided job description to emphasize relevant keywords that naturally fit the user's actual experience."*
+This forces the AI to use the **STAR method** (Situation, Task, Action, Result) to format the text beautifully *without* lying.
+
+### 2. The Backend Endpoint (`ResumeUploadController.java`)
+We created a brand new `POST /api/rewrite` endpoint. It accepts a JSON payload containing the original bullet point and the target job description, calls our AI agent, and returns the newly polished bullet point.
+
+### 3. The Frontend Experience (`App.tsx`)
+We added a new "Enhance a Bullet Point (Sprint 4)" section to the React app!
+- You can now paste a weak, boring bullet point into the text area.
+- Click **Rewrite Bullet Point**.
+- It will show you a beautiful side-by-side comparison of your **Before** text and your **After (AI Enhanced)** text, highlighting exactly how much better it sounds.
+
+## Try it out!
+
+Go to your React frontend at `http://localhost:5173`.
+1. Make sure you have a Job Description pasted in the top box (so the AI knows what role to target).
+2. Scroll down to the new **Enhance a Bullet Point** section.
+3. Paste a weak bullet point, such as: *"Fixed bugs in the backend code"*
+4. Hit **Rewrite Bullet Point** and watch it transform!

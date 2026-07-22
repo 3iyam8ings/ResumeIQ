@@ -1,0 +1,46 @@
+# Sprint 0 End-to-End Verification
+
+The end-to-end flow is now completely wired up, satisfying the Sprint 0 Definition of Done!
+
+## What Changed
+
+### 1. API Gateway (`api-gateway`)
+- Initialized a Spring Cloud Gateway service.
+- Configured [`application.yml`](file:///C:/Users/Tiyaa/Downloads/AI%20resume%20analyser/api-gateway/src/main/resources/application.yml) to run on **port 8081**.
+- Added a routing rule to automatically proxy any request hitting `/api/**` down to our Backend (`http://localhost:8080`).
+- Configured Global CORS to allow our frontend development server to make requests without browser security errors.
+
+### 2. Backend API Endpoint (`backend`)
+- Created [`AnalyzeController.java`](file:///C:/Users/Tiyaa/Downloads/AI%20resume%20analyser/backend/src/main/java/com/example/demo/controller/AnalyzeController.java) to expose a new `POST /api/analyze` endpoint.
+- Connected the controller to our `AiService` interface to return the hardcoded mock LLM response.
+
+### 3. Frontend App (`frontend`)
+- Scaffolded a fast, modern React + TypeScript application using Vite.
+- Edited [`App.tsx`](file:///C:/Users/Tiyaa/Downloads/AI%20resume%20analyser/frontend/src/App.tsx) with a single "Test E2E Flow" button. When clicked, it makes an HTTP request to the API Gateway (`:8081`), which routes it to the backend (`:8080`), and displays the result directly on the screen.
+
+## How to Test the Full Stack
+
+> [!WARNING]
+> Before starting the backend, make sure you have your local PostgreSQL server running with the `resume_db` database and `postgres` credentials created.
+
+To verify the end-to-end flow, open three separate terminal tabs and start each service:
+
+**Tab 1: Start the Backend (Port 8080)**
+```powershell
+cd backend
+.\gradlew.bat bootRun
+```
+
+**Tab 2: Start the API Gateway (Port 8081)**
+```powershell
+cd api-gateway
+.\gradlew.bat bootRun
+```
+
+**Tab 3: Start the Frontend (Port 5173)**
+```powershell
+cd frontend
+npm run dev
+```
+
+Finally, open your browser to `http://localhost:5173`, click the test button, and watch the hardcoded AI analysis bounce all the way back through the stack!

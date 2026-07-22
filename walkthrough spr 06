@@ -1,0 +1,30 @@
+# Sprint 6 Walkthrough - The Mock Interview
+
+I've successfully implemented the Mock Interview feature! Here's a breakdown of what was added and how to use it.
+
+## What Was Added
+
+### 1. New Mock Interview UI (Frontend)
+- Added a new section at the bottom of the page titled **"🎤 Mock Interview (Sprint 6)"**.
+- This section remains disabled until you upload a resume and job description.
+- Contains a "Generate Interview Question" button, a text area for your answer, and a "Submit Answer" button.
+
+### 2. Context-Aware AI Agent (Backend)
+- **`generateInterviewQuestion`**: Analyzes the parsed resume and job description to create *one* challenging, highly specific technical or behavioral question. It explicitly avoids generic questions like "Tell me about yourself."
+- **`provideInterviewFeedback`**: Acts as a technical interviewer to evaluate your answer against the question. It provides 1-2 paragraphs of sharp, actionable advice, pointing out exactly what is missing (e.g., failing to use the STAR method or missing technical details).
+
+### 3. API Infrastructure
+- Created 4 new Data Transfer Objects (DTOs) to cleanly pass the data between the frontend and backend.
+- Added two new endpoints to the `ResumeUploadController`:
+  - `POST /api/interview/question`
+  - `POST /api/interview/feedback`
+
+## How to Test It
+
+> [!NOTE]
+> The backend server is currently rebooting to apply these changes. It will take ~15 seconds to come online.
+
+1. **Parse your Resume:** If you haven't already, paste the sample Job Description and upload your resume.
+2. **Generate a Question:** Scroll down to the Mock Interview section and click **"Generate Interview Question"**. Notice how specific the question is to your actual experience!
+3. **Answer the Question:** Type a response in the text box. (Try giving a weak or vague answer first to see how the AI critiques it).
+4. **Get Feedback:** Click **"Submit Answer"** and review the actionable feedback provided by the AI interviewer.

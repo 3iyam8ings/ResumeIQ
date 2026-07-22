@@ -1,0 +1,51 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.1.0'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	runtimeOnly 'org.postgresql:postgresql'
+	runtimeOnly 'com.h2database:h2'
+	
+	// PDF & DOCX Parsing
+	implementation 'org.apache.pdfbox:pdfbox:2.0.30'
+	implementation 'org.apache.poi:poi-ooxml:5.2.5'
+	implementation 'org.jsoup:jsoup:1.17.2'
+	
+	// LangChain4j for AI integration (Sprint 2)
+	implementation 'dev.langchain4j:langchain4j:0.36.2'
+	implementation 'dev.langchain4j:langchain4j-spring-boot-starter:0.36.2'
+	implementation 'dev.langchain4j:langchain4j-google-ai-gemini:0.36.2'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+task generateDummyResume(type: JavaExec) {
+    mainClass = 'com.example.demo.GenerateDummyResume'
+    classpath = sourceSets.test.runtimeClasspath
+}

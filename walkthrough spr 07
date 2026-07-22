@@ -1,0 +1,33 @@
+# Sprint 7 Walkthrough - Look Beyond the Resume
+
+Sprint 7 has been fully implemented! Here is a summary of the new features added and how you can test them out.
+
+## What Was Added
+
+### 1. New "Look Beyond the Resume" UI (Frontend)
+- Added a brand new section to the bottom of the page titled **"🚀 Look Beyond the Resume (Sprint 7)"**.
+- Just like the other features, it remains disabled until you upload a resume and job description.
+- It is broken down into two main features:
+  - **Portfolio / GitHub Analysis:** An input for your URL and an "Analyze" button.
+  - **Skill-Gap Roadmap:** A dedicated button to generate a learning plan.
+
+### 2. Portfolio Web Scraper (Backend)
+- Added the `Jsoup` library to the Spring Boot backend.
+- Created `PortfolioService` which takes any valid URL (like a GitHub repo, personal site, or blog) and safely extracts the raw text content from the webpage.
+
+### 3. Context-Aware AI Endpoints (Backend)
+- **`analyzePortfolio`**: The AI acts as an expert recruiter, reading your scraped portfolio text and cross-referencing it with your resume and the target job description to tell you *exactly* what you need to highlight or fix.
+- **`generateSkillGapRoadmap`**: The AI compares your resume to the job description and generates a step-by-step, actionable learning roadmap to bridge any missing skills.
+
+### 4. API Infrastructure
+- Created 4 new Data Transfer Objects (DTOs) for the new endpoints.
+- Added `POST /api/portfolio/analyze` and `POST /api/roadmap/generate` to the controller.
+
+## How to Test It
+
+> [!NOTE]
+> The backend server was just restarted to install the new Jsoup library. It will take ~15 seconds to fully boot up.
+
+1. **Parse your Resume:** Provide the Sample Job Description and upload your resume as usual.
+2. **Analyze a Portfolio:** Scroll down to the Sprint 7 section. Paste in a URL (e.g., your GitHub profile, a specific repository README, or a personal website) and click **"Analyze"**. The AI will scrape the page and provide targeted feedback.
+3. **Generate a Roadmap:** Click the **"Generate Skill-Gap Roadmap"** button to see a custom, step-by-step upskilling plan based on what your resume is missing for this specific job.

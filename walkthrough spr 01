@@ -1,0 +1,32 @@
+# Sprint 1 Walkthrough: Teach It to Read
+
+Sprint 1 is completely built and ready for testing! Here's a breakdown of what I've accomplished:
+
+## 1. Document Parsing Engines Added
+I've wired up two major libraries to handle raw text extraction:
+- **PDFBox (`PdfTextExtractor`)**: Extracts raw text from standard PDF resumes.
+- **Apache POI (`DocxTextExtractor`)**: Extracts raw text from Word documents (`.docx`).
+
+## 2. The Heuristic Section Detector
+I've built the `ResumeParserService` which acts as the brain for this sprint. Once the raw text is extracted, it runs a series of regex heuristics to chop the resume into distinct JSON sections:
+- **Contact Info** 
+- **Experience**
+- **Education**
+- **Skills**
+
+> [!NOTE]  
+> The section extractor looks for common headers like "Work History", "Experience", "Skills", etc. It's incredibly fast, but because it relies on keywords, highly non-standard resume formats might confuse it slightly. (This is expected for Sprint 1, and we'll improve it with LLMs in Sprint 4).
+
+## 3. Graceful Error Handling
+If someone uploads a `.txt` file, an image, or a corrupted document, the server will **not crash**. Instead, it catches the issue and returns a clean `400 Bad Request` with an error message, which is then beautifully displayed on the frontend.
+
+## 4. Frontend Upload Interface
+I overhauled `App.tsx`! 
+- It now features a dedicated **File Upload Input** specifically accepting `.pdf` and `.docx`.
+- An **"Analyze Resume"** button sends the file to the API Gateway using `multipart/form-data`.
+- The results are cleanly rendered on-screen, showing each extracted section, along with a collapsible drawer to view the complete raw extracted text.
+
+## Next Steps
+Everything is in place! To test this out:
+1. Please **restart your backend terminal** (`.\gradlew bootRun`) to load the new PDFBox and POI dependencies.
+2. Upload a few real resumes on the frontend! Let's see how well the heuristic engine performs.
