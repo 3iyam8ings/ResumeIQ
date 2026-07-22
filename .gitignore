@@ -6,8 +6,11 @@ Thumbs.db
 .env
 .env.local
 
-# Project specific notes / checklists
-checklist_advanced.md
+# Project specific notes / checklists / docs
+checklist*.md
+walkthrough*
+sitemap*
+*.pdf
 
 # Node / Frontend
 frontend/node_modules/
