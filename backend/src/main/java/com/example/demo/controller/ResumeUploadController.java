@@ -5,6 +5,8 @@ import com.example.demo.dto.ScoreResult;
 import com.example.demo.service.ResumeParserService;
 import com.example.demo.service.ResumeScoringService;
 import com.example.demo.service.ai.JobAnalyzerAgent;
+import com.example.demo.repository.ResumeRepository;
+import com.example.demo.entity.Resume;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,12 +22,14 @@ public class ResumeUploadController {
     private final JobAnalyzerAgent jobAnalyzerAgent;
     private final ResumeScoringService scoringService;
     private final com.example.demo.service.PortfolioService portfolioService;
+    private final ResumeRepository resumeRepository;
 
-    public ResumeUploadController(ResumeParserService parserService, JobAnalyzerAgent jobAnalyzerAgent, ResumeScoringService scoringService, com.example.demo.service.PortfolioService portfolioService) {
+    public ResumeUploadController(ResumeParserService parserService, JobAnalyzerAgent jobAnalyzerAgent, ResumeScoringService scoringService, com.example.demo.service.PortfolioService portfolioService, ResumeRepository resumeRepository) {
         this.parserService = parserService;
         this.jobAnalyzerAgent = jobAnalyzerAgent;
         this.scoringService = scoringService;
         this.portfolioService = portfolioService;
+        this.resumeRepository = resumeRepository;
     }
 
     @PostMapping("/upload")
@@ -51,6 +55,26 @@ public class ResumeUploadController {
                 }
             }
             
+            try {
+                String extractedRole = jobAnalyzerAgent.extractCandidateRole(result.getRawText());
+                result.setRole(extractedRole);
+            } catch (Exception e) {
+                System.err.println("Failed to extract role with AI: " + e.getMessage());
+                result.setRole("CANDIDATE");
+            }
+            
+            // Save the resume to the database
+            try {
+                Resume savedResume = new Resume();
+                savedResume.setFileName(file.getOriginalFilename());
+                savedResume.setExtractedText(result.getRawText());
+                savedResume.setCandidateName("Candidate"); // Default placeholder
+                savedResume.setPdfData(file.getBytes());
+                resumeRepository.save(savedResume);
+            } catch (Exception e) {
+                System.err.println("Failed to save resume to database: " + e.getMessage());
+            }
+
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

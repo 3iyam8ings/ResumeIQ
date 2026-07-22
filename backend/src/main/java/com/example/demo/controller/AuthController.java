@@ -58,10 +58,15 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
-        String email = request.get("email");
+        String emailOrUsername = request.get("email");
         String password = request.get("password");
 
-        User user = userRepository.findByEmail(email).orElse(null);
+        User user = userRepository.findByEmail(emailOrUsername).orElse(null);
+        
+        // If not found, and doesn't look like an email, try adding @github.com for GitHub usernames
+        if (user == null && emailOrUsername != null && !emailOrUsername.contains("@")) {
+            user = userRepository.findByEmail(emailOrUsername + "@github.com").orElse(null);
+        }
 
         if (user == null || user.getPassword() == null || !passwordEncoder.matches(password, user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid email or password"));
@@ -70,11 +75,52 @@ public class AuthController {
         // Create session
         loginUserSession(user, httpRequest);
 
-        return ResponseEntity.ok(Map.of("message", "Login successful", "email", email));
+        return ResponseEntity.ok(Map.of("message", "Login successful", "email", user.getEmail()));
     }
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not authenticated"));
+        }
+
+        String email = null;
+        String name = null;
+        String picture = null;
+        
+        if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
+            email = oauthToken.getPrincipal().getAttribute("email");
+            if (email == null) {
+                email = oauthToken.getPrincipal().getAttribute("login") + "@github.com"; // Fallback for github
+            }
+            name = oauthToken.getPrincipal().getAttribute("name");
+            
+            // Handle picture (Google uses 'picture', GitHub uses 'avatar_url')
+            picture = oauthToken.getPrincipal().getAttribute("picture");
+            if (picture == null) {
+                picture = oauthToken.getPrincipal().getAttribute("avatar_url");
+            }
+        } else {
+            email = authentication.getName(); // For UsernamePasswordAuthenticationToken
+        }
+
+        if (email != null) {
+            User dbUser = userRepository.findByEmail(email).orElse(null);
+            if (dbUser != null && dbUser.getAvatarUrl() != null) {
+                picture = dbUser.getAvatarUrl();
+            }
+        }
+
+        Map<String, String> response = new HashMap<>();
+        response.put("email", email != null ? email : "unknown");
+        if (name != null) response.put("name", name);
+        if (picture != null) response.put("picture", picture);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/set-password")
+    public ResponseEntity<?> setPassword(@RequestBody Map<String, String> request, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not authenticated"));
         }
@@ -89,7 +135,28 @@ public class AuthController {
             email = authentication.getName(); // For UsernamePasswordAuthenticationToken
         }
 
-        return ResponseEntity.ok(Map.of("email", email != null ? email : "unknown"));
+        if (email == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Email not found"));
+        }
+
+        String password = request.get("password");
+        if (password == null || password.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Password is required"));
+        }
+
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
+        }
+
+        if (user.getPassword() != null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Password already set"));
+        }
+
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("message", "Password set successfully"));
     }
 
     private void loginUserSession(User user, HttpServletRequest request) {

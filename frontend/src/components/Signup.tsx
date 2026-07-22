@@ -1,42 +1,22 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import ErrorModal from './ErrorModal';
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [focusedInput, setFocusedInput] = useState<string | null>(null);
+  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) return;
-    
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Signup failed');
-      }
-
-      // Success, redirect to dashboard
-      navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const errorParam = params.get('error');
+    if (errorParam === 'account_exists') {
+      setError('Account already exists. Please try to sign up with another email or GitHub.');
+    } else if (errorParam) {
+      setError('Authentication failed. Please try again.');
     }
-  };
+  }, [location]);
+
 
   const handleOAuthLogin = (provider: string) => {
     window.location.href = `http://localhost:8082/oauth2/authorization/${provider}`;
@@ -46,7 +26,7 @@ const Signup: React.FC = () => {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    minHeight: '100vh',
+    flex: 1,
     backgroundColor: 'var(--bg)',
     fontFamily: 'var(--sans)',
     padding: '2rem'
@@ -68,10 +48,11 @@ const Signup: React.FC = () => {
 
   const titleStyle: React.CSSProperties = {
     fontSize: '32px',
-    fontWeight: '800',
+    fontWeight: 'normal',
+    fontFamily: 'var(--display)',
     color: 'var(--text-primary)',
     margin: 0,
-    letterSpacing: '-0.02em',
+    letterSpacing: '0.02em',
     textAlign: 'center'
   };
 
@@ -89,19 +70,6 @@ const Signup: React.FC = () => {
     backgroundColor: 'var(--panel-white)'
   };
 
-  const getInputStyle = (isFocused: boolean): React.CSSProperties => ({
-    width: '100%',
-    padding: '12px 20px',
-    borderRadius: '9999px',
-    border: 'var(--border-thick)',
-    backgroundColor: isFocused ? 'var(--panel-yellow)' : 'var(--panel-white)',
-    color: 'var(--text-primary)',
-    fontSize: '16px',
-    outline: 'none',
-    boxSizing: 'border-box',
-    fontFamily: 'inherit',
-    transition: 'background-color 0.2s'
-  });
 
   const buttonStyle: React.CSSProperties = {
     width: '100%',
@@ -140,88 +108,14 @@ const Signup: React.FC = () => {
         <h1 style={titleStyle}>Create Account</h1>
         
         {error && (
-          <div style={{ backgroundColor: '#ffdad6', color: '#93000a', padding: '12px', borderRadius: '8px', border: '2px solid #93000a', fontFamily: 'var(--mono)', fontSize: '14px', textAlign: 'center' }}>
-            {error}
-          </div>
+          <ErrorModal error={error} onClose={() => setError(null)} />
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: 'var(--text-primary)' }}>Email</label>
-            <input 
-              type="email" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => setFocusedInput('email')}
-              onBlur={() => setFocusedInput(null)}
-              style={getInputStyle(focusedInput === 'email')}
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: 'var(--text-primary)' }}>Password</label>
-            <input 
-              type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={() => setFocusedInput('password')}
-              onBlur={() => setFocusedInput(null)}
-              style={getInputStyle(focusedInput === 'password')}
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          <button 
-            type="submit" 
-            style={buttonStyle}
-            disabled={loading}
-            onMouseDown={(e) => {
-              if(!loading) {
-                e.currentTarget.style.boxShadow = 'var(--shadow-pressed)';
-                e.currentTarget.style.transform = 'translate(4px, 4px)';
-              }
-            }}
-            onMouseUp={(e) => {
-              if(!loading) {
-                e.currentTarget.style.boxShadow = 'var(--shadow-hard)';
-                e.currentTarget.style.transform = 'translate(0px, 0px)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if(!loading) {
-                e.currentTarget.style.boxShadow = 'var(--shadow-hard)';
-                e.currentTarget.style.transform = 'translate(0px, 0px)';
-              }
-            }}
-          >
-            {loading ? 'Creating...' : 'Sign Up'}
-          </button>
-        </form>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0' }}>
-          <div style={{ flex: 1, height: '3px', backgroundColor: 'var(--text-primary)' }} />
-          <span style={{ fontWeight: '800', fontSize: '14px' }}>OR</span>
-          <div style={{ flex: 1, height: '3px', backgroundColor: 'var(--text-primary)' }} />
-        </div>
 
         <button 
           type="button"
           style={oauthButtonStyle}
           onClick={() => handleOAuthLogin('google')}
-          onMouseDown={(e) => {
-            e.currentTarget.style.boxShadow = 'var(--shadow-pressed)';
-            e.currentTarget.style.transform = 'translate(4px, 4px)';
-          }}
-          onMouseUp={(e) => {
-            e.currentTarget.style.boxShadow = 'var(--shadow-hard)';
-            e.currentTarget.style.transform = 'translate(0px, 0px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = 'var(--shadow-hard)';
-            e.currentTarget.style.transform = 'translate(0px, 0px)';
-          }}
         >
           <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', height: '20px' }} />
           Sign up with Google
@@ -231,18 +125,6 @@ const Signup: React.FC = () => {
           type="button"
           style={oauthButtonStyle}
           onClick={() => handleOAuthLogin('github')}
-          onMouseDown={(e) => {
-            e.currentTarget.style.boxShadow = 'var(--shadow-pressed)';
-            e.currentTarget.style.transform = 'translate(4px, 4px)';
-          }}
-          onMouseUp={(e) => {
-            e.currentTarget.style.boxShadow = 'var(--shadow-hard)';
-            e.currentTarget.style.transform = 'translate(0px, 0px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = 'var(--shadow-hard)';
-            e.currentTarget.style.transform = 'translate(0px, 0px)';
-          }}
         >
           <img src="https://github.githubassets.com/favicons/favicon.svg" alt="GitHub" style={{ width: '20px', height: '20px' }} />
           Sign up with GitHub

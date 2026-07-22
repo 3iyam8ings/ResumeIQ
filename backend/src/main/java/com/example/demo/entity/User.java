@@ -22,6 +22,9 @@ public class User {
     @Column
     private String providerId; // ID from the OAuth provider
 
+    @Column
+    private String avatarUrl; // URL for the user's profile picture
+
     public User() {
     }
 
@@ -70,5 +73,13 @@ public class User {
 
     public void setProviderId(String providerId) {
         this.providerId = providerId;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }

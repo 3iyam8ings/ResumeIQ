@@ -9,6 +9,7 @@ public class ResumeParseResult {
     private String skills;
     private String rawText;
     private ScoreResult score;
+    private String role;
 
     // Getters and Setters
     public String getContactInfo() { return contactInfo; }
@@ -28,4 +29,7 @@ public class ResumeParseResult {
     
     public ScoreResult getScore() { return score; }
     public void setScore(ScoreResult score) { this.score = score; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 }

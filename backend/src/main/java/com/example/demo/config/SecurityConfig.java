@@ -14,8 +14,12 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -46,6 +50,7 @@ public class SecurityConfig {
             .oauth2Login(oauth2 -> oauth2
                 .userInfoEndpoint(userInfo -> userInfo.userService(this.oauth2UserService()))
                 .successHandler(this.oauth2SuccessHandler())
+                .failureHandler(this.oauth2FailureHandler())
             )
             // We'll handle local auth manually in AuthController to return JSON
             .logout(logout -> logout
@@ -101,17 +106,18 @@ public class SecurityConfig {
 
             final String finalEmail = email;
             
-            // Save or update user
-            User user = userRepository.findByEmail(finalEmail).orElseGet(() -> {
-                User newUser = new User();
-                newUser.setEmail(finalEmail);
-                newUser.setProvider(provider);
-                // For oauth, password can be null or a random string
-                return newUser;
-            });
-            
-            // Update provider if needed
+            // Handle picture (Google uses 'picture', GitHub uses 'avatar_url')
+            String picture = oAuth2User.getAttribute("picture");
+            if (picture == null) {
+                picture = oAuth2User.getAttribute("avatar_url");
+            }
+
+            User user = userRepository.findByEmail(finalEmail).orElse(new User());
+            user.setEmail(finalEmail);
             user.setProvider(provider);
+            if (picture != null) {
+                user.setAvatarUrl(picture);
+            }
             userRepository.save(user);
 
             // Wrap the OAuth2User to include our DB authorities or details if needed
@@ -125,8 +131,16 @@ public class SecurityConfig {
 
     private AuthenticationSuccessHandler oauth2SuccessHandler() {
         return (request, response, authentication) -> {
-            // Redirect back to the React app after successful login
-            response.sendRedirect("http://localhost:5173/dashboard");
+            // Redirect back to the React app to set password
+            response.sendRedirect("http://localhost:5173/set-password");
+        };
+    }
+
+    private AuthenticationFailureHandler oauth2FailureHandler() {
+        return (request, response, exception) -> {
+            String errorMsg = exception instanceof OAuth2AuthenticationException ? 
+                ((OAuth2AuthenticationException) exception).getError().getErrorCode() : "oauth2_error";
+            response.sendRedirect("http://localhost:5173/signup?error=" + errorMsg);
         };
     }
 }

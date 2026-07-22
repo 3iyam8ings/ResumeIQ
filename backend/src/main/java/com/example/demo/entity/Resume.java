@@ -20,6 +20,9 @@ public class Resume {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String extractedText;
 
+    @Lob
+    private byte[] pdfData;
+
     private LocalDateTime uploadedAt;
 
     @PrePersist
@@ -59,6 +62,14 @@ public class Resume {
 
     public void setExtractedText(String extractedText) {
         this.extractedText = extractedText;
+    }
+
+    public byte[] getPdfData() {
+        return pdfData;
+    }
+
+    public void setPdfData(byte[] pdfData) {
+        this.pdfData = pdfData;
     }
 
     public LocalDateTime getUploadedAt() {

@@ -4,8 +4,12 @@ import './index.css'
 import Dashboard from './components/Dashboard'
 import Login from './components/Login'
 import Signup from './components/Signup'
+import SetPassword from './components/SetPassword'
+import Footer from './components/Footer'
+import ProfileCard from './components/ProfileCard'
 
-function MainApp() {
+function MainApp({ userProfile }: { userProfile: any }) {
+  const [extractedRole, setExtractedRole] = useState<string | undefined>()
   const [file, setFile] = useState<File | null>(null)
   const [jobDescription, setJobDescription] = useState<string>("")
   const [result, setResult] = useState<any | null>(null)
@@ -54,6 +58,13 @@ function MainApp() {
           <button onClick={() => setShowDashboard(!showDashboard)} style={{ backgroundColor: 'var(--panel-yellow)' }}>
             {showDashboard ? "Close Job Tracker" : "Open Job Tracker"}
           </button>
+          <button onClick={() => {
+            fetch('/api/auth/logout', { method: 'POST' }).then(() => {
+              window.location.href = '/signup';
+            });
+          }} style={{ backgroundColor: 'var(--btn-coral)', marginLeft: '10px' }}>
+            Logout
+          </button>
         </div>
       </div>
 
@@ -63,8 +74,20 @@ function MainApp() {
         </div>
       )}
 
-      {/* Main Upload Section */}
-      <div className="neo-panel neo-panel-yellow">
+      <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
+        
+        {/* Profile Card Section */}
+        <div>
+          <ProfileCard 
+            name={userProfile?.name} 
+            picture={userProfile?.picture} 
+            role={extractedRole} 
+          />
+        </div>
+
+        {/* Main Upload Section */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '40px' }}>
+          <div className="neo-panel neo-panel-yellow">
         <h2>Resume Analysis & Match Score</h2>
         <form onSubmit={async (e) => {
             e.preventDefault();
@@ -79,6 +102,9 @@ function MainApp() {
               if (!res.ok) throw new Error("Upload failed");
               const data = await res.json();
               setResult(data);
+              if (data.role) {
+                setExtractedRole(data.role);
+              }
             } catch (err: any) {
               setError(err.message);
             } finally {
@@ -147,6 +173,9 @@ function MainApp() {
           </div>
         )}
       </div>
+      
+        </div>
+      </div>
 
     </div>
   )
@@ -154,6 +183,7 @@ function MainApp() {
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -162,6 +192,7 @@ function App() {
     fetch('/api/auth/me')
       .then(res => {
         if (res.ok) {
+          res.json().then(data => setUserProfile(data));
           setIsAuthenticated(true);
           if (location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/') {
             navigate('/dashboard');
@@ -180,12 +211,19 @@ function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/dashboard" element={isAuthenticated ? <MainApp /> : <Navigate to="/login" />} />
-      <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
-    </Routes>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '100vh' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/set-password" element={isAuthenticated ? <SetPassword /> : <Navigate to="/signup" />} />
+          <Route path="/dashboard" element={isAuthenticated ? <MainApp userProfile={userProfile} /> : <Navigate to="/signup" />} />
+          <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/signup"} />} />
+          <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/signup"} />} />
+        </Routes>
+      </div>
+      <Footer />
+    </div>
   );
 }
 

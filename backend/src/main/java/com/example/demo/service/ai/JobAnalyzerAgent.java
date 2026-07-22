@@ -20,6 +20,16 @@ public interface JobAnalyzerAgent {
     String extractKeywords(@dev.langchain4j.service.V("jobDescription") String jobDescription);
 
     @SystemMessage({
+        "You are an expert recruiter parsing a candidate's resume.",
+        "Your task is to identify the candidate's primary job title or role (e.g., 'Software Engineer', 'Data Scientist', 'Marketing Manager').",
+        "If they are a student, return something like 'Computer Science Student' or 'Graduating Student'.",
+        "Return EXACTLY and ONLY the role title as a short string.",
+        "Do NOT use JSON. Do NOT use bullet points. Do NOT include any other text."
+    })
+    @UserMessage("Resume:\n{{resumeText}}\n\nPlease extract the candidate's primary role or title:")
+    String extractCandidateRole(@dev.langchain4j.service.V("resumeText") String resumeText);
+
+    @SystemMessage({
         "You are an expert resume writer.",
         "Rewrite the provided bullet point to be more impactful, using the STAR method (Situation, Task, Action, Result) if possible.",
         "CRITICAL RULE: Do NOT fabricate or invent any numbers, metrics, tools, or experiences that the user did not explicitly mention.",
