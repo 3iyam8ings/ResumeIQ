@@ -20,7 +20,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   const defaultName = "Tiya";
   const defaultRole = "FULL_STACK_DEVELOPER()";
   const defaultLocation = "Hyderabad, Telangana";
-  const defaultStatus = "4th YEAR BTECH STUDENT";
+  const defaultStatus = "3rd YEAR BTECH STUDENT";
   const defaultMission = "to get an internship";
   const defaultPicture = "https://ui-avatars.com/api/?name=Tiya&background=F59E0B&color=fff"; // Fallback image
 

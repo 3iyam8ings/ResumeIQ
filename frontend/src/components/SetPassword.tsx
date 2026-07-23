@@ -30,7 +30,7 @@ const SetPassword: React.FC = () => {
       }
 
       // Success, redirect to dashboard
-      navigate('/dashboard');
+      navigate('/home');
     } catch (err: any) {
       setError(err.message);
     } finally {

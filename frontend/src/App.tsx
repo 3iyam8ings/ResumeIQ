@@ -7,7 +7,7 @@ import Signup from './components/Signup'
 import SetPassword from './components/SetPassword'
 import Footer from './components/Footer'
 import ProfileCard from './components/ProfileCard'
-
+import Home from './components/Home'
 function MainApp({ userProfile }: { userProfile: any }) {
   const [extractedRole, setExtractedRole] = useState<string | undefined>()
   const [file, setFile] = useState<File | null>(null)
@@ -195,7 +195,7 @@ function App() {
           res.json().then(data => setUserProfile(data));
           setIsAuthenticated(true);
           if (location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/') {
-            navigate('/dashboard');
+            navigate('/home');
           }
         } else {
           setIsAuthenticated(false);
@@ -217,12 +217,13 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/set-password" element={isAuthenticated ? <SetPassword /> : <Navigate to="/signup" />} />
+          <Route path="/home" element={<Home isAuthenticated={isAuthenticated ?? false} userProfile={userProfile} />} />
           <Route path="/dashboard" element={isAuthenticated ? <MainApp userProfile={userProfile} /> : <Navigate to="/signup" />} />
-          <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/signup"} />} />
-          <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/signup"} />} />
+          <Route path="/" element={<Navigate to="/home" />} />
+          <Route path="*" element={<Navigate to="/home" />} />
         </Routes>
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
