@@ -63,16 +63,28 @@ button {
   cursor: pointer;
   transition: transform 0.1s, box-shadow 0.1s;
   color: var(--text-primary);
+  position: relative;
+}
+
+/* Invisible hit area to prevent hover flicker when button translates */
+button::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -20px;
+  bottom: -20px;
+  border-radius: 9999px;
 }
 
 button:hover {
   transform: translate(6px, 6px);
-  box-shadow: none !important;
+  box-shadow: none;
 }
 
 button:active {
-  transform: translate(4px, 4px);
-  box-shadow: none !important;
+  transform: translate(6px, 6px);
+  box-shadow: none;
 }
 
 button:disabled {

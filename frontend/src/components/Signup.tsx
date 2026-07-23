@@ -6,6 +6,7 @@ const Signup: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState<string | null>(null);
+  const [isHoveringCreate, setIsHoveringCreate] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -107,19 +108,23 @@ const Signup: React.FC = () => {
           <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '13px', fontWeight: 600, color: '#4e4635', textTransform: 'uppercase', marginLeft: '4px' }}>Full Name</label>
-              <input type="text" placeholder="John Doe" style={{ width: '100%', backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px 24px', fontSize: '18px', outline: 'none' }} />
+              <input type="text" placeholder="John Doe" style={{ width: '100%', backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px 24px', fontSize: '18px', outline: 'none', boxSizing: 'border-box' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '13px', fontWeight: 600, color: '#4e4635', textTransform: 'uppercase', marginLeft: '4px' }}>Email Address</label>
-              <input type="email" placeholder="hello@future.ai" style={{ width: '100%', backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px 24px', fontSize: '18px', outline: 'none' }} />
+              <input type="email" placeholder="hello@future.ai" style={{ width: '100%', backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px 24px', fontSize: '18px', outline: 'none', boxSizing: 'border-box' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '13px', fontWeight: 600, color: '#4e4635', textTransform: 'uppercase', marginLeft: '4px' }}>Password</label>
-              <input type="password" placeholder="••••••••" style={{ width: '100%', backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px 24px', fontSize: '18px', outline: 'none' }} />
+              <input type="password" placeholder="••••••••" style={{ width: '100%', backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px 24px', fontSize: '18px', outline: 'none', boxSizing: 'border-box' }} />
             </div>
             <div style={{ marginTop: '24px' }}>
-              <button style={{
+              <button 
+                onMouseEnter={() => setIsHoveringCreate(true)}
+                onMouseLeave={() => setIsHoveringCreate(false)}
+                style={{
                 width: '100%',
+                boxSizing: 'border-box',
                 backgroundColor: '#7BE0A0',
                 border: '3px solid #1c1b1b',
                 borderRadius: '9999px',
@@ -127,18 +132,15 @@ const Signup: React.FC = () => {
                 fontSize: '24px',
                 fontWeight: 700,
                 color: '#1c1b1b',
-                boxShadow: '6px 6px 0px 0px rgba(0,0,0,1)',
+                boxShadow: isHoveringCreate ? 'none' : '6px 6px 0px 0px rgba(0,0,0,1)',
+                transform: isHoveringCreate ? 'translate(6px, 6px)' : 'none',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '12px',
-                transition: 'transform 0.1s, box-shadow 0.1s'
-              }}
-              onMouseDown={(e) => { e.currentTarget.style.transform = 'translate(4px, 4px)'; e.currentTarget.style.boxShadow = 'none'; }}
-              onMouseUp={(e) => { e.currentTarget.style.transform = 'translate(0px, 0px)'; e.currentTarget.style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,1)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translate(0px, 0px)'; e.currentTarget.style.boxShadow = '6px 6px 0px 0px rgba(0,0,0,1)'; }}
-              >
+                transition: 'all 0.1s ease-in-out'
+              }}>
                 CREATE ACCOUNT
                 <span>➔</span>
               </button>
@@ -154,14 +156,14 @@ const Signup: React.FC = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
             <button onClick={() => handleOAuthLogin('google')} style={{
               backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px',
-              boxShadow: '3px 3px 0px 0px rgba(0,0,0,1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               fontFamily: '"JetBrains Mono", monospace', fontWeight: 600
             }}>
               <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', height: '20px' }} /> GOOGLE
             </button>
             <button onClick={() => handleOAuthLogin('github')} style={{
               backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px',
-              boxShadow: '3px 3px 0px 0px rgba(0,0,0,1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               fontFamily: '"JetBrains Mono", monospace', fontWeight: 600
             }}>
               <img src="https://github.githubassets.com/favicons/favicon.svg" alt="GitHub" style={{ width: '20px', height: '20px' }} /> GITHUB

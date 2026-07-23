@@ -86,25 +86,25 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {!isAuthenticated ? (
-            <>
-              <span onClick={() => navigate('/login')} style={{ cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: '14px', fontWeight: 600, color: '#1c1b1b' }}>LOGIN</span>
-              <button 
-                onClick={() => navigate('/signup')}
-                style={{ 
-                  backgroundColor: '#f5c445', 
-                  border: '2px solid #000', 
-                  borderRadius: '9999px', 
-                  padding: '8px 24px', 
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  fontFamily: '"Plus Jakarta Sans", sans-serif',
-                  color: '#1c1b1b'
-                }}>
-                SIGN UP
-              </button>
-            </>
+            <span onClick={() => navigate('/login')} style={{ cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: '14px', fontWeight: 600, color: '#1c1b1b' }}>LOGIN</span>
           ) : null}
-          <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '2px solid #000', overflow: 'hidden', backgroundColor: 'white' }}>
+          
+          <button 
+            onClick={() => navigate('/signup')}
+            style={{ 
+              backgroundColor: '#f5c445', 
+              border: '3px solid #000', 
+              borderRadius: '9999px', 
+              padding: '8px 24px', 
+              fontWeight: 800,
+              cursor: 'pointer',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
+              color: '#1c1b1b'
+            }}>
+            SIGN UP
+          </button>
+
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid #000', overflow: 'hidden', backgroundColor: 'white' }}>
             <img src={userProfile?.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="avatar" style={{ width: '100%', height: '100%' }} />
           </div>
         </div>

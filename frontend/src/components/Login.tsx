@@ -234,7 +234,12 @@ const Login: React.FC = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label style={{ ...fonts.labelMono, marginLeft: '8px' }}>USER_PASSWORD</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label style={{ ...fonts.labelMono, marginLeft: '8px' }}>USER_PASSWORD</label>
+                <Link to="/forgot-password" style={{ ...fonts.labelMono, color: '#775a00', textDecoration: 'none' }}>
+                  [ FORGOT_PASSWORD? ]
+                </Link>
+              </div>
               <input 
                 type="password" 
                 value={password}
@@ -256,12 +261,6 @@ const Login: React.FC = () => {
                 placeholder="••••••••"
                 required
               />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <span style={{ ...fonts.labelMono, color: '#775a00', cursor: 'pointer', textDecoration: 'none' }}>
-                [ FORGOT_PASSWORD? ]
-              </span>
             </div>
 
             {/* Main CTA */}

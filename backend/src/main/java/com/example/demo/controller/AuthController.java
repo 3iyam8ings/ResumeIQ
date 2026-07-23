@@ -14,6 +14,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+import com.example.demo.entity.PasswordResetToken;
+import com.example.demo.repository.PasswordResetTokenRepository;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,10 +38,13 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordResetTokenRepository tokenRepository;
+    private final SecureRandom secureRandom = new SecureRandom();
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, PasswordResetTokenRepository tokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenRepository = tokenRepository;
     }
 
     @PostMapping("/signup")
@@ -157,6 +173,113 @@ public class AuthController {
         userRepository.save(user);
 
         return ResponseEntity.ok(Map.of("message", "Password set successfully"));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+        }
+
+        User user = userRepository.findByEmail(email).orElse(null);
+        
+        // Always return generic success to prevent email enumeration
+        Map<String, String> genericResponse = Map.of(
+            "message", "If an account matches that email, we have sent a password reset link."
+        );
+
+        if (user != null) {
+            // 1. Invalidate previous unused tokens for this user
+            tokenRepository.invalidateAllTokensForUser(user);
+
+            // 2. Generate a secure random token
+            byte[] randomBytes = new byte[32];
+            secureRandom.nextBytes(randomBytes);
+            String rawToken = Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+
+            // 3. Hash the token for storage
+            String tokenHash = hashString(rawToken);
+
+            // 4. Save the hashed token with a 15-minute expiration
+            LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(15);
+            PasswordResetToken resetToken = new PasswordResetToken(tokenHash, user, expiryDate);
+            tokenRepository.save(resetToken);
+
+            // 5. Simulate sending the email (print to console for testing)
+            String resetLink = "http://localhost:5173/reset-password?token=" + rawToken;
+            System.out.println("=================================================");
+            System.out.println("SIMULATED EMAIL DISPATCH:");
+            System.out.println("To: " + user.getEmail());
+            System.out.println("Subject: Reset your ResumeIQ password");
+            System.out.println("Body: Click the link below to reset your password. It expires in 15 minutes.");
+            System.out.println(resetLink);
+            System.out.println("=================================================");
+        }
+
+        return ResponseEntity.ok(genericResponse);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String rawToken = request.get("token");
+        String newPassword = request.get("newPassword");
+
+        if (rawToken == null || newPassword == null || newPassword.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Token and new password are required"));
+        }
+
+        if (newPassword.length() < 8) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Password must be at least 8 characters long"));
+        }
+
+        String tokenHash = hashString(rawToken);
+        PasswordResetToken tokenEntity = tokenRepository.findByTokenHash(tokenHash).orElse(null);
+
+        if (tokenEntity == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Invalid or expired reset token"));
+        }
+
+        if (tokenEntity.isUsed()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "This reset token has already been used"));
+        }
+
+        if (tokenEntity.getExpiryDate().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "This reset token has expired"));
+        }
+
+        // Token is valid, update user's password
+        User user = tokenEntity.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        // Mark token as used
+        tokenEntity.setUsed(true);
+        tokenRepository.save(tokenEntity);
+
+        return ResponseEntity.ok(Map.of("message", "Password has been reset successfully. You can now log in."));
+    }
+
+    private String hashString(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] encodedhash = digest.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return bytesToHex(encodedhash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not found", e);
+        }
+    }
+
+    private String bytesToHex(byte[] hash) {
+        StringBuilder hexString = new StringBuilder(2 * hash.length);
+        for (int i = 0; i < hash.length; i++) {
+            String hex = Integer.toHexString(0xff & hash[i]);
+            if(hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 
     private void loginUserSession(User user, HttpServletRequest request) {

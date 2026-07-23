@@ -8,6 +8,9 @@ import SetPassword from './components/SetPassword'
 import Footer from './components/Footer'
 import ProfileCard from './components/ProfileCard'
 import Home from './components/Home'
+import ForgotPassword from './components/ForgotPassword'
+import ResetPassword from './components/ResetPassword'
+
 function MainApp({ userProfile }: { userProfile: any }) {
   const [extractedRole, setExtractedRole] = useState<string | undefined>()
   const [file, setFile] = useState<File | null>(null)
@@ -148,7 +151,7 @@ function MainApp({ userProfile }: { userProfile: any }) {
               const res = await fetch('/api/generate-cover-letter', { method: 'POST', body: formData });
               const data = await res.json();
               setClResult(data.coverLetter);
-            } catch (err) {
+            } catch (err: any) {
               console.error(err);
             } finally {
               setClLoading(false);
@@ -194,7 +197,7 @@ function App() {
         if (res.ok) {
           res.json().then(data => setUserProfile(data));
           setIsAuthenticated(true);
-          if (location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/') {
+          if (location.pathname === '/') {
             navigate('/home');
           }
         } else {
@@ -204,7 +207,7 @@ function App() {
       .catch(() => {
         setIsAuthenticated(false);
       });
-  }, [navigate, location.pathname]);
+  }, [navigate]);
 
   if (isAuthenticated === null) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: 'var(--bg)' }}><h2 style={{ color: 'var(--text-primary)' }}>Loading...</h2></div>;
@@ -217,6 +220,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/set-password" element={isAuthenticated ? <SetPassword /> : <Navigate to="/signup" />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/home" element={<Home isAuthenticated={isAuthenticated ?? false} userProfile={userProfile} />} />
           <Route path="/dashboard" element={isAuthenticated ? <MainApp userProfile={userProfile} /> : <Navigate to="/signup" />} />
           <Route path="/" element={<Navigate to="/home" />} />
