@@ -1,62 +1,74 @@
-# 🧠 ResumeIQ Platform
+# 🧠 ResumeIQ
 
-An intelligent, full-stack application designed to automatically parse, evaluate, and score candidate resumes against target job descriptions. Built with a modular architecture, this project leverages **Gemini 2.5 Flash** to extract unstructured resume data, identify matching or missing keywords, provide actionable feedback, and generate personalized career assets.
+**ResumeIQ** is an intelligent, AI-powered career assistant that helps candidates optimize their resumes and navigate the job application process with confidence. 
 
-## 🏗️ Architecture
-- **Frontend**: React (Vite) + React Router
-- **UI Design**: Neo-Brutalist Sticker System (Custom CSS + Inline Styles)
-- **API Gateway**: Spring Cloud Gateway (Port 8081)
-- **Backend Core**: Spring Boot (Port 8082) + Spring Security
-- **Database**: H2 In-Memory Database (Fallback from PostgreSQL)
-- **AI Integration**: LangChain4j with Google Gemini API
-- **Authentication**: Local Email/Password + OAuth2 (Google & GitHub)
+Powered by Google Gemini 2.5 Flash, ResumeIQ breaks down your resume through the eyes of a recruiter and an ATS (Applicant Tracking System) to provide you with actionable, hyper-personalized feedback.
 
-## 🚀 Features (All Sprints Complete)
-- **Resume Match & Analysis**: Upload a PDF and Job Description to get an ATS Match Score and detailed breakdown of matched/missing skills.
-- **Smart Rewrite**: Improve specific resume bullet points with AI to better align with the job description.
-- **AI Cover Letter**: Generate a customized cover letter tailored specifically to the uploaded resume and job description.
-- **Mock Interview**: Generate technical and behavioral interview questions, submit answers, and receive detailed AI feedback.
-- **Look Beyond Resume**: Analyze a project portfolio and generate a personalized learning roadmap.
-- **Job Tracker Dashboard**: Full CRUD dashboard to save and track the status of your job applications.
-- **Secure Authentication**: Robust authentication system supporting traditional Email/Password signup/login as well as one-click OAuth2 via Google and GitHub.
+---
 
-## 🛠️ Getting Started
+## ✨ Features
 
-### Prerequisites
-- Node.js & npm
-- Java 17+
-- Google Gemini API Key
-- Google & GitHub OAuth2 Credentials (if running locally)
+### 📄 AI Resume Analysis & ATS Match
+Upload your resume (PDF/DOCX) alongside any target job description. ResumeIQ extracts the unstructured data and instantly calculates an ATS match score. It highlights the exact skills you matched and precisely what keywords you're missing to get the interview.
 
-### Setup Instructions
+### ✍️ Smart Rewrite
+Stop struggling with wording. ResumeIQ can automatically rewrite and polish your resume bullet points to dramatically improve their impact and perfectly align them with the specific job you're applying for.
 
-1. **Frontend**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
+### ✉️ One-Click Cover Letters
+Generate a completely custom, professional cover letter tailored specifically to your uploaded resume and the target job description in seconds.
 
-2. **API Gateway**
-   ```bash
-   cd api-gateway
-   ./gradlew bootRun
-   ```
+### 🎤 Interactive Mock Interviews
+Prepare for the real thing. ResumeIQ generates custom technical and behavioral interview questions based on your specific job description. Submit your answers and receive immediate, actionable AI feedback on your performance.
 
-3. **Backend**
-   The backend properties (`backend/src/main/resources/application.properties`) currently store the API Keys and OAuth credentials.
-   ```bash
-   cd backend
-   ./gradlew bootRun
-   ```
+### 🗺️ Beyond the Resume (Portfolio & Roadmaps)
+Share your portfolio or GitHub profile, and ResumeIQ will analyze your projects to generate a personalized learning roadmap to help you bridge the gap between your current skills and your dream role.
 
-4. Open `http://localhost:5173` in your browser. You will be greeted by the new Neo-Brutalist Login/Signup pages!
+### 📊 Job Tracker Dashboard
+Stay organized during your hunt. The built-in Job Tracker Dashboard allows you to save, manage, and update the status of all your ongoing job applications in one central location.
 
-## ✅ Development Status
-- **Sprint 1 - 3 (MVP Core)**: PDF parsing, heuristic chunking, Keyword matching, ATS scoring.
-- **Sprint 4**: Resume Rewriting & Bullet Point Improvement.
-- **Sprint 5**: AI Cover Letter Generation.
-- **Sprint 6**: Mock Interview Questions & Feedback.
-- **Sprint 7**: Portfolio Analysis & Learning Roadmap.
-- **Sprint 8**: Job Tracker Dashboard.
-- **Sprint 9**: Full System Authentication & Neo-Brutalist Frontend Redesign.
+### 🔐 Secure, Seamless Authentication
+Create a local account or log in with one click using Google or GitHub OAuth2. Secure password reset flows are also fully supported.
+
+---
+
+## 🎨 UI/UX Design
+
+ResumeIQ is built entirely using a custom **Neo-Brutalist Design System**. 
+This distinctive aesthetic features bold typography, high-contrast layouts, heavy borders, vibrant colors, and satisfying, highly responsive physical hover interactions to make the platform as enjoyable to use as it is powerful.
+
+---
+
+## 🏗️ Tech Stack
+
+- **Frontend:** React (Vite) + React Router
+- **Backend:** Spring Boot (Java 17) + Spring Security
+- **API Gateway:** Spring Cloud Gateway
+- **Database:** H2 In-Memory Database
+- **AI Integration:** LangChain4j + Google Gemini API
+
+---
+
+## 🚀 Getting Started
+
+To run the application locally, you will need Node.js, Java 17+, and a Google Gemini API Key.
+
+**1. Start the Frontend**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**2. Start the API Gateway**
+```bash
+cd api-gateway
+./gradlew bootRun
+```
+
+**3. Start the Backend Service**
+```bash
+cd backend
+./gradlew bootRun
+```
+
+Once all services are running, navigate to `http://localhost:5173` to get started!
