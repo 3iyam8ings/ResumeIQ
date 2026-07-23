@@ -44,7 +44,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable()) // Disable CSRF for simplified React integration
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/login/**", "/oauth2/**").permitAll()
+                .requestMatchers("/api/auth/**", "/login/**", "/oauth2/**", "/api/upload").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
@@ -131,8 +131,8 @@ public class SecurityConfig {
 
     private AuthenticationSuccessHandler oauth2SuccessHandler() {
         return (request, response, authentication) -> {
-            // Redirect back to the React app to set password
-            response.sendRedirect("http://localhost:5173/set-password");
+            // Redirect back to the React app homepage
+            response.sendRedirect("http://localhost:5173/");
         };
     }
 

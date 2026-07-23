@@ -53,6 +53,10 @@ public class ResumeUploadController {
                 } catch (Exception e) {
                     System.err.println("Failed to analyze job description with AI: " + e.getMessage());
                 }
+            } else {
+                // If no job description is provided, do a general resume quality analysis
+                ScoreResult generalScore = scoringService.scoreGeneralResumeQuality(result.getRawText());
+                result.setScore(generalScore);
             }
             
             try {

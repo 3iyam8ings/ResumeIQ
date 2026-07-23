@@ -29,15 +29,17 @@ If you aren't ready for the job yet, you can share your portfolio or GitHub. The
 There's a built-in Kanban-style dashboard where you can save all the jobs you've analyzed and track where you are in the application process.
 
 ### 🔐 Secure Accounts
-You can create a local account with a secure password, or just click once to log in using Google or GitHub. 
+You can create a local account with a secure password, or just click once to log in using Google or GitHub. The authentication system is bulletproof: it prevents duplicate accounts, securely hashes all passwords, provides a robust "Forgot Password" flow using expiring tokens, and intelligently routes returning OAuth users straight to the dashboard.
 
 ---
 
 ## 🎨 The Vibe
 
-I was tired of boring corporate dashboards, so I built the entire frontend using a **Neo-Brutalist** design system. It uses heavy black borders, bright colors, chunky fonts, and really satisfying, physical "press" animations on all the buttons. It makes the app genuinely fun to click around in.
+I was tired of boring corporate dashboards, so I built the entire frontend using a **Neo-Brutalist** design system. It uses heavy black borders, bright colors, chunky fonts, and really satisfying, physical "press" animations on all the buttons. It makes the app genuinely fun to click around in. 
 
----
+We've heavily polished the UI to create a premium feel: the layout is compact with unified corner radiuses, interactions are crisp with custom hover states, and the dynamic hacker-style terminal starts clean and animates logically as it processes your resume.
+
+
 
 ## 🏗️ How it was built
 

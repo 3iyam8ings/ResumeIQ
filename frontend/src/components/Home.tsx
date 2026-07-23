@@ -11,21 +11,31 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
   const [jobDescription, setJobDescription] = useState<string>('');
   const [isHovering, setIsHovering] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [accuracy, setAccuracy] = useState<number | null>(null);
+  const [timeTaken, setTimeTaken] = useState<number | null>(null);
   const [logs, setLogs] = useState<string[]>([
     '# ResumeIQ Processing v2.4.0',
-    'System ready... awaiting file upload.',
-    '> Initializing neural engine...',
-    '> Connection established with Claude API',
-    '> Loading ATS heuristics...',
-    '> Awaiting input blob...'
+    'System ready... awaiting file upload.'
   ]);
   const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+      if (!validTypes.includes(selectedFile.type) && !selectedFile.name.toLowerCase().endsWith('.pdf') && !selectedFile.name.toLowerCase().endsWith('.docx') && !selectedFile.name.toLowerCase().endsWith('.doc')) {
+        alert("Invalid file type. Please upload a PDF or DOCX file.");
+        return;
+      }
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        alert("File size exceeds 5MB limit.");
+        return;
+      }
+      setFile(selectedFile);
     }
   };
+
+  const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
   const handleAnalyze = async () => {
     if (!file) {
@@ -33,7 +43,55 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
       return;
     }
     setLoading(true);
-    setLogs(prev => [...prev, '> [CRITICAL] File detected: ' + file.name, '> Extracting text metadata...', '> Mapping skills matrix...', '> Cross-referencing job requirements...', '> CALCULATING SCORE...']);
+    setAccuracy(null);
+    setTimeTaken(null);
+    setLogs([
+      '# ResumeIQ Processing v2.4.0',
+      `> [CRITICAL] File detected: ${file.name}`
+    ]);
+
+    const startTime = Date.now();
+    let isDone = false;
+
+    // Background animation sequence
+    const animateLogs = async () => {
+        setLogs([
+            '# ResumeIQ Processing v2.4.0',
+            'System ready... awaiting file upload.',
+            `> [CRITICAL] File detected: ${file?.name}`,
+            '> Initializing neural engine...',
+        ]);
+        await sleep(600);
+        if (isDone) return;
+        setLogs(prev => [...prev, '> Connection established with Claude API']);
+        await sleep(600);
+        if (isDone) return;
+        setLogs(prev => [...prev, '> Loading ATS heuristics...']);
+        await sleep(600);
+        if (isDone) return;
+        setLogs(prev => [...prev, '> Extracting text metadata...']);
+        await sleep(1000);
+        if (isDone) return;
+        setLogs(prev => [...prev, '> Analyzing formatting and structure...']);
+        await sleep(1000);
+        if (isDone) return;
+        if (jobDescription && jobDescription.trim().length > 0) {
+            setLogs(prev => [...prev, '> Cross-referencing job requirements...']);
+            await sleep(1200);
+            if (isDone) return;
+            setLogs(prev => [...prev, '> Calculating relevance score...']);
+        } else {
+            setLogs(prev => [...prev, '> Checking keyword density...']);
+            await sleep(1200);
+            if (isDone) return;
+            setLogs(prev => [...prev, '> Generating baseline ATS score...']);
+        }
+        await sleep(1000);
+        if (isDone) return;
+        setLogs(prev => [...prev, '> Finalizing report...']);
+    };
+    
+    animateLogs();
     
     const formData = new FormData();
     formData.append('file', file);
@@ -42,16 +100,23 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       if (!res.ok) throw new Error("Upload failed");
-      await res.json();
-      setLogs(prev => [...prev, '> Done. Generating report...']);
+      const data = await res.json();
       
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-         navigate('/dashboard');
-      }, 1000);
-      
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 4500) {
+          await sleep(4500 - elapsed); // Minimum wait for UX polish
+      }
+      isDone = true;
+
+      setLogs(prev => [...prev, '> Analysis complete.']);
+      const endTime = Date.now();
+      setTimeTaken((endTime - startTime) / 1000);
+      setAccuracy(data.score?.matchPercentage || 0);
+
     } catch (err: any) {
-      setLogs(prev => [...prev, '> ERROR: ' + err.message]);
+      isDone = true;
+      setLogs(prev => [...prev, `> Error: ${err.message}. Please try again.`]);
+    } finally {
       setLoading(false);
     }
   };
@@ -71,7 +136,7 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          marginBottom: '10px'
+          marginBottom: '50px'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -105,7 +170,7 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
           </button>
 
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid #000', overflow: 'hidden', backgroundColor: 'white' }}>
-            <img src={userProfile?.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="avatar" style={{ width: '100%', height: '100%' }} />
+            <img src={userProfile?.picture || userProfile?.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="avatar" style={{ width: '100%', height: '100%' }} />
           </div>
         </div>
       </div>
@@ -157,25 +222,39 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
               borderRadius: '20px',
               padding: '60px 40px',
               textAlign: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              transform: isHovering ? 'translate(6px, 6px)' : 'none',
-              boxShadow: isHovering ? 'none' : '6px 6px 0px #000',
+              boxShadow: '6px 6px 0px #000',
               position: 'relative'
             }}
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
           >
             <input 
+              id="resume-upload"
               type="file" 
-              accept=".pdf,.docx" 
+              accept=".pdf,.docx,.doc" 
               onChange={handleFileChange} 
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+              style={{ display: 'none' }}
             />
             <div style={{ fontSize: '48px', color: 'var(--panel-lavender)', marginBottom: '10px' }}>📄</div>
             <h3 style={{ margin: '0 0 10px 0' }}>Drop your Resume here</h3>
             <p style={{ opacity: 0.6, margin: '0 0 20px 0', fontFamily: 'var(--mono)', fontSize: '14px' }}>PDF, DOCX (Max 5MB)</p>
-            <button style={{ backgroundColor: 'var(--btn-coral)', pointerEvents: 'none' }}>SELECT FILE</button>
+            <button 
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => setIsHovering(false)}
+              onClick={() => document.getElementById('resume-upload')?.click()}
+              style={{ 
+                backgroundColor: 'var(--btn-coral)', 
+                cursor: 'pointer',
+                transition: 'all 0.1s ease',
+                transform: isHovering ? 'translate(4px, 4px)' : 'none',
+                boxShadow: isHovering ? 'none' : '4px 4px 0px #000',
+                border: '3px solid #000',
+                borderRadius: '9999px',
+                padding: '12px 32px',
+                fontWeight: 800,
+                fontSize: '16px',
+                fontFamily: 'inherit'
+              }}>
+              SELECT FILE
+            </button>
             {file && <p style={{ marginTop: '15px', fontWeight: 'bold' }}>Selected: {file.name}</p>}
           </div>
 
@@ -189,7 +268,7 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
               value={jobDescription} 
               onChange={(e) => setJobDescription(e.target.value)}
               placeholder="Paste the target job description here for a tailored match analysis..."
-              style={{ width: '100%', height: '150px', boxSizing: 'border-box' }}
+              style={{ width: '100%', height: '150px', boxSizing: 'border-box', transition: 'none', resize: 'none', backgroundColor: 'white' }}
             />
           </div>
 
@@ -215,22 +294,27 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
 
           {/* Analyze Button */}
           <button 
+            className="btn-tactile"
             onClick={handleAnalyze} 
-            disabled={loading}
-            style={{ width: '100%', backgroundColor: 'var(--btn-coral)', fontSize: '20px', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}
+            disabled={loading || !file}
+            style={{ width: '100%', backgroundColor: loading || !file ? '#ccc' : 'var(--btn-coral)', fontSize: '16px', padding: '8px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', cursor: loading || !file ? 'not-allowed' : 'pointer', border: '3px solid #000', borderRadius: '20px', boxShadow: loading || !file ? 'none' : '4px 4px 0px #000', fontWeight: 800 }}
           >
             📊 ANALYZE MY RESUME
           </button>
 
           {/* Metrics */}
           <div style={{ display: 'flex', gap: '20px' }}>
-            <div className="neo-panel" style={{ flex: 1, backgroundColor: 'var(--btn-mint)', margin: 0, padding: '16px' }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: '12px', fontWeight: 'bold', marginBottom: '5px' }}>ACCURACY</div>
-              <div style={{ fontSize: '28px', fontWeight: 900 }}>99.2%</div>
+            <div className="neo-panel" style={{ flex: 1, backgroundColor: 'var(--btn-mint)', margin: 0, padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', fontWeight: 'bold', marginBottom: '2px' }}>ACCURACY</div>
+              <div style={{ fontSize: '28px', fontWeight: 900, lineHeight: 1 }}>{accuracy !== null ? `${accuracy}%` : '--'}</div>
             </div>
-            <div className="neo-panel" style={{ flex: 1, backgroundColor: 'var(--panel-lavender)', margin: 0, padding: '16px' }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: '12px', fontWeight: 'bold', marginBottom: '5px' }}>TIME</div>
-              <div style={{ fontSize: '28px', fontWeight: 900 }}>&lt; 15s</div>
+            <div 
+              className="neo-panel btn-tactile" 
+              onClick={() => navigate('/dashboard')}
+              style={{ flex: 1, backgroundColor: 'var(--panel-lavender)', margin: 0, padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', border: '3px solid #000', boxShadow: '4px 4px 0px #000' }}
+            >
+              <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', fontWeight: 'bold', marginBottom: '2px' }}>VIEW REPORT</div>
+              <div style={{ fontSize: '16px', fontWeight: 900, lineHeight: 1 }}>DETAILED RESULT</div>
             </div>
           </div>
 
@@ -253,6 +337,18 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
         @keyframes blink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
+        }
+        
+        .btn-tactile {
+          transition: transform 100ms ease-out, box-shadow 100ms ease-out !important;
+        }
+        .btn-tactile:hover:not(:disabled) {
+          transform: translate(4px, 4px);
+          box-shadow: 0px 0px 0px #000 !important;
+        }
+        .btn-tactile:active:not(:disabled) {
+          transform: translate(4px, 4px);
+          box-shadow: 0px 0px 0px #000 !important;
         }
       `}</style>
       </div>

@@ -16,6 +16,12 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.entity.PasswordResetToken;
 import com.example.demo.repository.PasswordResetTokenRepository;
+import com.example.demo.service.EmailService;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Refill;
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -39,16 +45,22 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetTokenRepository tokenRepository;
+    private final EmailService emailService;
     private final SecureRandom secureRandom = new SecureRandom();
+    
+    // Rate limiting map: allows 3 requests per 10 minutes per IP/email
+    private final ConcurrentHashMap<String, Bucket> resetBuckets = new ConcurrentHashMap<>();
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, PasswordResetTokenRepository tokenRepository) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, PasswordResetTokenRepository tokenRepository, EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenRepository = tokenRepository;
+        this.emailService = emailService;
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
+        String name = request.get("name");
         String email = request.get("email");
         String password = request.get("password");
 
@@ -61,6 +73,7 @@ public class AuthController {
         }
 
         User user = new User();
+        user.setName(name);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setProvider("local");
@@ -176,10 +189,23 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
         String email = request.get("email");
         if (email == null || email.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+        }
+
+        // Apply Rate Limiting based on IP address
+        String clientIp = httpRequest.getRemoteAddr();
+        Bucket bucket = resetBuckets.computeIfAbsent(clientIp, k -> 
+            Bucket.builder()
+                .addLimit(Bandwidth.classic(3, Refill.intervally(3, Duration.ofMinutes(10))))
+                .build()
+        );
+        
+        if (!bucket.tryConsume(1)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Map.of("error", "Too many requests. Please try again later."));
         }
 
         User user = userRepository.findByEmail(email).orElse(null);
@@ -206,15 +232,9 @@ public class AuthController {
             PasswordResetToken resetToken = new PasswordResetToken(tokenHash, user, expiryDate);
             tokenRepository.save(resetToken);
 
-            // 5. Simulate sending the email (print to console for testing)
+            // 5. Send the real email asynchronously
             String resetLink = "http://localhost:5173/reset-password?token=" + rawToken;
-            System.out.println("=================================================");
-            System.out.println("SIMULATED EMAIL DISPATCH:");
-            System.out.println("To: " + user.getEmail());
-            System.out.println("Subject: Reset your ResumeIQ password");
-            System.out.println("Body: Click the link below to reset your password. It expires in 15 minutes.");
-            System.out.println(resetLink);
-            System.out.println("=================================================");
+            emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
         }
 
         return ResponseEntity.ok(genericResponse);

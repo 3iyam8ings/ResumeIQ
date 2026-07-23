@@ -20,6 +20,9 @@ public class User {
     private String provider; // 'local', 'github', 'google'
 
     @Column
+    private String name;
+
+    @Column
     private String providerId; // ID from the OAuth provider
 
     @Column
@@ -81,5 +84,13 @@ public class User {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

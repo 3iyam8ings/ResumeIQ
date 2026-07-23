@@ -5,7 +5,11 @@ import ErrorModal from './ErrorModal';
 const Signup: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [isHoveringCreate, setIsHoveringCreate] = useState(false);
 
   useEffect(() => {
@@ -24,6 +28,34 @@ const Signup: React.FC = () => {
 
   const handleOAuthLogin = (provider: string) => {
     window.location.href = `http://localhost:8082/oauth2/authorization/${provider}`;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      navigate('/home');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -105,21 +137,23 @@ const Signup: React.FC = () => {
         }}>
           {error && <ErrorModal error={error} onClose={() => setError(null)} />}
           
-          <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '13px', fontWeight: 600, color: '#4e4635', textTransform: 'uppercase', marginLeft: '4px' }}>Full Name</label>
-              <input type="text" placeholder="John Doe" style={{ width: '100%', backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px 24px', fontSize: '18px', outline: 'none', boxSizing: 'border-box' }} />
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" style={{ width: '100%', backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px 24px', fontSize: '18px', outline: 'none', boxSizing: 'border-box' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '13px', fontWeight: 600, color: '#4e4635', textTransform: 'uppercase', marginLeft: '4px' }}>Email Address</label>
-              <input type="email" placeholder="hello@future.ai" style={{ width: '100%', backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px 24px', fontSize: '18px', outline: 'none', boxSizing: 'border-box' }} />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="hello@future.ai" style={{ width: '100%', backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px 24px', fontSize: '18px', outline: 'none', boxSizing: 'border-box' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '13px', fontWeight: 600, color: '#4e4635', textTransform: 'uppercase', marginLeft: '4px' }}>Password</label>
-              <input type="password" placeholder="••••••••" style={{ width: '100%', backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px 24px', fontSize: '18px', outline: 'none', boxSizing: 'border-box' }} />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%', backgroundColor: 'white', border: '3px solid #1c1b1b', borderRadius: '9999px', padding: '12px 24px', fontSize: '18px', outline: 'none', boxSizing: 'border-box' }} />
             </div>
             <div style={{ marginTop: '24px' }}>
               <button 
+                type="submit"
+                disabled={loading}
                 onMouseEnter={() => setIsHoveringCreate(true)}
                 onMouseLeave={() => setIsHoveringCreate(false)}
                 style={{
@@ -141,8 +175,8 @@ const Signup: React.FC = () => {
                 gap: '12px',
                 transition: 'all 0.1s ease-in-out'
               }}>
-                CREATE ACCOUNT
-                <span>➔</span>
+                {loading ? 'CREATING...' : 'CREATE ACCOUNT'}
+                {!loading && <span>➔</span>}
               </button>
             </div>
           </form>

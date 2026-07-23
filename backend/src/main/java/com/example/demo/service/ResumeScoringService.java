@@ -37,4 +37,57 @@ public class ResumeScoringService {
 
         return new ScoreResult(score, matchedSkills, missingSkills);
     }
+
+    public ScoreResult scoreGeneralResumeQuality(String rawResumeText) {
+        if (rawResumeText == null || rawResumeText.trim().isEmpty()) {
+            return new ScoreResult(0, new ArrayList<>(), new ArrayList<>());
+        }
+
+        String lowerCaseResume = rawResumeText.toLowerCase();
+        int score = 40; // Base score
+        List<String> foundFeatures = new ArrayList<>();
+        List<String> missingFeatures = new ArrayList<>();
+
+        // Check for sections
+        if (lowerCaseResume.contains("education") || lowerCaseResume.contains("university") || lowerCaseResume.contains("college")) {
+            score += 15;
+            foundFeatures.add("Education Section");
+        } else {
+            missingFeatures.add("Education Section");
+        }
+        
+        if (lowerCaseResume.contains("experience") || lowerCaseResume.contains("work history") || lowerCaseResume.contains("employment")) {
+            score += 20;
+            foundFeatures.add("Experience Section");
+        } else {
+            missingFeatures.add("Experience Section");
+        }
+        
+        if (lowerCaseResume.contains("skills") || lowerCaseResume.contains("technologies")) {
+            score += 15;
+            foundFeatures.add("Skills Section");
+        } else {
+            missingFeatures.add("Skills Section");
+        }
+
+        // Contact info checks
+        if (lowerCaseResume.contains("@") && (lowerCaseResume.contains(".com") || lowerCaseResume.contains(".org") || lowerCaseResume.contains(".net") || lowerCaseResume.contains(".edu"))) {
+            score += 5;
+            foundFeatures.add("Email Address");
+        } else {
+            missingFeatures.add("Email Address");
+        }
+
+        // Length check
+        if (rawResumeText.length() > 800) {
+            score += 5;
+            foundFeatures.add("Adequate Content Length");
+        } else {
+            missingFeatures.add("Adequate Content Length");
+        }
+
+        score = Math.min(score, 100);
+
+        return new ScoreResult(score, foundFeatures, missingFeatures);
+    }
 }
