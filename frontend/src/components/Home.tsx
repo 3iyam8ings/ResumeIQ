@@ -130,6 +130,9 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
       {/* App Bar */}
       <div 
         style={{ 
+          position: 'sticky',
+          top: '16px',
+          zIndex: 50,
           backgroundColor: '#b996f7', 
           border: '3px solid #000',
           borderRadius: '9999px',
@@ -142,12 +145,13 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/home')}>
-          <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '40px' }} />
+          <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '48px' }} />
         </div>
-        <div style={{ display: 'flex', gap: '24px', fontFamily: 'var(--mono)', fontSize: '14px', color: '#1c1b1b', opacity: 0.7, fontWeight: 600 }}>
-          <span style={{ cursor: 'pointer' }}>ANALYZE</span>
-          <span style={{ cursor: 'pointer' }}>HISTORY</span>
-          <span style={{ cursor: 'pointer' }}>PRICING</span>
+        <div style={{ display: 'flex', gap: '24px', fontFamily: 'var(--mono)', fontSize: '14px', color: '#1c1b1b', opacity: 0.7, fontWeight: 600, textTransform: 'uppercase' }}>
+          <span className="nav-link" onClick={() => navigate('/home')} style={{ cursor: 'pointer', textDecoration: window.location.pathname === '/home' ? 'underline' : 'none' }}>Home</span>
+          <span className="nav-link" onClick={() => navigate('/cover-letter')} style={{ cursor: 'pointer' }}>Cover Letter</span>
+          <span className="nav-link" onClick={() => navigate('/mock-interview')} style={{ cursor: 'pointer' }}>Mock Interview</span>
+          <span className="nav-link" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>Job Tracker</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {!isAuthenticated ? (
@@ -334,6 +338,13 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
           50% { opacity: 0; }
         }
         
+        .nav-link {
+          transition: font-weight 0.1s ease, transform 0.1s ease;
+        }
+        .nav-link:hover {
+          font-weight: 900 !important;
+        }
+
         .btn-tactile {
           transition: transform 100ms ease-out, box-shadow 100ms ease-out !important;
         }

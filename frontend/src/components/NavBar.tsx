@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface NavBarProps {
@@ -10,6 +10,7 @@ interface NavBarProps {
 
 const NavBar: React.FC<NavBarProps> = ({ userProfile }) => {
   const navigate = useNavigate();
+  const [isHoveringHome, setIsHoveringHome] = useState(false);
 
   return (
     <nav style={{
@@ -30,27 +31,43 @@ const NavBar: React.FC<NavBarProps> = ({ userProfile }) => {
     }}>
       {/* Logo */}
       <div 
-        style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+        style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
         onClick={() => navigate('/dashboard')}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>menu</span>
-        <span style={{ fontSize: '20px', fontWeight: 800, fontStyle: 'italic', letterSpacing: '-0.02em' }}>
-          ResumeIQ
-        </span>
+        <img src="/logo.png" alt="ResumeIQ" style={{ height: '48px' }} />
       </div>
 
       {/* Links */}
-      <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-        <span onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer', fontWeight: 700, fontSize: '14px' }}>Analyze</span>
-        <span onClick={() => navigate('/mock-interview')} style={{ cursor: 'pointer', fontWeight: 700, fontSize: '14px', textDecoration: window.location.pathname === '/mock-interview' ? 'underline' : 'none' }}>Mock Interview</span>
-        <span onClick={() => navigate('/cover-letter')} style={{ cursor: 'pointer', fontWeight: 700, fontSize: '14px', textDecoration: window.location.pathname === '/cover-letter' ? 'underline' : 'none' }}>Cover Letter</span>
-        <span onClick={() => navigate('/history')} style={{ cursor: 'pointer', fontWeight: 700, fontSize: '14px', color: '#d1d5db' }}>History</span>
-        <span onClick={() => navigate('/settings')} style={{ cursor: 'pointer', fontWeight: 700, fontSize: '14px', color: '#d1d5db' }}>Settings</span>
+      <div style={{ display: 'flex', gap: '32px', alignItems: 'center', textTransform: 'uppercase' }}>
+        <span className="nav-link" onClick={() => navigate('/home')} style={{ cursor: 'pointer', fontWeight: 700, fontSize: '14px', textDecoration: window.location.pathname === '/home' ? 'underline' : 'none' }}>Home</span>
+        <span className="nav-link" onClick={() => navigate('/cover-letter')} style={{ cursor: 'pointer', fontWeight: 700, fontSize: '14px', textDecoration: window.location.pathname === '/cover-letter' ? 'underline' : 'none' }}>Cover Letter</span>
+        <span className="nav-link" onClick={() => navigate('/mock-interview')} style={{ cursor: 'pointer', fontWeight: 700, fontSize: '14px', textDecoration: window.location.pathname === '/mock-interview' ? 'underline' : 'none' }}>Mock Interview</span>
+        <span className="nav-link" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer', fontWeight: 700, fontSize: '14px', textDecoration: window.location.pathname === '/dashboard' ? 'underline' : 'none' }}>Job Tracker</span>
       </div>
 
       {/* Right Side */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <span className="material-symbols-outlined" style={{ cursor: 'pointer', fontSize: '24px' }}>search</span>
+        <button
+          onMouseEnter={() => setIsHoveringHome(true)}
+          onMouseLeave={() => setIsHoveringHome(false)}
+          onClick={() => navigate('/home')}
+          style={{
+            backgroundColor: '#f5c445',
+            color: '#1c1b1b',
+            border: '2px solid #1c1b1b',
+            borderRadius: '9999px',
+            padding: '8px 16px',
+            fontWeight: 700,
+            fontSize: '14px',
+            cursor: 'pointer',
+            transition: 'all 0.1s ease',
+            transform: isHoveringHome ? 'translate(4px, 4px)' : 'none',
+            boxShadow: isHoveringHome ? 'none' : '4px 4px 0px 0px #1c1b1b',
+            fontFamily: 'inherit'
+          }}
+        >
+          Go to Home
+        </button>
         {userProfile?.picture ? (
           <img 
             src={userProfile.picture} 

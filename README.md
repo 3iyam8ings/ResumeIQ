@@ -120,3 +120,7 @@ Once those three things are running, just open `http://localhost:5173` in your b
 - `[x]` Integration
   - `[x]` Update `App.tsx` routes without touching existing pages
   - `[x]` Test OpenAI API integration endpoints
+- `[x]` Navigation & UI Polish
+  - `[x]` Replaced inline headers with a unified, universal `NavBar` component across all core pages
+  - `[x]` Added a sticky scrolling "Home" link to ensure seamless navigation
+  - `[x]` Implemented bold and underline hover states globally for a better tactile feel
