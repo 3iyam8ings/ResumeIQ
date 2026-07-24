@@ -31,6 +31,18 @@ There's a built-in Kanban-style dashboard where you can save all the jobs you've
 ### 🔐 Secure Accounts
 You can create a local account with a secure password, or just click once to log in using Google or GitHub. The authentication system is bulletproof: it prevents duplicate accounts, securely hashes all passwords, provides a robust "Forgot Password" flow using expiring tokens, and intelligently routes returning OAuth users straight to the dashboard.
 
+### 🛡️ Enterprise-Grade Security & Reliability
+- **Auth Flow Logic**: Flawless signup, login, forgot-password, and reset-password.
+- **Password Hashing**: BCrypt for passwords; SHA-256 for secure reset tokens (no plain text).
+- **Rate Limiting**: Forgot-password endpoint protected (3 requests / 10 min per IP).
+- **Anti-Enumeration**: Consistent 200 OK responses to prevent email scraping.
+- **Token Security**: 15-minute expiry windows, one-time use tokens, and old token invalidation.
+- **Email Delivery**: Asynchronous (`@Async`), non-blocking email service that catches exceptions gracefully.
+- **Test Coverage**: Comprehensive 15+ backend integration test cases for all authentication endpoints.
+
+### 🧠 Take the IQ Test
+Test your cognitive skills with our built-in IQ assessment. It features dynamic routing, real-time timing, and personalized cognitive profiling utilizing Gemini AI for an interactive experience.
+
 ---
 
 ## 🎨 The Vibe
@@ -46,7 +58,7 @@ We've heavily polished the UI to create a premium feel: the layout is compact wi
 - **Frontend:** React (Vite) + React Router
 - **Backend:** Java 17 with Spring Boot and Spring Security
 - **API Gateway:** Spring Cloud Gateway
-- **Database:** H2 In-Memory Database (keeps local setup incredibly easy)
+- **Database:** PostgreSQL for the running application; H2 is used only by automated tests.
 - **AI Brain:** LangChain4j hooked up to the Google Gemini API
 
 ---
@@ -54,6 +66,20 @@ We've heavily polished the UI to create a premium feel: the layout is compact wi
 ## 🚀 How to run it yourself
 
 If you want to spin this up on your own machine, you'll need Node.js, Java 17, and a free Google Gemini API Key.
+
+**Database setup**
+
+Start the local PostgreSQL container, then copy `backend/.env.example` to
+`backend/.env` and fill in your Gemini, OAuth, and email credentials. The
+default local connection is `jdbc:postgresql://localhost:5433/resume_db`.
+
+```bash
+docker compose up -d postgres
+```
+
+For a hosted database, replace `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` in
+`backend/.env`. H2 is intentionally isolated to the `test` Spring profile and
+is never used by `bootRun`.
 
 **1. Start the Frontend**
 ```bash
