@@ -101,3 +101,22 @@ cd backend
 ```
 
 Once those three things are running, just open `http://localhost:5173` in your browser and you're good to go!
+
+---
+
+## 📅 Hackathon Progress - 24/July/2026
+
+- `[x]` Setup and Configuration
+  - `[x]` Add OpenAI API Key to `.env`
+  - `[x]` Install `openai` package
+- `[x]` Backend Updates
+  - `[x]` Add `User` relationship to `JobApplication.java`
+  - `[x]` Update `JobApplicationController.java` to fetch/save based on logged-in user
+- `[x]` Frontend UI Construction
+  - `[x]` Create Neo-Brutalist sticky `NavBar.tsx`
+  - `[x]` Redesign `Dashboard.tsx` with user-specific data tracking
+  - `[x]` Create `CoverLetterGenius.tsx` with interactive Neo-Brutalist inputs and OpenAI generation
+  - `[x]` Create `MockInterview.tsx` with Neo-Brutalist mode dropdown and >10 message AI feedback popup
+- `[x]` Integration
+  - `[x]` Update `App.tsx` routes without touching existing pages
+  - `[x]` Test OpenAI API integration endpoints

@@ -12,7 +12,6 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
   const [isHovering, setIsHovering] = useState(false);
   const [loading, setLoading] = useState(false);
   const [accuracy, setAccuracy] = useState<number | null>(null);
-  const [timeTaken, setTimeTaken] = useState<number | null>(null);
   const [analysisResult, setAnalysisResult] = useState<any | null>(null);
   const [logs, setLogs] = useState<string[]>([
     '# ResumeIQ Processing v2.4.0',
@@ -49,7 +48,6 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
     }
     setLoading(true);
     setAccuracy(null);
-    setTimeTaken(null);
     setLogs([
       '# ResumeIQ Processing v2.4.0',
       `> [CRITICAL] File detected: ${file.name}`
@@ -114,8 +112,6 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
       isDone = true;
 
       setLogs(prev => [...prev, '> Analysis complete.']);
-      const endTime = Date.now();
-      setTimeTaken((endTime - startTime) / 1000);
       setAccuracy(data.score?.matchPercentage || 0);
       setAnalysisResult({ ...data, jobDescription });
 

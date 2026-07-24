@@ -16,162 +16,22 @@ import IQTestScreen from './components/IQTestScreen'
 import IQTestReviewScreen from './components/IQTestReviewScreen'
 import IQTestResultsScreen from './components/IQTestResultsScreen'
 import { Outlet } from 'react-router-dom'
+import NavBar from './components/NavBar'
+import CoverLetterGenius from './components/CoverLetterGenius'
+import MockInterview from './components/MockInterview'
 
-function MainApp({ userProfile }: { userProfile: any }) {
-  const [extractedRole, setExtractedRole] = useState<string | undefined>()
-  const [file, setFile] = useState<File | null>(null)
-  const [jobDescription, setJobDescription] = useState<string>("")
-  const [result, setResult] = useState<any | null>(null)
-  const [loading, setLoading] = useState<boolean>(false)
-  const [error, setError] = useState<string | null>(null)
-  const [showDashboard, setShowDashboard] = useState<boolean>(false)
-
-  const [clFile, setClFile] = useState<File | null>(null)
-  const [clJobDesc, setClJobDesc] = useState<string>("")
-  const [clResult, setClResult] = useState<string | null>(null)
-  const [clLoading, setClLoading] = useState<boolean>(false)
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<File | null>>) => {
-    if (e.target.files && e.target.files[0]) {
-      setter(e.target.files[0])
-    }
-  }
-
-  // All the existing handleSubmit functions...
-  // Since the user asked for full auth with a dashboard, I'll place the main features here for now.
-  // In a real app we'd break these down, but sticking to MVP structure.
-
+function AuthenticatedLayout({ userProfile }: { userProfile: any }) {
   return (
-    <div className="App" style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <h1 style={{ margin: 0 }}>ResumeIQ <span style={{color: 'var(--btn-coral)'}}>Dashboard</span></h1>
-        <div>
-          <button onClick={() => setShowDashboard(!showDashboard)} style={{ backgroundColor: 'var(--panel-yellow)' }}>
-            {showDashboard ? "Close Job Tracker" : "Open Job Tracker"}
-          </button>
-          <button onClick={() => {
-            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).then(() => {
-              window.location.href = '/signup';
-            });
-          }} style={{ backgroundColor: 'var(--btn-coral)', marginLeft: '10px' }}>
-            Logout
-          </button>
-        </div>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f3efe8' }}>
+      <NavBar userProfile={userProfile} />
+      <div style={{ paddingTop: '16px' }}>
+        <Outlet />
       </div>
-
-      {showDashboard && (
-        <div style={{ marginBottom: '40px' }}>
-          <Dashboard />
-        </div>
-      )}
-
-      <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
-        
-        {/* Profile Card Section */}
-        <div>
-          <ProfileCard 
-            name={userProfile?.name} 
-            picture={userProfile?.picture} 
-            role={extractedRole} 
-          />
-        </div>
-
-        {/* Main Upload Section */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '40px' }}>
-          <div className="neo-panel neo-panel-yellow">
-        <h2>Resume Analysis & Match Score</h2>
-        <form onSubmit={async (e) => {
-            e.preventDefault();
-            if (!file) return;
-            setLoading(true);
-            setError(null);
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('jobDescription', jobDescription);
-            try {
-              const res = await fetch('/api/upload', { method: 'POST', body: formData });
-              if (!res.ok) throw new Error("Upload failed");
-              const data = await res.json();
-              setResult(data);
-              if (data.role) {
-                setExtractedRole(data.role);
-              }
-            } catch (err: any) {
-              setError(err.message);
-            } finally {
-              setLoading(false);
-            }
-        }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label>Resume (PDF): </label>
-            <input type="file" accept=".pdf" onChange={(e) => handleFileChange(e, setFile)} />
-          </div>
-          <div>
-            <label style={{ display: 'block' }}>Job Description:</label>
-            <textarea value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} rows={6} style={{ width: '100%' }} />
-          </div>
-          <button type="submit" style={{ backgroundColor: 'var(--btn-coral)' }} disabled={loading}>
-            {loading ? 'Analyzing...' : 'Analyze'}
-          </button>
-        </form>
-
-        {error && <p style={{ color: 'var(--btn-coral)' }}>{error}</p>}
-        {result && (
-          <div className="neo-terminal" style={{ marginTop: '20px' }}>
-            <p className="neo-badge" style={{ borderColor: 'var(--terminal-text)' }}>[RESULTS]</p>
-            <h3>Match Score: {result.matchScore}%</h3>
-            <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{result.extractedText}</pre>
-          </div>
-        )}
-      </div>
-
-      {/* AI Cover Letter Generator */}
-      <div className="neo-panel neo-panel-lavender">
-        <h2>AI Cover Letter Generator</h2>
-        <form onSubmit={async (e) => {
-            e.preventDefault();
-            if (!clFile) return;
-            setClLoading(true);
-            const formData = new FormData();
-            formData.append('file', clFile);
-            formData.append('jobDescription', clJobDesc);
-            try {
-              const res = await fetch('/api/cover-letter', { method: 'POST', body: formData });
-              const data = await res.json();
-              setClResult(data.coverLetter);
-            } catch (err: any) {
-              console.error(err);
-            } finally {
-              setClLoading(false);
-            }
-        }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label>Resume (PDF): </label>
-            <input type="file" accept=".pdf" onChange={(e) => handleFileChange(e, setClFile)} />
-          </div>
-          <div>
-            <label style={{ display: 'block' }}>Job Description:</label>
-            <textarea value={clJobDesc} onChange={(e) => setClJobDesc(e.target.value)} rows={4} style={{ width: '100%' }} />
-          </div>
-          <button type="submit" style={{ backgroundColor: 'var(--panel-white)' }} disabled={clLoading}>
-            {clLoading ? 'Generating...' : 'Generate Cover Letter'}
-          </button>
-        </form>
-        {clResult && (
-          <div className="neo-terminal" style={{ marginTop: '20px' }}>
-            <p className="neo-badge" style={{ borderColor: 'var(--terminal-text)' }}>[COVER LETTER]</p>
-            <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{clResult}</pre>
-          </div>
-        )}
-      </div>
-      
-        </div>
-      </div>
-
     </div>
   )
 }
+
+
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -223,7 +83,11 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/home" element={<Home isAuthenticated={isAuthenticated ?? false} userProfile={userProfile} />} />
           <Route path="/report" element={<Report userProfile={userProfile} />} />
-          <Route path="/dashboard" element={isAuthenticated ? <MainApp userProfile={userProfile} /> : <Navigate to="/signup" />} />
+          <Route element={isAuthenticated ? <AuthenticatedLayout userProfile={userProfile} /> : <Navigate to="/signup" />}>
+            <Route path="/dashboard" element={<Dashboard userProfile={userProfile} />} />
+            <Route path="/cover-letter" element={<CoverLetterGenius userProfile={userProfile} />} />
+            <Route path="/mock-interview" element={<MockInterview userProfile={userProfile} />} />
+          </Route>
           <Route path="/iqtest" element={<IQTestLanding />} />
           
           <Route path="/test" element={<IQTestProvider><Outlet /></IQTestProvider>}>

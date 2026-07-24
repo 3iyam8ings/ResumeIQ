@@ -35,13 +35,14 @@ const TypewriterText = ({ text }: { text: string }) => {
 
 const IQTestResultsScreen: React.FC = () => {
   const navigate = useNavigate();
-  const { answers, resetTest } = useIQTest();
+  const { answers } = useIQTest();
 
   const [scoreData, setScoreData] = useState<{
     iqScore: number;
     percentile: number;
     badge: string;
     categories: Record<string, number>;
+    correctAnswers: number;
   } | null>(null);
 
   const [aiSummary, setAiSummary] = useState<string>('Generating cognitive profile analysis...');
@@ -69,7 +70,8 @@ const IQTestResultsScreen: React.FC = () => {
       iqScore: result.iq,
       percentile: result.percentile,
       badge: result.label,
-      categories: catScores
+      categories: catScores,
+      correctAnswers: correctCount
     });
 
   }, [answers]);
@@ -125,8 +127,14 @@ const IQTestResultsScreen: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      paddingBottom: '64px'
+      paddingBottom: '0' // Changed to 0 because of the footer
     }}>
+      <style>{`
+        @keyframes blinkCursor {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+      `}</style>
       {/* Main Content */}
       <main style={{
         width: '100%',
@@ -204,7 +212,7 @@ const IQTestResultsScreen: React.FC = () => {
                 {animatedScore}
               </span>
               <span style={{ ...fonts.labelMono, fontSize: '14px', color: '#666', marginTop: '4px' }}>
-                IQ POINTS
+                OUT OF 140
               </span>
             </div>
           </div>
@@ -242,7 +250,7 @@ const IQTestResultsScreen: React.FC = () => {
             { id: 'Spatial', icon: 'layers', color: '#F08080' },
             { id: 'Verbal', icon: 'translate', color: '#8FE3B0' },
             { id: 'Numerical', icon: 'calculate', color: '#F08080' }
-          ].map((cat, idx) => {
+          ].map((cat) => {
             const score = scoreData.categories[cat.id] || 0;
             const percentage = (score / 5) * 100;
             return (
@@ -320,19 +328,51 @@ const IQTestResultsScreen: React.FC = () => {
             <div style={{ marginBottom: '16px' }}>{'>'} [STATUS: COMPLETE]</div>
 
             <div style={{ color: '#fff' }}>{'>'} Analysis summary:</div>
-            <div>{'>'} Percentile Rank: {scoreData.percentile}st</div>
+            <div>{'>'} Percentile Rank: {scoreData.percentile}{scoreData.percentile % 10 === 1 && scoreData.percentile !== 11 ? 'st' : scoreData.percentile % 10 === 2 && scoreData.percentile !== 12 ? 'nd' : scoreData.percentile % 10 === 3 && scoreData.percentile !== 13 ? 'rd' : 'th'}</div>
             <div>{'>'} Global Average: 100</div>
-            <div>{'>'} Standard Deviation: +1.86</div>
+            <div>{'>'} Out of 140, you have scored {scoreData.iqScore}.</div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <span>{'>'}</span>
               <span>
                 <TypewriterText text={aiSummary} />
-                <span className="animate-pulse">_</span>
               </span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <span>{'>'}</span>
+              <span style={{ animation: 'blinkCursor 1s step-end infinite' }}>_</span>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Lavender Footer */}
+      <footer style={{
+        width: '100%',
+        backgroundColor: '#B79CF0',
+        padding: '24px 48px',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        boxSizing: 'border-box',
+        borderTop: '3px solid #1c1b1b',
+        marginTop: 'auto'
+      }}>
+        <span 
+          onClick={() => navigate('/home')}
+          onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+          onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+          style={{
+            cursor: 'pointer',
+            ...fonts.labelMono,
+            fontSize: '14px',
+            color: '#1c1b1b',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
+          }}
+        >
+          GO TO HOME
+        </span>
+      </footer>
     </div>
   );
 };

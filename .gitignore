@@ -26,3 +26,5 @@ backend/out/
 .idea/
 .vscode/
 *.iml
+. g r a d l e - u s e r /  
+backend/.gradle-user/

@@ -173,11 +173,16 @@ const IQTestLanding: React.FC = () => {
               alignItems: 'center',
               gap: '12px',
               marginTop: '16px',
-              transition: 'transform 0.1s',
+              transition: 'transform 0.1s, box-shadow 0.1s',
             }}
-            onMouseDown={(e) => e.currentTarget.style.transform = 'translate(2px, 2px)'}
-            onMouseUp={(e) => e.currentTarget.style.transform = 'none'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translate(6px, 6px)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'none';
+              e.currentTarget.style.boxShadow = shadow;
+            }}
           >
             START TEST
             <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>arrow_forward</span>
@@ -263,11 +268,7 @@ const IQTestLanding: React.FC = () => {
         <div style={{ ...fonts.bodyLg, fontSize: '14px', color: '#999', fontStyle: 'italic' }}>
           "For entertainment and self-insight purposes, not a clinical assessment"
         </div>
-        <div style={{ display: 'flex', gap: '24px', ...fonts.labelMono, fontSize: '14px', color: '#1c1b1b' }}>
-          <span style={{ cursor: 'pointer' }}>Privacy</span>
-          <span style={{ cursor: 'pointer' }}>Terms</span>
-          <span style={{ cursor: 'pointer' }}>Support</span>
-        </div>
+
       </footer>
     </div>
   );

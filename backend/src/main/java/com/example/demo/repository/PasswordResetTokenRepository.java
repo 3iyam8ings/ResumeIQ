@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import org.springframework.data.repository.query.Param;
 
 @Repository
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
@@ -18,5 +19,5 @@ public interface PasswordResetTokenRepository extends JpaRepository<PasswordRese
     @Modifying
     @Transactional
     @Query("UPDATE PasswordResetToken t SET t.used = true WHERE t.user = :user AND t.used = false")
-    void invalidateAllTokensForUser(User user);
+    void invalidateAllTokensForUser(@Param("user") User user);
 }

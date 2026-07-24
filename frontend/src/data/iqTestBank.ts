@@ -28,6 +28,11 @@ export const iqTestBank: Question[] = [
     type: 'pattern-matrix',
     difficulty: 'hard',
     prompt: 'Which shape logically follows the sequence presented in the matrix below?',
+    grid: [
+      { type: 'diamond', filled: false }, { type: 'circle', filled: false }, { type: 'square', filled: true, color: '#f5c445' },
+      { type: 'diamond', filled: true, color: '#f5c445' }, { type: 'circle', filled: true, color: '#f5c445' }, { type: 'square', filled: false },
+      { type: 'square', filled: false }, { type: 'diamond', filled: false }, { type: 'empty' }
+    ],
     options: ['Rotated Hexagon (0°)', 'Inverted Triangle Cluster', 'Double Concentric Circles', 'Asymmetric Grid Pattern'],
     correctAnswerIndex: 0
   },

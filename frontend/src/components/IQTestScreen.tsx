@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useIQTest } from '../context/IQTestContext';
 import { iqTestBank } from '../data/iqTestBank';
 import { PatternMatrix, ShapeRenderer } from './PatternMatrix';
-
+import ErrorModal from './ErrorModal';
 const border = '3px solid #1c1b1b';
 const shadow = '6px 6px 0px 0px rgba(0,0,0,1)';
 
@@ -25,6 +25,7 @@ const IQTestScreen: React.FC = () => {
   
   const [currentIndex, setCurrentIndex] = useState(initialIndex >= 0 && initialIndex < iqTestBank.length ? initialIndex : 0);
   const currentQuestion = iqTestBank[currentIndex];
+  const [showReportIssue, setShowReportIssue] = useState(false);
   
   const [timeLeft, setTimeLeft] = useState(timeRemaining[currentIndex] !== undefined ? timeRemaining[currentIndex] : TIME_PER_QUESTION);
 
@@ -42,6 +43,13 @@ const IQTestScreen: React.FC = () => {
   useEffect(() => {
     setTimeLeft(timeRemaining[currentIndex] !== undefined ? timeRemaining[currentIndex] : TIME_PER_QUESTION);
   }, [currentIndex, timeRemaining]);
+
+  useEffect(() => {
+    const q = parseInt(new URLSearchParams(location.search).get('q') || '0', 10);
+    if (q >= 0 && q < iqTestBank.length && q !== currentIndex) {
+      setCurrentIndex(q);
+    }
+  }, [location.search]);
 
   const handleSelectAnswer = (index: number) => {
     setAnswer(currentIndex, index);
@@ -66,15 +74,19 @@ const IQTestScreen: React.FC = () => {
     <div style={{
       minHeight: '100vh',
       backgroundColor: '#fcf9f8',
-      backgroundImage: 'radial-gradient(#e0e0e0 1px, transparent 1px)',
-      backgroundSize: '24px 24px',
+      backgroundImage: 'radial-gradient(#d2c5af 1px, transparent 1px)',
+      backgroundSize: '40px 40px',
+      backgroundPosition: '0 0, 20px 20px',
       fontFamily: '"Plus Jakarta Sans", sans-serif',
       color: '#1c1b1b',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center'
+      alignItems: 'center',
+      position: 'relative'
     }}>
-      {/* Header */}
+      {showReportIssue && <ErrorModal error="Please contact the creator at tiyaaaxi@gmail.com to report any issues or bugs." onClose={() => setShowReportIssue(false)} />}
+      
+      {/* Top Navbar */}
       <header style={{
         width: '100%',
         padding: '24px 48px',
@@ -205,7 +217,9 @@ const IQTestScreen: React.FC = () => {
         justifyContent: 'space-between',
         alignItems: 'center'
       }}>
-        <div style={{ 
+        <div 
+          onClick={() => setShowReportIssue(true)}
+          style={{ 
           ...fonts.labelMono, 
           fontSize: '12px', 
           color: '#666', 

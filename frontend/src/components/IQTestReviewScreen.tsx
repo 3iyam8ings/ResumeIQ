@@ -32,7 +32,9 @@ const IQTestReviewScreen: React.FC = () => {
       color: '#1c1b1b',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center'
+      alignItems: 'center',
+      boxSizing: 'border-box',
+      overflowX: 'hidden'
     }}>
       {/* Top Navbar */}
       <header style={{
@@ -65,7 +67,8 @@ const IQTestReviewScreen: React.FC = () => {
         display: 'flex',
         flexDirection: 'column',
         gap: '40px',
-        flex: 1
+        flex: 1,
+        boxSizing: 'border-box'
       }}>
         <div style={{ textAlign: 'center' }}>
           <h1 style={{ ...fonts.displayLg, fontSize: '48px', margin: '0 0 16px 0', letterSpacing: '-0.02em' }}>
@@ -128,7 +131,8 @@ const IQTestReviewScreen: React.FC = () => {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 'auto'
+        marginTop: 'auto',
+        boxSizing: 'border-box'
       }}>
         <button 
           onClick={() => navigate('/test')}
@@ -153,10 +157,9 @@ const IQTestReviewScreen: React.FC = () => {
 
         <button 
           onClick={() => navigate('/test/results')}
-          disabled={!allAnswered}
           style={{
-            backgroundColor: allAnswered ? '#F08080' : '#e5e5e5',
-            color: allAnswered ? '#1c1b1b' : '#999',
+            backgroundColor: '#F08080',
+            color: '#1c1b1b',
             border: border,
             borderRadius: '9999px',
             padding: '12px 32px',
@@ -165,9 +168,9 @@ const IQTestReviewScreen: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            cursor: allAnswered ? 'pointer' : 'not-allowed',
-            boxShadow: allAnswered ? shadow : 'none',
-            opacity: allAnswered ? 1 : 0.7
+            cursor: 'pointer',
+            boxShadow: shadow,
+            opacity: 1
           }}
         >
           SUBMIT TEST

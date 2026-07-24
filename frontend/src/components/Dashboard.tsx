@@ -12,21 +12,13 @@ interface JobApplication {
 
 const API_URL = 'http://127.0.0.1:8082/api/applications';
 
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+  userProfile?: any;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Form State
-  const [companyName, setCompanyName] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
-  const [status, setStatus] = useState('Applied');
-  const [appliedDate, setAppliedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [matchScore, setMatchScore] = useState<number>(0);
-  const [notes, setNotes] = useState('');
-
-  // Edit State
-  const [editingId, setEditingId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchApplications();
@@ -35,195 +27,244 @@ const Dashboard: React.FC = () => {
   const fetchApplications = async () => {
     setLoading(true);
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(API_URL, { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
         setApplications(data);
-      } else {
-        setError('Failed to fetch applications');
       }
     } catch (err: any) {
-      setError('Error connecting to backend: ' + err.message);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!companyName || !jobTitle) return;
-
-    const newApp: JobApplication = {
-      companyName,
-      jobTitle,
-      status,
-      appliedDate,
-      matchScore: Number(matchScore),
-      notes
-    };
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      let response;
-      if (editingId) {
-        response = await fetch(`${API_URL}/${editingId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newApp)
-        });
-      } else {
-        response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newApp)
-        });
-      }
-
-      if (response.ok) {
-        resetForm();
-        fetchApplications();
-      } else {
-        setError('Failed to save application');
-      }
-    } catch (err: any) {
-      setError('Error saving: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
+  const getLaneApplications = (status: string) => {
+    return applications.filter(app => app.status === status);
   };
 
-  const handleEdit = (app: JobApplication) => {
-    setEditingId(app.id!);
-    setCompanyName(app.companyName);
-    setJobTitle(app.jobTitle);
-    setStatus(app.status);
-    setAppliedDate(app.appliedDate || '');
-    setMatchScore(app.matchScore || 0);
-    setNotes(app.notes || '');
+  const calculateAvgScore = () => {
+    if (applications.length === 0) return 0;
+    const total = applications.reduce((acc, curr) => acc + (curr.matchScore || 0), 0);
+    return Math.round(total / applications.length);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this application?')) return;
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-      if (response.ok) {
-        fetchApplications();
-      } else {
-        setError('Failed to delete application');
-      }
-    } catch (err: any) {
-      setError('Error deleting: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resetForm = () => {
-    setEditingId(null);
-    setCompanyName('');
-    setJobTitle('');
-    setStatus('Applied');
-    setAppliedDate(new Date().toISOString().split('T')[0]);
-    setMatchScore(0);
-    setNotes('');
+  const getActiveInterviewsCount = () => {
+    return getLaneApplications('Interview').length;
   };
 
   return (
-    <div style={{ marginTop: '40px', padding: '20px', backgroundColor: '#1e1e2f', color: '#fff', borderRadius: '8px', textAlign: 'left', border: '1px solid #10b981' }}>
-      <h3>📊 Application Dashboard (Sprint 8)</h3>
-      <p style={{ fontSize: '14px', color: '#aaa' }}>Track your job applications, interviews, and progress.</p>
+    <div style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', padding: '0 24px', color: '#1c1b1b' }}>
       
-      {error && <div style={{ color: '#fca5a5', padding: '10px', backgroundColor: '#7f1d1d', borderRadius: '4px', marginBottom: '15px' }}>{error}</div>}
+      {/* Header Section */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+        <div>
+          <div style={{ display: 'inline-block', backgroundColor: '#1c1b1b', color: '#fff', padding: '4px 8px', fontSize: '10px', fontWeight: 800, letterSpacing: '0.05em', borderRadius: '4px', marginBottom: '8px' }}>
+            [DASHBOARD: OVERVIEW]
+          </div>
+          <h1 style={{ margin: 0, fontSize: '48px', fontWeight: 800, letterSpacing: '-0.03em' }}>
+            Welcome back, {userProfile?.name?.split(' ')[0] || 'User'}.
+          </h1>
+        </div>
+        <button style={{
+          backgroundColor: '#f87171',
+          color: '#1c1b1b',
+          border: '3px solid #1c1b1b',
+          borderRadius: '9999px',
+          padding: '12px 24px',
+          fontWeight: 800,
+          fontSize: '14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          boxShadow: '4px 4px 0px 0px #1c1b1b',
+          cursor: 'pointer'
+        }}>
+          <span>+</span> NEW APPLICATION
+        </button>
+      </div>
 
-      <form onSubmit={handleSave} style={{ backgroundColor: '#222', padding: '15px', borderRadius: '8px', marginBottom: '20px', display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-        <div style={{ flex: '1 1 45%' }}>
-          <label style={{ display: 'block', fontSize: '12px', marginBottom: '5px', color: '#ccc' }}>Company Name *</label>
-          <input required type="text" value={companyName} onChange={e => setCompanyName(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '4px', backgroundColor: '#333', color: '#fff', border: '1px solid #555' }} />
+      {/* Summary Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '48px' }}>
+        <div style={{ backgroundColor: '#fbbf24', border: '4px solid #1c1b1b', borderRadius: '16px', padding: '24px', boxShadow: '6px 6px 0px 0px #1c1b1b' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '12px', fontWeight: 700, fontFamily: '"JetBrains Mono", monospace' }}>
+            <span>[TOTAL_APPS]</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>rocket_launch</span>
+          </div>
+          <div style={{ fontSize: '48px', fontWeight: 800, lineHeight: 1 }}>{applications.length}</div>
+          <div style={{ fontSize: '14px', fontWeight: 600, marginTop: '8px' }}>+12% from last week</div>
         </div>
-        <div style={{ flex: '1 1 45%' }}>
-          <label style={{ display: 'block', fontSize: '12px', marginBottom: '5px', color: '#ccc' }}>Job Title *</label>
-          <input required type="text" value={jobTitle} onChange={e => setJobTitle(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '4px', backgroundColor: '#333', color: '#fff', border: '1px solid #555' }} />
+
+        <div style={{ backgroundColor: '#34d399', border: '4px solid #1c1b1b', borderRadius: '16px', padding: '24px', boxShadow: '6px 6px 0px 0px #1c1b1b' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '12px', fontWeight: 700, fontFamily: '"JetBrains Mono", monospace' }}>
+            <span>[AVG_RESUME_SCORE]</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>analytics</span>
+          </div>
+          <div style={{ fontSize: '48px', fontWeight: 800, lineHeight: 1 }}>{calculateAvgScore()}%</div>
+          <div style={{ fontSize: '14px', fontWeight: 600, marginTop: '8px' }}>Optimized for FAANG</div>
         </div>
-        <div style={{ flex: '1 1 30%' }}>
-          <label style={{ display: 'block', fontSize: '12px', marginBottom: '5px', color: '#ccc' }}>Status</label>
-          <select value={status} onChange={e => setStatus(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '4px', backgroundColor: '#333', color: '#fff', border: '1px solid #555' }}>
-            <option value="Applied">Applied</option>
-            <option value="OA">OA / Assessment</option>
-            <option value="Interview">Interview</option>
-            <option value="Offer">Offer</option>
-            <option value="Rejected">Rejected</option>
-          </select>
+
+        <div style={{ backgroundColor: '#60a5fa', border: '4px solid #1c1b1b', borderRadius: '16px', padding: '24px', boxShadow: '6px 6px 0px 0px #1c1b1b' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '12px', fontWeight: 700, fontFamily: '"JetBrains Mono", monospace' }}>
+            <span>[ACTIVE_INTERVIEWS]</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>forum</span>
+          </div>
+          <div style={{ fontSize: '48px', fontWeight: 800, lineHeight: 1 }}>{String(getActiveInterviewsCount()).padStart(2, '0')}</div>
+          <div style={{ fontSize: '14px', fontWeight: 600, marginTop: '8px' }}>2 calls scheduled tomorrow</div>
         </div>
-        <div style={{ flex: '1 1 30%' }}>
-          <label style={{ display: 'block', fontSize: '12px', marginBottom: '5px', color: '#ccc' }}>Applied Date</label>
-          <input type="date" value={appliedDate} onChange={e => setAppliedDate(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '4px', backgroundColor: '#333', color: '#fff', border: '1px solid #555' }} />
-        </div>
-        <div style={{ flex: '1 1 30%' }}>
-          <label style={{ display: 'block', fontSize: '12px', marginBottom: '5px', color: '#ccc' }}>Match Score (%)</label>
-          <input type="number" min="0" max="100" value={matchScore} onChange={e => setMatchScore(parseInt(e.target.value))} style={{ width: '100%', padding: '8px', borderRadius: '4px', backgroundColor: '#333', color: '#fff', border: '1px solid #555' }} />
-        </div>
-        <div style={{ flex: '1 1 100%' }}>
-          <label style={{ display: 'block', fontSize: '12px', marginBottom: '5px', color: '#ccc' }}>Notes</label>
-          <textarea value={notes} onChange={e => setNotes(e.target.value)} style={{ width: '100%', minHeight: '60px', padding: '8px', borderRadius: '4px', backgroundColor: '#333', color: '#fff', border: '1px solid #555' }} />
-        </div>
-        <div style={{ flex: '1 1 100%', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-          {editingId && <button type="button" onClick={resetForm} style={{ padding: '8px 16px', backgroundColor: '#444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>}
-          <button type="submit" disabled={loading} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-            {loading ? 'Saving...' : (editingId ? 'Update Application' : 'Add Application')}
+      </div>
+
+      {/* Job Tracker */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h2 style={{ fontSize: '24px', fontWeight: 800, margin: 0 }}>Job Tracker</h2>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button style={{ border: '3px solid #1c1b1b', backgroundColor: '#fff', borderRadius: '8px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '2px 2px 0px 0px #1c1b1b' }}>
+            <span className="material-symbols-outlined">filter_list</span>
+          </button>
+          <button style={{ border: '3px solid #1c1b1b', backgroundColor: '#fff', borderRadius: '8px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '2px 2px 0px 0px #1c1b1b' }}>
+            <span className="material-symbols-outlined">view_kanban</span>
           </button>
         </div>
-      </form>
+      </div>
 
-      {applications.length > 0 ? (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#333', borderBottom: '2px solid #555' }}>
-                <th style={{ padding: '10px', textAlign: 'left' }}>Company</th>
-                <th style={{ padding: '10px', textAlign: 'left' }}>Role</th>
-                <th style={{ padding: '10px', textAlign: 'left' }}>Status</th>
-                <th style={{ padding: '10px', textAlign: 'left' }}>Date</th>
-                <th style={{ padding: '10px', textAlign: 'left' }}>Match</th>
-                <th style={{ padding: '10px', textAlign: 'center' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {applications.map(app => (
-                <tr key={app.id} style={{ borderBottom: '1px solid #444', backgroundColor: editingId === app.id ? '#2c3e50' : 'transparent' }}>
-                  <td style={{ padding: '10px' }}>{app.companyName}</td>
-                  <td style={{ padding: '10px' }}>{app.jobTitle}</td>
-                  <td style={{ padding: '10px' }}>
-                    <span style={{ 
-                      padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold',
-                      backgroundColor: app.status === 'Applied' ? '#3b82f6' : 
-                                       app.status === 'OA' ? '#f59e0b' : 
-                                       app.status === 'Interview' ? '#8b5cf6' : 
-                                       app.status === 'Offer' ? '#10b981' : '#ef4444'
-                    }}>
-                      {app.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: '10px' }}>{app.appliedDate}</td>
-                  <td style={{ padding: '10px' }}>
-                    {app.matchScore ? <span style={{ color: app.matchScore > 75 ? '#10b981' : app.matchScore > 50 ? '#f59e0b' : '#ef4444' }}>{app.matchScore}%</span> : '-'}
-                  </td>
-                  <td style={{ padding: '10px', textAlign: 'center' }}>
-                    <button onClick={() => handleEdit(app)} style={{ padding: '4px 8px', marginRight: '5px', backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Edit</button>
-                    <button onClick={() => handleDelete(app.id!)} style={{ padding: '4px 8px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '48px' }}>
+        {/* Applied */}
+        <div>
+          <div style={{ backgroundColor: '#c4b5fd', border: '3px solid #1c1b1b', borderRadius: '999px', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', fontWeight: 700, boxShadow: '3px 3px 0px 0px #1c1b1b' }}>
+            <span>Applied</span>
+            <span style={{ backgroundColor: '#fff', border: '2px solid #1c1b1b', borderRadius: '999px', padding: '2px 8px', fontSize: '12px' }}>{getLaneApplications('Applied').length}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {getLaneApplications('Applied').map(app => (
+              <JobCard key={app.id} app={app} color="#10b981" />
+            ))}
+          </div>
         </div>
-      ) : (
-        <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#222', borderRadius: '8px', color: '#aaa' }}>
-          No job applications tracked yet. Start tracking above!
+
+        {/* OA */}
+        <div>
+          <div style={{ backgroundColor: '#6ee7b7', border: '3px solid #1c1b1b', borderRadius: '999px', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', fontWeight: 700, boxShadow: '3px 3px 0px 0px #1c1b1b' }}>
+            <span>OA</span>
+            <span style={{ backgroundColor: '#fff', border: '2px solid #1c1b1b', borderRadius: '999px', padding: '2px 8px', fontSize: '12px' }}>{getLaneApplications('OA').length}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {getLaneApplications('OA').map(app => (
+              <JobCard key={app.id} app={app} color="#60a5fa" />
+            ))}
+          </div>
         </div>
-      )}
+
+        {/* Interview */}
+        <div>
+          <div style={{ backgroundColor: '#fcd34d', border: '3px solid #1c1b1b', borderRadius: '999px', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', fontWeight: 700, boxShadow: '3px 3px 0px 0px #1c1b1b' }}>
+            <span>Interview</span>
+            <span style={{ backgroundColor: '#fff', border: '2px solid #1c1b1b', borderRadius: '999px', padding: '2px 8px', fontSize: '12px' }}>{getLaneApplications('Interview').length}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {getLaneApplications('Interview').map(app => (
+              <JobCard key={app.id} app={app} color="#fbbf24" />
+            ))}
+          </div>
+        </div>
+
+        {/* Offer */}
+        <div>
+          <div style={{ backgroundColor: '#86efac', border: '3px solid #1c1b1b', borderRadius: '999px', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', fontWeight: 700, boxShadow: '3px 3px 0px 0px #1c1b1b' }}>
+            <span>Offer</span>
+            <span style={{ backgroundColor: '#fff', border: '2px solid #1c1b1b', borderRadius: '999px', padding: '2px 8px', fontSize: '12px' }}>{getLaneApplications('Offer').length}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ backgroundColor: '#fff', border: '3px dashed #34d399', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100px', boxShadow: '4px 4px 0px 0px rgba(52,211,153,0.3)' }}>
+              <span style={{ fontWeight: 800, fontStyle: 'italic', fontSize: '16px', color: '#10b981' }}>CONGRATS!</span>
+            </div>
+            {getLaneApplications('Offer').map(app => (
+              <JobCard key={app.id} app={app} color="#10b981" />
+            ))}
+          </div>
+        </div>
+
+        {/* Rejected */}
+        <div>
+          <div style={{ backgroundColor: '#fca5a5', border: '3px solid #1c1b1b', borderRadius: '999px', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', fontWeight: 700, boxShadow: '3px 3px 0px 0px #1c1b1b' }}>
+            <span>Rejected</span>
+            <span style={{ backgroundColor: '#fff', border: '2px solid #1c1b1b', borderRadius: '999px', padding: '2px 8px', fontSize: '12px' }}>{getLaneApplications('Rejected').length}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {getLaneApplications('Rejected').map(app => (
+              <JobCard key={app.id} app={app} color="#ef4444" isFaded />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Analytics Section (from image 2) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', marginBottom: '48px' }}>
+        <div style={{ border: '4px solid #1c1b1b', borderRadius: '16px', backgroundColor: '#fff', padding: '24px', boxShadow: '6px 6px 0px 0px #1c1b1b', position: 'relative', minHeight: '300px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}>
+              <span className="material-symbols-outlined">monitoring</span> Resume Score History
+            </h3>
+            <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '12px', fontWeight: 700, color: '#6b7280' }}>JAN - JUN 2024</span>
+          </div>
+          {/* Mock Chart SVG */}
+          <svg viewBox="0 0 500 200" style={{ width: '100%', height: '200px' }}>
+            <polygon points="0,200 0,150 100,140 200,90 300,110 400,60 500,70 500,200" fill="#f3efe8" />
+            <polyline points="0,150 100,140 200,90 300,110 400,60 500,70" fill="none" stroke="#1c1b1b" strokeWidth="4" strokeLinejoin="round" />
+            <line x1="0" y1="200" x2="500" y2="200" stroke="#1c1b1b" strokeWidth="4" />
+          </svg>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', fontWeight: 700, marginTop: '8px', color: '#6b7280' }}>
+            <span>JAN</span><span>FEB</span><span>MAR</span><span>APR</span><span>MAY</span><span>JUN</span>
+          </div>
+        </div>
+
+        <div style={{ backgroundColor: '#111827', border: '4px solid #1c1b1b', borderRadius: '16px', padding: '24px', boxShadow: '6px 6px 0px 0px #1c1b1b', color: '#34d399', fontFamily: '"JetBrains Mono", monospace', fontSize: '13px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+            <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#ef4444' }}></div>
+            <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#f59e0b' }}></div>
+            <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#10b981' }}></div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <p style={{ margin: 0 }}>{'>'} Initializing Resume Scan...</p>
+            <p style={{ margin: 0 }}>{'>'} Scanning: Software_Engineer_V4.pdf</p>
+            <p style={{ margin: 0 }}>{'>'} Target: Google L5 Requirements</p>
+            <p style={{ margin: 0 }}>{'>'} <span style={{ color: '#ef4444' }}>Error: Missing "Kubernetes" keyword.</span></p>
+            <p style={{ margin: 0 }}>{'>'} Suggestion: Quantify impact in section 3.</p>
+            <p style={{ margin: 0 }}>{'>'} Score Prediction: 94/100 after edits.</p>
+            <p style={{ margin: 0, marginTop: '16px' }} className="animate-pulse">_</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+};
+
+const JobCard = ({ app, color, isFaded = false }: { app: JobApplication, color: string, isFaded?: boolean }) => {
+  return (
+    <div style={{ 
+      backgroundColor: '#fff', 
+      border: '3px solid #1c1b1b', 
+      borderRadius: '12px', 
+      padding: '16px', 
+      boxShadow: '4px 4px 0px 0px #1c1b1b',
+      opacity: isFaded ? 0.6 : 1
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+        <span style={{ fontSize: '10px', fontWeight: 800, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{app.companyName}</span>
+        <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#6b7280' }}>more_vert</span>
+      </div>
+      <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 700, lineHeight: 1.2 }}>{app.jobTitle}</h4>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {app.matchScore ? (
+          <span style={{ backgroundColor: color, border: '2px solid #1c1b1b', padding: '2px 6px', fontSize: '10px', fontWeight: 800, borderRadius: '4px' }}>
+            MATCH: {app.matchScore}%
+          </span>
+        ) : (
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 700, color: '#6b7280' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>calendar_today</span> Due in 2 days
+          </span>
+        )}
+      </div>
     </div>
   );
 };
