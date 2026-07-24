@@ -9,7 +9,23 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8082',
         changeOrigin: true,
-      }
+        secure: false,
+        cookieDomainRewrite: 'localhost',
+      },
+      // Forward OAuth2 and Spring Security login paths so GitHub/Google
+      // redirects work correctly through the Vite dev server
+      '/oauth2': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+        secure: false,
+        cookieDomainRewrite: 'localhost',
+      },
+      '/login': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+        secure: false,
+        cookieDomainRewrite: 'localhost',
+      },
     }
   }
 })

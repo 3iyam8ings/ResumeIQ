@@ -30,12 +30,17 @@ const ForgotPassword: React.FC = () => {
         body: JSON.stringify({ email }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to request password reset');
+        throw new Error(
+          data?.error ||
+          (response.status === 502
+            ? 'The server is unavailable. Please try again in a moment.'
+            : 'Failed to request password reset')
+        );
       }
 
-      setSuccessMsg(data.message || 'If an account matches that email, we have sent a password reset link.');
+      setSuccessMsg(data?.message || 'If an account matches that email, we have sent a password reset link.');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -85,8 +90,9 @@ const ForgotPassword: React.FC = () => {
         top: 0,
         zIndex: 50
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/home')}>
-          <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '40px' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => navigate('/home')}>
+          <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#775a00' }}>description</span>
+          <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '24px', fontWeight: 900 }}>ResumeIQ</span>
         </div>
         <div style={{ ...fonts.labelMono }}>
           [ VERSION: 2.0.4 ]

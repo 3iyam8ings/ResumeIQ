@@ -151,8 +151,9 @@ const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
         justifyContent: 'space-between',
         boxShadow: '4px 4px 0px #000',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/home')}>
-          <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '40px' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => navigate('/home')}>
+          <span className="material-symbols-outlined" style={{ fontSize: '28px', color: '#1c1b1b' }}>description</span>
+          <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '20px', fontWeight: 900, color: '#1c1b1b' }}>ResumeIQ</span>
         </div>
         <div style={{ display: 'flex', gap: '32px' }}>
           {['ANALYZE', 'EDITOR', 'HISTORY'].map(link => (

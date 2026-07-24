@@ -38,7 +38,7 @@ dependencies {
 	implementation 'dev.langchain4j:langchain4j-spring-boot-starter:0.36.2'
 	implementation 'dev.langchain4j:langchain4j-google-ai-gemini:0.36.2'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

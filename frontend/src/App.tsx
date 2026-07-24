@@ -5,7 +5,6 @@ import Dashboard from './components/Dashboard'
 import Login from './components/Login'
 import Signup from './components/Signup'
 import SetPassword from './components/SetPassword'
-import Footer from './components/Footer'
 import ProfileCard from './components/ProfileCard'
 import Home from './components/Home'
 import ForgotPassword from './components/ForgotPassword'
@@ -27,27 +26,10 @@ function MainApp({ userProfile }: { userProfile: any }) {
   const [error, setError] = useState<string | null>(null)
   const [showDashboard, setShowDashboard] = useState<boolean>(false)
 
-  const [rewriteFile, setRewriteFile] = useState<File | null>(null)
-  const [rewriteJobDesc, setRewriteJobDesc] = useState<string>("")
-  const [rewriteResult, setRewriteResult] = useState<string | null>(null)
-  const [rewriteLoading, setRewriteLoading] = useState<boolean>(false)
-  
   const [clFile, setClFile] = useState<File | null>(null)
   const [clJobDesc, setClJobDesc] = useState<string>("")
   const [clResult, setClResult] = useState<string | null>(null)
   const [clLoading, setClLoading] = useState<boolean>(false)
-
-  const [intFile, setIntFile] = useState<File | null>(null)
-  const [intJobDesc, setIntJobDesc] = useState<string>("")
-  const [intQuestions, setIntQuestions] = useState<any[] | null>(null)
-  const [intLoading, setIntLoading] = useState<boolean>(false)
-
-  const [portfolioFile, setPortfolioFile] = useState<File | null>(null)
-  const [roadmapRole, setRoadmapRole] = useState<string>("")
-  const [portfolioResult, setPortfolioResult] = useState<any | null>(null)
-  const [roadmapResult, setRoadmapResult] = useState<any | null>(null)
-  const [analyzingPortfolio, setAnalyzingPortfolio] = useState(false)
-  const [generatingRoadmap, setGeneratingRoadmap] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<File | null>>) => {
     if (e.target.files && e.target.files[0]) {
@@ -69,7 +51,7 @@ function MainApp({ userProfile }: { userProfile: any }) {
             {showDashboard ? "Close Job Tracker" : "Open Job Tracker"}
           </button>
           <button onClick={() => {
-            fetch('/api/auth/logout', { method: 'POST' }).then(() => {
+            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).then(() => {
               window.location.href = '/signup';
             });
           }} style={{ backgroundColor: 'var(--btn-coral)', marginLeft: '10px' }}>
@@ -155,7 +137,7 @@ function MainApp({ userProfile }: { userProfile: any }) {
             formData.append('file', clFile);
             formData.append('jobDescription', clJobDesc);
             try {
-              const res = await fetch('/api/generate-cover-letter', { method: 'POST', body: formData });
+              const res = await fetch('/api/cover-letter', { method: 'POST', body: formData });
               const data = await res.json();
               setClResult(data.coverLetter);
             } catch (err: any) {
@@ -198,8 +180,18 @@ function App() {
   const location = useLocation();
 
   useEffect(() => {
+    // These pages are available before sign-in. Avoid an expected 401 from the
+    // session endpoint every time a visitor opens an auth form.
+    const isPublicAuthPage = ['/login', '/signup', '/forgot-password', '/reset-password']
+      .includes(location.pathname);
+
+    if (isPublicAuthPage) {
+      setIsAuthenticated(false);
+      return;
+    }
+
     // Check if the user is logged in
-    fetch('/api/auth/me')
+    fetch('/api/auth/me', { credentials: 'include' })
       .then(res => {
         if (res.ok) {
           res.json().then(data => setUserProfile(data));
@@ -214,7 +206,7 @@ function App() {
       .catch(() => {
         setIsAuthenticated(false);
       });
-  }, [navigate]);
+  }, [location.pathname, navigate]);
 
   if (isAuthenticated === null) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: 'var(--bg)' }}><h2 style={{ color: 'var(--text-primary)' }}>Loading...</h2></div>;
