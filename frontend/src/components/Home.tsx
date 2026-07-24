@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface HomeProps {
@@ -13,11 +13,16 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
   const [loading, setLoading] = useState(false);
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [timeTaken, setTimeTaken] = useState<number | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<any | null>(null);
   const [logs, setLogs] = useState<string[]>([
     '# ResumeIQ Processing v2.4.0',
     'System ready... awaiting file upload.'
   ]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -112,6 +117,7 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
       const endTime = Date.now();
       setTimeTaken((endTime - startTime) / 1000);
       setAccuracy(data.score?.matchPercentage || 0);
+      setAnalysisResult({ ...data, jobDescription });
 
     } catch (err: any) {
       isDone = true;
@@ -139,10 +145,8 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
           marginBottom: '50px'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ fontWeight: 800, fontSize: '20px', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            ResumeIQ
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/home')}>
+          <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '40px' }} />
         </div>
         <div style={{ display: 'flex', gap: '24px', fontFamily: 'var(--mono)', fontSize: '14px', color: '#1c1b1b', opacity: 0.7, fontWeight: 600 }}>
           <span style={{ cursor: 'pointer' }}>ANALYZE</span>
@@ -155,7 +159,7 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
           ) : null}
           
           <button 
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate(isAuthenticated ? '/iqtest' : '/signup')}
             style={{ 
               backgroundColor: '#f5c445', 
               border: '3px solid #000', 
@@ -166,7 +170,7 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
               fontFamily: '"Plus Jakarta Sans", sans-serif',
               color: '#1c1b1b'
             }}>
-            SIGN UP
+            {isAuthenticated ? 'IQ Test' : 'SIGN UP'}
           </button>
 
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid #000', overflow: 'hidden', backgroundColor: 'white' }}>
@@ -265,6 +269,7 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
               <span style={{ fontSize: '12px', opacity: 0.6 }}>OPTIONAL BUT RECOMMENDED</span>
             </div>
             <textarea 
+              className="jd-textarea"
               value={jobDescription} 
               onChange={(e) => setJobDescription(e.target.value)}
               placeholder="Paste the target job description here for a tailored match analysis..."
@@ -310,8 +315,8 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
             </div>
             <div 
               className="neo-panel btn-tactile" 
-              onClick={() => navigate('/dashboard')}
-              style={{ flex: 1, backgroundColor: 'var(--panel-lavender)', margin: 0, padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', border: '3px solid #000', boxShadow: '4px 4px 0px #000' }}
+              onClick={() => analysisResult && navigate('/report', { state: { result: analysisResult } })}
+              style={{ flex: 1, backgroundColor: analysisResult ? 'var(--panel-lavender)' : '#ccc', margin: 0, padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', cursor: analysisResult ? 'pointer' : 'not-allowed', border: '3px solid #000', boxShadow: analysisResult ? '4px 4px 0px #000' : 'none' }}
             >
               <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', fontWeight: 'bold', marginBottom: '2px' }}>VIEW REPORT</div>
               <div style={{ fontSize: '16px', fontWeight: 900, lineHeight: 1 }}>DETAILED RESULT</div>
@@ -324,13 +329,7 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
 
       {/* Footer / Trusted By */}
       <div style={{ textAlign: 'center', marginTop: '40px' }}>
-        <h3 style={{ fontFamily: 'var(--sans)', fontSize: '16px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '20px', opacity: 0.8 }}>Trusted by candidates at</h3>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', opacity: 0.4, filter: 'grayscale(100%)', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '24px', fontWeight: 900 }}>TECHCORP</span>
-          <span style={{ fontSize: '24px', fontWeight: 900 }}>STARTUP.IO</span>
-          <span style={{ fontSize: '24px', fontWeight: 900 }}>GIGA-SOFT</span>
-          <span style={{ fontSize: '24px', fontWeight: 900 }}>MODERN-UI</span>
-        </div>
+        <h3 style={{ fontFamily: 'var(--sans)', fontSize: '16px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.8 }}>Trusted by candidates</h3>
       </div>
       
       <style>{`
@@ -349,6 +348,23 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
         .btn-tactile:active:not(:disabled) {
           transform: translate(4px, 4px);
           box-shadow: 0px 0px 0px #000 !important;
+        }
+
+        .jd-textarea::-webkit-scrollbar {
+          width: 8px;
+        }
+        .jd-textarea::-webkit-scrollbar-track {
+          background: white;
+          border-radius: 9999px;
+          margin: 4px 2px 4px 0;
+        }
+        .jd-textarea::-webkit-scrollbar-thumb {
+          background: #000;
+          border-radius: 9999px;
+          border: 2px solid white;
+        }
+        .jd-textarea::-webkit-scrollbar-thumb:hover {
+          background: #333;
         }
       `}</style>
       </div>

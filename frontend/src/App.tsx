@@ -10,6 +10,13 @@ import ProfileCard from './components/ProfileCard'
 import Home from './components/Home'
 import ForgotPassword from './components/ForgotPassword'
 import ResetPassword from './components/ResetPassword'
+import Report from './components/Report'
+import IQTestLanding from './components/IQTestLanding'
+import { IQTestProvider } from './context/IQTestContext'
+import IQTestScreen from './components/IQTestScreen'
+import IQTestReviewScreen from './components/IQTestReviewScreen'
+import IQTestResultsScreen from './components/IQTestResultsScreen'
+import { Outlet } from 'react-router-dom'
 
 function MainApp({ userProfile }: { userProfile: any }) {
   const [extractedRole, setExtractedRole] = useState<string | undefined>()
@@ -223,7 +230,15 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/home" element={<Home isAuthenticated={isAuthenticated ?? false} userProfile={userProfile} />} />
+          <Route path="/report" element={<Report userProfile={userProfile} />} />
           <Route path="/dashboard" element={isAuthenticated ? <MainApp userProfile={userProfile} /> : <Navigate to="/signup" />} />
+          <Route path="/iqtest" element={<IQTestLanding />} />
+          
+          <Route path="/test" element={<IQTestProvider><Outlet /></IQTestProvider>}>
+            <Route index element={<IQTestScreen />} />
+            <Route path="review" element={<IQTestReviewScreen />} />
+            <Route path="results" element={<IQTestResultsScreen />} />
+          </Route>
           <Route path="/" element={<Navigate to="/home" />} />
           <Route path="*" element={<Navigate to="/home" />} />
         </Routes>

@@ -85,9 +85,8 @@ const ForgotPassword: React.FC = () => {
         top: 0,
         zIndex: 50
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => navigate('/home')}>
-          <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#775a00' }}>description</span>
-          <span style={{ ...fonts.headlineMd, fontWeight: 900 }}>ResumeIQ</span>
+        <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/home')}>
+          <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '40px' }} />
         </div>
         <div style={{ ...fonts.labelMono }}>
           [ VERSION: 2.0.4 ]
@@ -213,6 +212,7 @@ const ForgotPassword: React.FC = () => {
                     border: border,
                     borderRadius: '9999px',
                     ...fonts.headlineMd,
+                    fontSize: '18px',
                     color: '#1c1b1b',
                     display: 'flex',
                     alignItems: 'center',
@@ -224,7 +224,6 @@ const ForgotPassword: React.FC = () => {
                   }}
                 >
                   {loading ? 'SENDING...' : 'SEND RESET LINK'}
-                  {!loading && <span className="material-symbols-outlined">send</span>}
                 </button>
               </>
             )}
@@ -242,7 +241,7 @@ const ForgotPassword: React.FC = () => {
       <footer style={{
         width: '100%',
         display: 'flex',
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
         alignItems: 'center',
         padding: '24px',
         backgroundColor: '#c3a8fd',
@@ -250,9 +249,11 @@ const ForgotPassword: React.FC = () => {
         marginTop: 'auto',
         boxSizing: 'border-box'
       }}>
-        <div style={{ ...fonts.labelMono, color: '#513985', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span className="material-symbols-outlined">security</span>
-          SECURE PASSWORD RECOVERY
+        <div 
+          onClick={() => navigate('/home')}
+          style={{ ...fonts.labelMono, color: '#513985', display: 'flex', alignItems: 'center', cursor: 'pointer', textTransform: 'uppercase' }}
+        >
+          Go to Home
         </div>
       </footer>
     </div>

@@ -30,13 +30,31 @@ public interface JobAnalyzerAgent {
     String extractCandidateRole(@dev.langchain4j.service.V("resumeText") String resumeText);
 
     @SystemMessage({
-        "You are an expert resume writer.",
-        "Rewrite the provided bullet point to be more impactful, using the STAR method (Situation, Task, Action, Result) if possible.",
-        "CRITICAL RULE: Do NOT fabricate or invent any numbers, metrics, tools, or experiences that the user did not explicitly mention.",
-        "Only use the provided job description to emphasize relevant keywords that naturally fit the user's actual experience.",
-        "Return ONLY the rewritten bullet point text, without any conversational filler or formatting tags."
+        "You are a brutally honest senior recruiter and resume expert.",
+        "Your ONLY task is to find the single weakest, most vague, and least impactful bullet point or sentence in this resume.",
+        "A weak bullet point: uses passive voice, has no quantified results, is generic ('Responsible for...', 'Helped with...', 'Worked on...'), is very short, or says nothing specific.",
+        "DO NOT pick the candidate's name, contact info, education header, a section title, or a skills list.",
+        "You MUST pick a full sentence or bullet that came from the Experience or Projects section.",
+        "Return EXACTLY and ONLY the original weak bullet point text, verbatim as it appears in the resume.",
+        "Do NOT add quotes. Do NOT add commentary. Do NOT rewrite it. Just return the exact text."
     })
-    @UserMessage("Job Description context:\n{{jobDescription}}\n\nOriginal Bullet Point:\n{{bulletPoint}}\n\nPlease rewrite the bullet point:")
+    @UserMessage("Resume:\n{{resumeText}}\n\nIdentify the single weakest bullet point or experience sentence:")
+    String findWeakestBulletPoint(@dev.langchain4j.service.V("resumeText") String resumeText);
+
+    @SystemMessage({
+        "You are a world-class resume writer who has helped candidates land offers at FAANG, top startups, and Fortune 500 companies.",
+        "Your task is to rewrite a weak resume bullet point into a powerful, results-driven statement that will impress hiring managers.",
+        "Follow these rules STRICTLY:",
+        "1. Use a strong, active verb at the start (e.g., Architected, Spearheaded, Engineered, Delivered, Reduced, Increased).",
+        "2. Apply the XYZ formula where possible: Accomplished [X] by doing [Y], resulting in [Z].",
+        "3. If the candidate mentioned any numbers, tools, or technologies, keep them — do NOT drop or change real facts.",
+        "4. CRITICAL: Do NOT invent fake metrics (e.g., do not say '40% improvement' if the original did not mention it).",
+        "5. If no metrics exist, make the impact clear through scope and specificity (e.g., 'across 3 production services', 'used by 500+ users').",
+        "6. Use keywords from the job description naturally if they fit.",
+        "7. Keep it to ONE punchy sentence, maximum 30 words.",
+        "8. Return ONLY the rewritten bullet. No commentary, no quotes, no formatting."
+    })
+    @UserMessage("Job Description context:\n{{jobDescription}}\n\nOriginal Weak Bullet:\n{{bulletPoint}}\n\nRewrite this into a powerful, impactful resume bullet:")
     String rewriteBulletPoint(@dev.langchain4j.service.V("bulletPoint") String bulletPoint, @dev.langchain4j.service.V("jobDescription") String jobDescription);
 
     @SystemMessage({

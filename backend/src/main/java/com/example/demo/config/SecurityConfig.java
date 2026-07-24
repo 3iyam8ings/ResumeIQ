@@ -44,7 +44,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable()) // Disable CSRF for simplified React integration
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/login/**", "/oauth2/**", "/api/upload").permitAll()
+                .requestMatchers("/api/auth/**", "/login/**", "/oauth2/**", "/api/upload", "/api/rewrite", "/api/cover-letter").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2

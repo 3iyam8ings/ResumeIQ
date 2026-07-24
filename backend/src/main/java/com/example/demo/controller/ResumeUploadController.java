@@ -66,7 +66,17 @@ public class ResumeUploadController {
                 System.err.println("Failed to extract role with AI: " + e.getMessage());
                 result.setRole("CANDIDATE");
             }
-            
+
+            // Use Gemini AI to find the genuinely weakest bullet point
+            if (result.getScore() != null) {
+                try {
+                    String weakBullet = jobAnalyzerAgent.findWeakestBulletPoint(result.getRawText());
+                    result.getScore().setWeakBullet(weakBullet != null ? weakBullet.trim() : null);
+                } catch (Exception e) {
+                    System.err.println("Failed to find weak bullet with AI: " + e.getMessage());
+                }
+            }
+
             // Save the resume to the database
             try {
                 Resume savedResume = new Resume();

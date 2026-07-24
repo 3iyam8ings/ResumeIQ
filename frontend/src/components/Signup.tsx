@@ -91,9 +91,8 @@ const Signup: React.FC = () => {
         position: 'relative',
         zIndex: 40
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '28px' }}>📄</span>
-          <span style={{ fontSize: '24px', fontWeight: 900 }}>ResumeIQ</span>
+        <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/home')}>
+          <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '40px' }} />
         </div>
         <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ cursor: 'pointer', fontFamily: '"JetBrains Mono", monospace', fontSize: '13px', fontWeight: 600, color: '#4e4635' }}>FEATURES</span>

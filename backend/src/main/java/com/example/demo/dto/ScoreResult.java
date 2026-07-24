@@ -6,9 +6,10 @@ public class ScoreResult {
     private int matchPercentage;
     private List<String> matchedSkills;
     private List<String> missingSkills;
+    private List<ScoreFactor> breakdown;
+    private String weakBullet;
 
-    public ScoreResult() {
-    }
+    public ScoreResult() {}
 
     public ScoreResult(int matchPercentage, List<String> matchedSkills, List<String> missingSkills) {
         this.matchPercentage = matchPercentage;
@@ -16,27 +17,18 @@ public class ScoreResult {
         this.missingSkills = missingSkills;
     }
 
-    public int getMatchPercentage() {
-        return matchPercentage;
-    }
+    public int getMatchPercentage() { return matchPercentage; }
+    public void setMatchPercentage(int matchPercentage) { this.matchPercentage = matchPercentage; }
 
-    public void setMatchPercentage(int matchPercentage) {
-        this.matchPercentage = matchPercentage;
-    }
+    public List<String> getMatchedSkills() { return matchedSkills; }
+    public void setMatchedSkills(List<String> matchedSkills) { this.matchedSkills = matchedSkills; }
 
-    public List<String> getMatchedSkills() {
-        return matchedSkills;
-    }
+    public List<String> getMissingSkills() { return missingSkills; }
+    public void setMissingSkills(List<String> missingSkills) { this.missingSkills = missingSkills; }
 
-    public void setMatchedSkills(List<String> matchedSkills) {
-        this.matchedSkills = matchedSkills;
-    }
+    public List<ScoreFactor> getBreakdown() { return breakdown; }
+    public void setBreakdown(List<ScoreFactor> breakdown) { this.breakdown = breakdown; }
 
-    public List<String> getMissingSkills() {
-        return missingSkills;
-    }
-
-    public void setMissingSkills(List<String> missingSkills) {
-        this.missingSkills = missingSkills;
-    }
+    public String getWeakBullet() { return weakBullet; }
+    public void setWeakBullet(String weakBullet) { this.weakBullet = weakBullet; }
 }
