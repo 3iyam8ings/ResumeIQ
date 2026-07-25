@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import NavBar from './NavBar';
+
+interface IQTestLandingProps {
+  userProfile?: any;
+}
 
 const border = '3px solid #1c1b1b';
 const shadow = '6px 6px 0px 0px rgba(0,0,0,1)';
@@ -11,7 +16,7 @@ const fonts = {
   displayLg: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800 }
 };
 
-const IQTestLanding: React.FC = () => {
+const IQTestLanding: React.FC<IQTestLandingProps> = ({ userProfile }) => {
   const navigate = useNavigate();
   const [bootText, setBootText] = useState<string[]>([]);
 
@@ -45,45 +50,31 @@ const IQTestLanding: React.FC = () => {
       flexDirection: 'column',
       padding: '24px'
     }}>
-      {/* Top Navbar Pill */}
-      <header style={{
-        width: '100%',
-        backgroundColor: '#c3a8fd',
-        border: border,
-        borderRadius: '9999px',
-        padding: '16px 32px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxSizing: 'border-box',
-        boxShadow: shadow,
-        marginBottom: '48px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/home')}>
-          <div style={{ ...fonts.displayLg, fontSize: '24px', letterSpacing: '-0.5px' }}>
-            <span style={{ fontWeight: 400 }}>terminal</span> IQTest
-          </div>
-        </div>
-        
-        <div style={{ display: 'flex', gap: '32px', ...fonts.labelMono, fontSize: '14px', alignItems: 'center' }}>
-          <div style={{ cursor: 'pointer', fontWeight: 800 }}>Test</div>
-          <div style={{ cursor: 'pointer', color: '#1c1b1b', opacity: 0.8 }}>History</div>
-          <div style={{ cursor: 'pointer', color: '#1c1b1b', opacity: 0.8 }}>Rankings</div>
-          <div style={{ cursor: 'pointer', color: '#1c1b1b', opacity: 0.8 }}>Settings</div>
-        </div>
+      {/* Top Universal Navbar */}
+      <NavBar userProfile={userProfile} />
 
-        <div style={{ 
-          width: '40px', height: '40px', 
-          backgroundColor: '#f5c445', 
-          borderRadius: '50%', 
-          border: border,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          overflow: 'hidden'
+      {/* Page Title */}
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto 48px auto',
+        width: '100%',
+      }}>
+        <h1 style={{ 
+          margin: 0, 
+          display: 'inline-block',
+          backgroundColor: '#f5c445',
+          border: '4px solid #1c1b1b',
+          padding: '12px 24px',
+          boxShadow: '8px 8px 0px 0px #1c1b1b',
+          transform: 'rotate(-2deg)',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontWeight: 900,
+          fontSize: '42px',
+          letterSpacing: '-1px'
         }}>
-          {/* Placeholder for avatar */}
-          <span style={{ fontSize: '20px' }}>🧑‍💻</span>
-        </div>
-      </header>
+          Terminal IQTest
+        </h1>
+      </div>
 
       {/* Main Grid */}
       <main style={{

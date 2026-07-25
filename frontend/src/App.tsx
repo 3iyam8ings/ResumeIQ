@@ -88,15 +88,15 @@ function App() {
             <Route path="/cover-letter" element={<CoverLetterGenius userProfile={userProfile} />} />
             <Route path="/mock-interview" element={<MockInterview userProfile={userProfile} />} />
           </Route>
-          <Route path="/iqtest" element={<IQTestLanding />} />
+          <Route path="/iqtest" element={<IQTestLanding userProfile={userProfile} />} />
           
           <Route path="/test" element={<IQTestProvider><Outlet /></IQTestProvider>}>
             <Route index element={<IQTestScreen />} />
             <Route path="review" element={<IQTestReviewScreen />} />
             <Route path="results" element={<IQTestResultsScreen />} />
           </Route>
-          <Route path="/" element={<Navigate to="/home" />} />
-          <Route path="*" element={<Navigate to="/home" />} />
+          <Route path="/" element={isAuthenticated ? <Navigate to="/home" /> : <Navigate to="/signup" />} />
+          <Route path="*" element={isAuthenticated ? <Navigate to="/home" /> : <Navigate to="/signup" />} />
         </Routes>
       </div>
       {/* <Footer /> */}

@@ -139,61 +139,21 @@ const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
   return (
     <div style={{ backgroundColor: '#f5f0eb', minHeight: '100vh' }}>
 
-      {/* Nav Bar */}
-      <div style={{
-        backgroundColor: '#b996f7',
-        border: '3px solid #000',
-        borderRadius: '9999px',
-        margin: '12px 24px 0',
-        padding: '8px 20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        boxShadow: '4px 4px 0px #000',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => navigate('/home')}>
-          <span className="material-symbols-outlined" style={{ fontSize: '28px', color: '#1c1b1b' }}>description</span>
-          <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '20px', fontWeight: 900, color: '#1c1b1b' }}>ResumeIQ</span>
-        </div>
-        <div style={{ display: 'flex', gap: '32px' }}>
-          {['ANALYZE', 'EDITOR', 'HISTORY'].map(link => (
-            <span
-              key={link}
-              onClick={() => navigate(link === 'ANALYZE' ? '/home' : link === 'HISTORY' ? '/dashboard' : '/home')}
-              onMouseEnter={() => setNavHover(link)}
-              onMouseLeave={() => setNavHover(null)}
-              style={{
-                color: '#1c1b1b',
-                fontWeight: 700,
-                fontSize: '14px',
-                letterSpacing: '0.5px',
-                cursor: 'pointer',
-                fontFamily: 'monospace',
-                opacity: navHover === link ? 0.5 : 0.75,
-                transition: 'opacity 0.15s',
-                borderBottom: navHover === link ? '2px solid #1c1b1b' : '2px solid transparent',
-                paddingBottom: '2px',
-              }}
-            >
-              {link}
-            </span>
-          ))}
-        </div>
-        <div style={{
-          width: '38px', height: '38px', borderRadius: '50%',
-          border: '3px solid #000', overflow: 'hidden',
-          backgroundColor: 'white', cursor: 'pointer',
-        }}>
-          <img src={userProfile?.picture || userProfile?.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-      </div>
-
       {/* Page Title */}
-      <div style={{ padding: '10px 24px 4px', maxWidth: '1200px', margin: '0 auto' }}>
-        <h1 style={{ fontWeight: 900, fontSize: '20px', margin: 0, letterSpacing: '-0.5px' }}>
+      <div style={{ 
+        padding: '24px 24px 16px', 
+        maxWidth: '1200px', 
+        margin: '0 auto',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        backgroundColor: '#f5f0eb',
+        borderBottom: '2px solid transparent' // Optional, could add a border if needed
+      }}>
+        <h1 style={{ fontWeight: 900, fontSize: '36px', margin: 0, letterSpacing: '-1px' }}>
           Detailed Analysis <span style={{ color: '#7c3aed' }}>Report</span>
         </h1>
-        <p style={{ fontFamily: 'monospace', fontSize: '12px', opacity: 0.5, marginTop: 2, marginBottom: 0 }}>
+        <p style={{ fontFamily: 'monospace', fontSize: '16px', opacity: 0.6, marginTop: 6, marginBottom: 0 }}>
           {result ? `Analysis for: ${result.role || 'Candidate'} · Score: ${score?.matchPercentage ?? 0}%` : 'No analysis data found.'}
         </p>
       </div>
@@ -427,6 +387,7 @@ const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
           {/* Back Button */}
           <div style={{ textAlign: 'center', marginTop: '8px' }}>
             <button
+              className="btn-analyze"
               onClick={() => navigate('/home')}
               style={{
                 padding: '12px 36px', backgroundColor: '#fff',
@@ -447,6 +408,10 @@ const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
         @keyframes skeleton-pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.4; }
+        }
+        .btn-analyze:hover, .btn-analyze:active {
+          transform: translate(4px, 4px);
+          box-shadow: 0px 0px 0px #000 !important;
         }
       `}</style>
     </div>
