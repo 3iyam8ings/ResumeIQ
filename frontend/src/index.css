@@ -110,6 +110,12 @@ input, textarea, select {
   transition: background-color 0.2s;
 }
 
+input::placeholder, textarea::placeholder {
+  color: #6b7280;
+  font-weight: 500;
+  opacity: 1;
+}
+
 textarea {
   border-radius: 20px;
 }

@@ -121,6 +121,13 @@ Once those three things are running, just open `http://localhost:5173` in your b
   - `[x]` Update `App.tsx` routes without touching existing pages
   - `[x]` Test OpenAI API integration endpoints
 - `[x]` Navigation & UI Polish
-  - `[x]` Replaced inline headers with a unified, universal `NavBar` component across all core pages
-  - `[x]` Added a sticky scrolling "Home" link to ensure seamless navigation
-  - `[x]` Implemented bold and underline hover states globally for a better tactile feel
+  - [x] Replaced inline headers with a unified, universal `NavBar` component across all core pages
+  - [x] Added a sticky scrolling "Home" link to ensure seamless navigation
+  - [x] Implemented bold and underline hover states globally for a better tactile feel
+
+- `[x]` **CoverLetterGenius UI & UX Polish (25/July/2026)**
+  - `[x]` Added bold neo-brutalist styling to the component header and title
+  - `[x]` Fixed terminal animation timing using `Promise.all` to synchronize properly with the lightning-fast Gemini API
+  - `[x]` Updated input field placeholders to clearly distinguish them from inserted data using global `::placeholder` styling
+  - `[x]` Fixed button hover effects to properly clear inline shadows and translate correctly for the neo-brutalist aesthetic
+  - `[x]` Resolved TypeScript errors related to `React.CSSProperties` handling
