@@ -1,7 +1,5 @@
 package com.example.demo.dto;
 
-import java.util.List;
-
 public class ResumeParseResult {
     private String contactInfo;
     private String experience;
@@ -12,24 +10,59 @@ public class ResumeParseResult {
     private String role;
 
     // Getters and Setters
-    public String getContactInfo() { return contactInfo; }
-    public void setContactInfo(String contactInfo) { this.contactInfo = contactInfo; }
+    public String getContactInfo() {
+        return contactInfo;
+    }
 
-    public String getExperience() { return experience; }
-    public void setExperience(String experience) { this.experience = experience; }
+    public void setContactInfo(String contactInfo) {
+        this.contactInfo = contactInfo;
+    }
 
-    public String getEducation() { return education; }
-    public void setEducation(String education) { this.education = education; }
+    public String getExperience() {
+        return experience;
+    }
 
-    public String getSkills() { return skills; }
-    public void setSkills(String skills) { this.skills = skills; }
+    public void setExperience(String experience) {
+        this.experience = experience;
+    }
 
-    public String getRawText() { return rawText; }
-    public void setRawText(String rawText) { this.rawText = rawText; }
-    
-    public ScoreResult getScore() { return score; }
-    public void setScore(ScoreResult score) { this.score = score; }
+    public String getEducation() {
+        return education;
+    }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public void setEducation(String education) {
+        this.education = education;
+    }
+
+    public String getSkills() {
+        return skills;
+    }
+
+    public void setSkills(String skills) {
+        this.skills = skills;
+    }
+
+    public String getRawText() {
+        return rawText;
+    }
+
+    public void setRawText(String rawText) {
+        this.rawText = rawText;
+    }
+
+    public ScoreResult getScore() {
+        return score;
+    }
+
+    public void setScore(ScoreResult score) {
+        this.score = score;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 }

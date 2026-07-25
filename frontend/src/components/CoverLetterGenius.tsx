@@ -187,6 +187,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
+    boxShadow: '4px 4px 0px 0px #1c1b1b',
   },
   copyButtonBase: {
     backgroundColor: '#fff',
@@ -198,7 +199,9 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
+    boxShadow: '4px 4px 0px 0px #1c1b1b',
     cursor: 'pointer',
+    transition: 'color 0.3s ease',
   },
 
   sidebar: { display: 'flex', flexDirection: 'column', gap: '24px' },
@@ -353,7 +356,7 @@ Keep it concise, professional, and highlight how my skills align perfectly with 
         model.generateContent(buildPrompt()),
         new Promise((resolve) => setTimeout(resolve, minAnimTime))
       ]);
-      
+
       const text = result.response.text();
 
       setDraft(text || 'Failed to generate.');
@@ -521,5 +524,4 @@ Keep it concise, professional, and highlight how my skills align perfectly with 
     </div>
   );
 };
-
 export default CoverLetterGenius;

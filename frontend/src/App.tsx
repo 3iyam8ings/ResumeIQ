@@ -5,7 +5,6 @@ import Dashboard from './components/Dashboard'
 import Login from './components/Login'
 import Signup from './components/Signup'
 import SetPassword from './components/SetPassword'
-import ProfileCard from './components/ProfileCard'
 import Home from './components/Home'
 import ForgotPassword from './components/ForgotPassword'
 import ResetPassword from './components/ResetPassword'
@@ -89,7 +88,7 @@ function App() {
             <Route path="/mock-interview" element={<MockInterview userProfile={userProfile} />} />
           </Route>
           <Route path="/iqtest" element={<IQTestLanding userProfile={userProfile} />} />
-          
+
           <Route path="/test" element={<IQTestProvider><Outlet /></IQTestProvider>}>
             <Route index element={<IQTestScreen />} />
             <Route path="review" element={<IQTestReviewScreen />} />

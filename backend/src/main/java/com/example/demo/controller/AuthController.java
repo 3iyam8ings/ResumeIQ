@@ -19,21 +19,13 @@ import com.example.demo.repository.PasswordResetTokenRepository;
 import com.example.demo.service.EmailService;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Refill;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,11 +39,12 @@ public class AuthController {
     private final PasswordResetTokenRepository tokenRepository;
     private final EmailService emailService;
     private final SecureRandom secureRandom = new SecureRandom();
-    
+
     // Rate limiting map: allows 3 requests per 10 minutes per IP/email
     private final ConcurrentHashMap<String, Bucket> resetBuckets = new ConcurrentHashMap<>();
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, PasswordResetTokenRepository tokenRepository, EmailService emailService) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            PasswordResetTokenRepository tokenRepository, EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenRepository = tokenRepository;
@@ -91,8 +84,9 @@ public class AuthController {
         String password = request.get("password");
 
         User user = userRepository.findByEmail(emailOrUsername).orElse(null);
-        
-        // If not found, and doesn't look like an email, try adding @github.com for GitHub usernames
+
+        // If not found, and doesn't look like an email, try adding @github.com for
+        // GitHub usernames
         if (user == null && emailOrUsername != null && !emailOrUsername.contains("@")) {
             user = userRepository.findByEmail(emailOrUsername + "@github.com").orElse(null);
         }
@@ -109,21 +103,22 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getPrincipal())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not authenticated"));
         }
 
         String email = null;
         String name = null;
         String picture = null;
-        
+
         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
             email = oauthToken.getPrincipal().getAttribute("email");
             if (email == null) {
                 email = oauthToken.getPrincipal().getAttribute("login") + "@github.com"; // Fallback for github
             }
             name = oauthToken.getPrincipal().getAttribute("name");
-            
+
             // Handle picture (Google uses 'picture', GitHub uses 'avatar_url')
             picture = oauthToken.getPrincipal().getAttribute("picture");
             if (picture == null) {
@@ -142,15 +137,18 @@ public class AuthController {
 
         Map<String, String> response = new HashMap<>();
         response.put("email", email != null ? email : "unknown");
-        if (name != null) response.put("name", name);
-        if (picture != null) response.put("picture", picture);
+        if (name != null)
+            response.put("name", name);
+        if (picture != null)
+            response.put("picture", picture);
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/set-password")
     public ResponseEntity<?> setPassword(@RequestBody Map<String, String> request, Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getPrincipal())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not authenticated"));
         }
 
@@ -197,23 +195,20 @@ public class AuthController {
 
         // Apply Rate Limiting based on IP address
         String clientIp = httpRequest.getRemoteAddr();
-        Bucket bucket = resetBuckets.computeIfAbsent(clientIp, k -> 
-            Bucket.builder()
-                .addLimit(Bandwidth.classic(3, Refill.intervally(3, Duration.ofMinutes(10))))
-                .build()
-        );
-        
+        Bucket bucket = resetBuckets.computeIfAbsent(clientIp, k -> Bucket.builder()
+                .addLimit(Bandwidth.builder().capacity(3).refillIntervally(3, Duration.ofMinutes(10)).build())
+                .build());
+
         if (!bucket.tryConsume(1)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(Map.of("error", "Too many requests. Please try again later."));
+                    .body(Map.of("error", "Too many requests. Please try again later."));
         }
 
         User user = userRepository.findByEmail(email).orElse(null);
-        
+
         // Always return generic success to prevent email enumeration
         Map<String, String> genericResponse = Map.of(
-            "message", "If an account matches that email, we have sent a password reset link."
-        );
+                "message", "If an account matches that email, we have sent a password reset link.");
 
         if (user != null) {
             // 1. Invalidate previous unused tokens for this user
@@ -257,11 +252,13 @@ public class AuthController {
         PasswordResetToken tokenEntity = tokenRepository.findByTokenHash(tokenHash).orElse(null);
 
         if (tokenEntity == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Invalid or expired reset token"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Invalid or expired reset token"));
         }
 
         if (tokenEntity.isUsed()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "This reset token has already been used"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "This reset token has already been used"));
         }
 
         if (tokenEntity.getExpiryDate().isBefore(LocalDateTime.now())) {
@@ -294,7 +291,7 @@ public class AuthController {
         StringBuilder hexString = new StringBuilder(2 * hash.length);
         for (int i = 0; i < hash.length; i++) {
             String hex = Integer.toHexString(0xff & hash[i]);
-            if(hex.length() == 1) {
+            if (hex.length() == 1) {
                 hexString.append('0');
             }
             hexString.append(hex);
@@ -303,9 +300,9 @@ public class AuthController {
     }
 
     private void loginUserSession(User user, HttpServletRequest request) {
-        UsernamePasswordAuthenticationToken authReq
-                = new UsernamePasswordAuthenticationToken(user.getEmail(), null, Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")));
-        
+        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(user.getEmail(), null,
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")));
+
         SecurityContext sc = SecurityContextHolder.getContext();
         sc.setAuthentication(authReq);
         HttpSession session = request.getSession(true);
