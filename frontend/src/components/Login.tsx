@@ -90,7 +90,7 @@ const Login: React.FC = () => {
         zIndex: 50
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => navigate('/home')}>
-          <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#775a00' }}>description</span>
+          <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '48px' }} />
           <span style={{ ...fonts.headlineMd, fontWeight: 900 }}>ResumeIQ</span>
         </div>
         <div style={{ ...fonts.labelMono }}>

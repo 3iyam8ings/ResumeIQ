@@ -91,7 +91,7 @@ const ForgotPassword: React.FC = () => {
         zIndex: 50
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => navigate('/home')}>
-          <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#775a00' }}>description</span>
+          <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '32px' }} />
           <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '24px', fontWeight: 900 }}>ResumeIQ</span>
         </div>
         <div style={{ ...fonts.labelMono }}>

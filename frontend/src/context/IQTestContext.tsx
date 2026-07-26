@@ -1,5 +1,8 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 
+/* ------------------------------------------------------------------ */
+/* Types                                                                */
+/* ------------------------------------------------------------------ */
 type Category = 'Logical' | 'Spatial' | 'Verbal' | 'Numerical';
 
 export interface ShapeData {
@@ -30,18 +33,24 @@ interface IQTestContextType {
   resetTest: () => void;
 }
 
+/* ------------------------------------------------------------------ */
+/* Context                                                              */
+/* ------------------------------------------------------------------ */
 const IQTestContext = createContext<IQTestContextType | undefined>(undefined);
 
+/* ------------------------------------------------------------------ */
+/* Provider                                                             */
+/* ------------------------------------------------------------------ */
 export const IQTestProvider = ({ children }: { children: ReactNode }) => {
   const [answers, setAnswersState] = useState<Record<number, number>>({});
   const [timeRemaining, setTimeRemainingState] = useState<Record<number, number>>({});
 
   const setAnswer = (questionIndex: number, answerIndex: number) => {
-    setAnswersState(prev => ({ ...prev, [questionIndex]: answerIndex }));
+    setAnswersState((prev) => ({ ...prev, [questionIndex]: answerIndex }));
   };
 
   const setTimeRemaining = (questionIndex: number, time: number) => {
-    setTimeRemainingState(prev => ({ ...prev, [questionIndex]: time }));
+    setTimeRemainingState((prev) => ({ ...prev, [questionIndex]: time }));
   };
 
   const resetTest = () => {
@@ -56,6 +65,9 @@ export const IQTestProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+/* ------------------------------------------------------------------ */
+/* Hook                                                                 */
+/* ------------------------------------------------------------------ */
 export const useIQTest = () => {
   const context = useContext(IQTestContext);
   if (!context) {

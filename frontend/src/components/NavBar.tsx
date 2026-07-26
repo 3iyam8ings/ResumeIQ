@@ -5,12 +5,12 @@ interface NavBarProps {
   userProfile?: {
     name?: string;
     picture?: string;
+    photoURL?: string;
   };
 }
 
 const NavBar: React.FC<NavBarProps> = ({ userProfile }) => {
   const navigate = useNavigate();
-  const [isHoveringHome, setIsHoveringHome] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const handleLogout = async () => {
@@ -70,7 +70,7 @@ const NavBar: React.FC<NavBarProps> = ({ userProfile }) => {
             onClick={() => setShowDropdown(!showDropdown)}
             style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid #000', overflow: 'hidden', backgroundColor: 'white', cursor: 'pointer' }}
           >
-            <img src={userProfile?.picture || (userProfile as any)?.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="avatar" style={{ width: '100%', height: '100%' }} />
+            <img src={userProfile?.photoURL || userProfile?.picture || (userProfile as any)?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userProfile?.name || 'Felix'}`} alt="avatar" style={{ width: '100%', height: '100%' }} />
           </div>
           {showDropdown && (
             <div style={{

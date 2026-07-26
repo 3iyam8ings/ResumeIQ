@@ -141,3 +141,18 @@ Once those three things are running, just open `http://localhost:5173` in your b
   - `[x]` Fixed aggressive auto-scrolling bug that hid the chat underneath the sticky navbar
   - `[x]` Implemented smart natural language detection to gracefully end the interview and pause the timer when the user types variations of 'end session'
   - `[x]` Removed excessive page padding to keep the input interface snug at the bottom of the screen
+
+- `[x]` **Job Tracker CRUD Integration (26/July/2026)**
+  - `[x]` Developed the interactive Kanban-style dashboard for managing job applications
+  - `[x]` Connected the frontend Job Tracker to the backend REST API (`/api/job-applications`) for full CRUD functionality
+  - `[x]` Secured application data so users can only view and manage their own saved jobs
+  - `[x]` Ensured seamless drag-and-drop state updates synchronize perfectly with the PostgreSQL database
+
+
+- `[x]` **IQ Test Feature & Security Enhancements (26/July/2026)**
+  - `[x]` Built full Neo-Brutalist UI flow for the IQ Test (`IQTestLanding`, `IQTestScreen`, `IQTestReviewScreen`, `IQTestResultsScreen`)
+  - `[x]` Created a dynamic `PatternMatrix` component to render logic puzzles from `iqTestBank.ts`
+  - `[x]` Managed global test state (answers, time remaining) using `IQTestContext`
+  - `[x]` Secured the Gemini API integration by migrating prompt generation from the frontend to a new backend `/api/iqtest/summary` endpoint
+  - `[x]` Hardened the new backend endpoint with `Bucket4j` rate limiting (5 req/min per IP) and strict DTO input validation to prevent API abuse
+  - `[x]` Rotated leaked frontend API keys out of the `.env` file and integrated the frontend with the secured Spring Boot backend

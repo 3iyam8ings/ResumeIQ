@@ -15,7 +15,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -26,7 +25,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
@@ -41,25 +39,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable()) // Disable CSRF for simplified React integration
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/login/**", "/oauth2/**", "/api/upload", "/api/rewrite", "/api/cover-letter", "/error").permitAll()
-                .anyRequest().authenticated()
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(userInfo -> userInfo.userService(this.oauth2UserService()))
-                .successHandler(this.oauth2SuccessHandler())
-                .failureHandler(this.oauth2FailureHandler())
-            )
-            // We'll handle local auth manually in AuthController to return JSON
-            .logout(logout -> logout
-                .logoutUrl("/api/auth/logout")
-                .logoutSuccessHandler((request, response, authentication) -> {
-                    response.setStatus(200);
-                })
-                .permitAll()
-            );
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for simplified React integration
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**", "/login/**", "/oauth2/**", "/api/upload", "/api/rewrite",
+                                "/api/cover-letter", "/error", "/api/iqtest/**")
+                        .permitAll()
+                        .anyRequest().authenticated())
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo.userService(this.oauth2UserService()))
+                        .successHandler(this.oauth2SuccessHandler())
+                        .failureHandler(this.oauth2FailureHandler()))
+                // We'll handle local auth manually in AuthController to return JSON
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(200);
+                        })
+                        .permitAll());
 
         return http.build();
     }
@@ -87,11 +84,13 @@ public class SecurityConfig {
         return request -> {
             OAuth2User oAuth2User = delegate.loadUser(request);
             String provider = request.getClientRegistration().getRegistrationId();
-            
+
             String email = null;
             if ("github".equals(provider)) {
-                // GitHub doesn't always guarantee email in standard profile depending on privacy settings,
-                // but let's try. Sometimes it's under 'login'. Let's use 'login' if email is missing.
+                // GitHub doesn't always guarantee email in standard profile depending on
+                // privacy settings,
+                // but let's try. Sometimes it's under 'login'. Let's use 'login' if email is
+                // missing.
                 email = oAuth2User.getAttribute("email");
                 if (email == null) {
                     email = oAuth2User.getAttribute("login") + "@github.com";
@@ -105,7 +104,7 @@ public class SecurityConfig {
             }
 
             final String finalEmail = email;
-            
+
             // Handle picture (Google uses 'picture', GitHub uses 'avatar_url')
             String picture = oAuth2User.getAttribute("picture");
             if (picture == null) {
@@ -122,10 +121,9 @@ public class SecurityConfig {
 
             // Wrap the OAuth2User to include our DB authorities or details if needed
             return new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                oAuth2User.getAttributes(),
-                "github".equals(provider) && oAuth2User.getAttribute("email") == null ? "login" : "email"
-            );
+                    Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
+                    oAuth2User.getAttributes(),
+                    "github".equals(provider) && oAuth2User.getAttribute("email") == null ? "login" : "email");
         };
     }
 
@@ -138,8 +136,9 @@ public class SecurityConfig {
 
     private AuthenticationFailureHandler oauth2FailureHandler() {
         return (request, response, exception) -> {
-            String errorMsg = exception instanceof OAuth2AuthenticationException ? 
-                ((OAuth2AuthenticationException) exception).getError().getErrorCode() : "oauth2_error";
+            String errorMsg = exception instanceof OAuth2AuthenticationException
+                    ? ((OAuth2AuthenticationException) exception).getError().getErrorCode()
+                    : "oauth2_error";
             response.sendRedirect("http://localhost:5173/signup?error=" + errorMsg);
         };
     }

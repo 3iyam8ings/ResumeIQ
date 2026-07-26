@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,7 +26,7 @@ class ResumeParserServiceTest {
 
             @Override
             public String extractText(org.springframework.web.multipart.MultipartFile file) throws IOException {
-                return new String(file.getBytes());
+                return new String(file.getBytes(), StandardCharsets.UTF_8);
             }
         };
 
@@ -43,11 +43,11 @@ class ResumeParserServiceTest {
                 "B.S. Computer Science\n" +
                 "Skills\n" +
                 "Java, Spring, React";
-        
-        MockMultipartFile mockFile = new MockMultipartFile("file", "resume.txt", "text/plain", rawText.getBytes());
-        
+
+        MockMultipartFile mockFile = new MockMultipartFile("file", "resume.txt", "text/plain", rawText.getBytes(StandardCharsets.UTF_8));
+
         ResumeParseResult result = parserService.parseResume(mockFile);
-        
+
         assertEquals(rawText, result.getRawText());
         assertEquals("john.doe@example.com | 555-1234", result.getContactInfo());
         assertEquals("Software Engineer at Tech Corp", result.getExperience());
@@ -65,14 +65,46 @@ class ResumeParserServiceTest {
                 "M.S. Data Science\n" +
                 "Skills\n" +
                 "Python, ML";
-        
-        MockMultipartFile mockFile = new MockMultipartFile("file", "resume.txt", "text/plain", rawText.getBytes());
-        
+
+        MockMultipartFile mockFile = new MockMultipartFile("file", "resume.txt", "text/plain", rawText.getBytes(StandardCharsets.UTF_8));
+
         ResumeParseResult result = parserService.parseResume(mockFile);
-        
+
         assertEquals("Jane Doe\njane@example.com", result.getContactInfo());
         assertEquals("Built an AI Resume Analyzer", result.getExperience());
         assertEquals("M.S. Data Science", result.getEducation());
         assertEquals("Python, ML", result.getSkills());
+    }
+
+    @Test
+    void testParseEmptyResume() throws IOException {
+        String rawText = "";
+
+        MockMultipartFile mockFile = new MockMultipartFile("file", "resume.txt", "text/plain", rawText.getBytes(StandardCharsets.UTF_8));
+
+        ResumeParseResult result = parserService.parseResume(mockFile);
+
+        assertNotNull(result);
+        assertEquals("", result.getRawText());
+        assertEquals("", result.getContactInfo());
+        assertNull(result.getExperience());
+        assertNull(result.getEducation());
+        assertNull(result.getSkills());
+    }
+
+    @Test
+    void testParseResumeWithNoHeaders() throws IOException {
+        String rawText = "Just some text\nwith no clear headers";
+
+        MockMultipartFile mockFile = new MockMultipartFile("file", "resume.txt", "text/plain", rawText.getBytes(StandardCharsets.UTF_8));
+
+        ResumeParseResult result = parserService.parseResume(mockFile);
+
+        assertNotNull(result);
+        assertEquals(rawText, result.getRawText());
+        assertEquals(rawText, result.getContactInfo());
+        assertNull(result.getExperience());
+        assertNull(result.getEducation());
+        assertNull(result.getSkills());
     }
 }

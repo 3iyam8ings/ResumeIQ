@@ -1,0 +1,40 @@
+# Complete Job Tracker Implementation Plan
+
+The backend infrastructure for the Job Tracker is actually already beautifully implemented! The `JobApplicationController` contains fully personalized and authenticated endpoints for CRUD operations locked to the currently logged-in user.
+
+The next step is wiring up the React frontend in `Dashboard.tsx` so users can seamlessly create, edit, update, and manage their applications within your Neo-Brutalist design system.
+
+## Proposed Changes
+
+### 1. New Application Modal
+The "+ NEW APPLICATION" button in `Dashboard.tsx` is currently a static UI element. We will:
+- Add a new state variable `isAddModalOpen` to toggle a popup modal overlay.
+- Build a Neo-Brutalist form containing fields for `companyName`, `jobTitle`, `status` (Applied, OA, Interview, Offer, Rejected), `matchScore`, and `notes`.
+- Wire the form's submit handler to send a `POST` request to `http://127.0.0.1:8082/api/applications`, which saves the data to the personalized PostgreSQL database.
+- Refresh the `fetchApplications()` hook on success.
+
+### 2. View/Edit/Delete Functionality
+Currently, the `JobCard` components just display data. We will:
+- Add an `onClick` handler to the `JobCard` to open an "Edit Application" modal.
+- Allow users to update their interview stage (e.g., from "OA" to "Interview") by sending a `PUT /api/applications/{id}` request.
+- Add a highly visible "DELETE" button inside the edit modal that triggers `DELETE /api/applications/{id}`.
+
+### 3. Drag-and-Drop (Optional/Future Enhancement)
+To make the kanban board feel truly dynamic, we can wrap the columns in a library like `@hello-pangea/dnd` to allow dragging a job card from "Applied" to "Interview", automatically triggering a `PUT` request to update its status.
+
+## User Review Required
+
+> [!IMPORTANT]
+> Since we are sticking to vanilla React state and CSS for now, **do you want me to build the Add/Edit functionality via standard Popup Modals first?** I can implement drag-and-drop later if you prefer to start with a simpler, bulletproof modal system.
+
+## Verification Plan
+
+### Automated Tests
+- N/A (Frontend interaction testing relies heavily on visual verification).
+
+### Manual Verification
+1. I will load the dashboard and click "+ NEW APPLICATION".
+2. Fill out a sample application for "Google" as "Software Engineer".
+3. Verify that the job card appears in the correct column based on the status selected.
+4. Click the job card, change the status to "Interview", and ensure it moves columns upon saving.
+5. Log in with a different test user account and ensure the "Google" application is completely hidden (verifying backend personalization works).

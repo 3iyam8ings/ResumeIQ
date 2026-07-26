@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIQTest } from '../context/IQTestContext';
 import { iqTestBank } from '../data/iqTestBank';
-import { GoogleGenAI } from '@google/genai';
+
 import { scoreTest } from '../utils/scoring';
 
 const border = '3px solid #1c1b1b';
@@ -91,22 +91,21 @@ const IQTestResultsScreen: React.FC = () => {
     }, 30);
 
     const fetchSummary = async () => {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      if (!apiKey) {
-        setAiSummary(`Cognitive profile suggests strong abstract reasoning skills.`);
-        return;
-      }
       try {
-        const ai = new GoogleGenAI({ apiKey });
-        const prompt = `Based on an IQ test score of ${scoreData.iqScore} (Percentile: ${scoreData.percentile}%), with category scores out of 5: Logical (${scoreData.categories.Logical}), Numerical (${scoreData.categories.Numerical}), Verbal (${scoreData.categories.Verbal}), Spatial (${scoreData.categories.Spatial}), generate a short, professional, 2-line personalized cognitive profile summary.`;
-        
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: prompt,
+        const response = await fetch('/api/iqtest/summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(scoreData),
         });
 
-        if (response.text) {
-          setAiSummary(response.text);
+        if (!response.ok) {
+          setAiSummary(`Cognitive profile suggests strong abstract reasoning skills.`);
+          return;
+        }
+
+        const data = await response.json();
+        if (data && data.summary) {
+          setAiSummary(data.summary);
         }
       } catch (err) {
         setAiSummary(`Cognitive profile suggests strong abstract reasoning skills.`);
