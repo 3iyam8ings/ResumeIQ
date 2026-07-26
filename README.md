@@ -1,158 +1,79 @@
-# 🧠 ResumeIQ
-
-Hey there! 👋 Welcome to **ResumeIQ**. 
-
-I built this project because job hunting is incredibly stressful, and getting past automated Applicant Tracking Systems (ATS) feels like a black box. You submit a resume you worked hard on, and then... nothing. 
-
-ResumeIQ is a full-stack tool I put together that uses Google's Gemini 2.5 Flash to act as your personal career coach. It looks at your resume exactly how a ruthless recruiter or ATS would, and tells you exactly what you need to fix to actually get an interview.
+<div align="center">
+  <img src="frontend/public/logo.png" alt="ResumeIQ Logo" width="200" />
+  <h1>ResumeIQ</h1>
+  <p><strong>Beat the ATS. Ace the interview. Land the job.</strong></p>
+</div>
 
 ---
 
-## ✨ What it does
+Job hunting shouldn't feel like throwing your hard work into a black box. **ResumeIQ** is a full-stack platform powered by Google's Gemini 2.5 Flash that acts as your personal, ruthless career coach. It analyzes your resume exactly how an Applicant Tracking System (ATS) would, providing actionable insights to help you get hired.
 
-### 📄 Match your resume to the job
-You just upload your PDF and paste the job description you want. The app reads both, calculates a match score, and gives you a no-nonsense breakdown of the exact skills you hit and the keywords you completely missed.
+## ✨ Features
 
-### ✍️ Fix your bullet points
-If you struggle with wording (like most of us do), you can select any bullet point on your resume and have the AI rewrite it to sound much more impactful and perfectly tailored to the job you want.
+- 📄 **Smart ATS Matching:** Upload your PDF resume and a target job description. We calculate a match score and provide a no-nonsense breakdown of missing keywords and skills.
+- ✍️ **AI Bullet Point Rewrite:** Select any weak bullet point on your resume, and our AI will rewrite it to be impactful and tailored specifically to your target job.
+- ✉️ **One-Click Cover Letters:** Generate highly specific, professional cover letters that perfectly bridge your experience with the job requirements.
+- 🎤 **Interactive Mock Interviews:** Practice with custom technical and behavioral questions generated from the job description. Get real-time, interactive feedback on your answers via voice and text AI.
+- 🗺️ **Personalized Learning Roadmaps:** Share your GitHub or portfolio. The AI analyzes your current projects and generates a step-by-step roadmap to bridge your skill gaps.
+- 📊 **Kanban Job Tracker:** A built-in drag-and-drop dashboard to save analyzed jobs and track your application progress in real time.
+- 🧠 **Cognitive IQ Assessment:** Test your logic and spatial reasoning with our interactive pattern matrix puzzles, complete with a personalized AI cognitive profile.
 
-### ✉️ Write your cover letter
-Cover letters are tedious. Click one button, and ResumeIQ writes a highly specific, professional cover letter that blends your uploaded resume with the target job. 
+## 🛡️ Enterprise-Grade Architecture & Security
 
-### 🎤 Practice for the interview
-Once your resume gets you in the door, the app can generate custom technical and behavioral questions based on that specific job description. You type in your answers, and it gives you instant feedback on how you did.
+- **Bulletproof Auth:** Secure local accounts (BCrypt hashing) alongside seamless Google and GitHub OAuth. Complete with rate-limited password resets, one-time expiring tokens, and robust old-token invalidation.
+- **Backend API Security:** All AI integrations (like the Gemini API) are securely routed through our Spring Boot backend. Endpoints are protected by Bucket4j rate limiting (e.g., 5 req/min per IP) and strict DTO input validation to prevent abuse and injection.
+- **Reliable Data Sync:** The React frontend stays perfectly synced with our PostgreSQL database, ensuring your job tracking and application data are never lost.
+- **Enterprise Reliability:** Asynchronous non-blocking email services, anti-enumeration protections to prevent email scraping, and comprehensive backend integration testing ensure the platform is robust.
 
-### 🗺️ Figure out what to learn next
-If you aren't ready for the job yet, you can share your portfolio or GitHub. The AI will look at your current projects and generate a step-by-step roadmap of exactly what you need to learn to bridge the gap.
+## 🎨 The Neo-Brutalist Experience
 
-### 📊 Keep track of everything
-There's a built-in Kanban-style dashboard where you can save all the jobs you've analyzed and track where you are in the application process.
+We ditched the boring corporate aesthetic for a striking **Neo-Brutalist** design. Heavy borders, vibrant colors, chunky typography, and deeply satisfying physical "press" animations make ResumeIQ a joy to use. The UI is packed with micro-interactions, custom hover states, and dynamic hacker-style terminals that animate logically as your data is processed.
 
-### 🔐 Secure Accounts
-You can create a local account with a secure password, or just click once to log in using Google or GitHub. The authentication system is bulletproof: it prevents duplicate accounts, securely hashes all passwords, provides a robust "Forgot Password" flow using expiring tokens, and intelligently routes returning OAuth users straight to the dashboard.
+## 🏗️ Tech Stack
 
-### 🛡️ Enterprise-Grade Security & Reliability
-- **Auth Flow Logic**: Flawless signup, login, forgot-password, and reset-password.
-- **Password Hashing**: BCrypt for passwords; SHA-256 for secure reset tokens (no plain text).
-- **Rate Limiting**: Forgot-password endpoint protected (3 requests / 10 min per IP).
-- **Anti-Enumeration**: Consistent 200 OK responses to prevent email scraping.
-- **Token Security**: 15-minute expiry windows, one-time use tokens, and old token invalidation.
-- **Email Delivery**: Asynchronous (`@Async`), non-blocking email service that catches exceptions gracefully.
-- **Test Coverage**: Comprehensive 15+ backend integration test cases for all authentication endpoints.
-
-### 🧠 Take the IQ Test
-Test your cognitive skills with our built-in IQ assessment. It features dynamic routing, real-time timing, and personalized cognitive profiling utilizing Gemini AI for an interactive experience.
+- **Frontend:** React (Vite), React Router, Neo-Brutalist Custom CSS
+- **Backend:** Java 17, Spring Boot, Spring Security, Spring Cloud Gateway
+- **Database:** PostgreSQL (Production) / H2 (Testing)
+- **AI Integration:** LangChain4j, Google Gemini 2.5 Flash API, Vapi Voice AI
 
 ---
 
-## 🎨 The Vibe
+## 🚀 Run It Locally
 
-I was tired of boring corporate dashboards, so I built the entire frontend using a **Neo-Brutalist** design system. It uses heavy black borders, bright colors, chunky fonts, and really satisfying, physical "press" animations on all the buttons. It makes the app genuinely fun to click around in. 
+To spin this up on your machine, you'll need Node.js, Java 17, Docker, and a free Google Gemini API Key.
 
-We've heavily polished the UI to create a premium feel: the layout is compact with unified corner radiuses, interactions are crisp with custom hover states, and the dynamic hacker-style terminal starts clean and animates logically as it processes your resume.
-
-
-
-## 🏗️ How it was built
-
-- **Frontend:** React (Vite) + React Router
-- **Backend:** Java 17 with Spring Boot and Spring Security
-- **API Gateway:** Spring Cloud Gateway
-- **Database:** PostgreSQL for the running application; H2 is used only by automated tests.
-- **AI Brain:** LangChain4j hooked up to the Google Gemini API
-
----
-
-## 🚀 How to run it yourself
-
-If you want to spin this up on your own machine, you'll need Node.js, Java 17, and a free Google Gemini API Key.
-
-**Database setup**
-
-Start the local PostgreSQL container, then copy `backend/.env.example` to
-`backend/.env` and fill in your Gemini, OAuth, and email credentials. The
-default local connection is `jdbc:postgresql://localhost:5433/resume_db`.
-
+### 1. Database Setup
+Start the local PostgreSQL container. Copy `backend/.env.example` to `backend/.env` and insert your API credentials.
 ```bash
 docker compose up -d postgres
 ```
 
-For a hosted database, replace `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` in
-`backend/.env`. H2 is intentionally isolated to the `test` Spring profile and
-is never used by `bootRun`.
-
-**1. Start the Frontend**
+### 2. Start the Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-**2. Start the API Gateway**
+### 3. Start the API Gateway & Backend Service
 ```bash
 cd api-gateway
 ./gradlew bootRun
-```
 
-**3. Start the Backend Service**
-```bash
+# In a new terminal window:
 cd backend
 ./gradlew bootRun
 ```
-
-Once those three things are running, just open `http://localhost:5173` in your browser and you're good to go!
+Access the app at `http://localhost:5173`.
 
 ---
 
-## 📅 Hackathon Progress - 24/July/2026
+## 📅 Hackathon Journey
 
-- `[x]` Setup and Configuration
-  - `[x]` Add OpenAI API Key to `.env`
-  - `[x]` Install `openai` package
-- `[x]` Backend Updates
-  - `[x]` Add `User` relationship to `JobApplication.java`
-  - `[x]` Update `JobApplicationController.java` to fetch/save based on logged-in user
-- `[x]` Frontend UI Construction
-  - `[x]` Create Neo-Brutalist sticky `NavBar.tsx`
-  - `[x]` Redesign `Dashboard.tsx` with user-specific data tracking
-  - `[x]` Create `CoverLetterGenius.tsx` with interactive Neo-Brutalist inputs and OpenAI generation
-  - `[x]` Create `MockInterview.tsx` with Neo-Brutalist mode dropdown and >10 message AI feedback popup
-- `[x]` Integration
-  - `[x]` Update `App.tsx` routes without touching existing pages
-  - `[x]` Test OpenAI API integration endpoints
-- `[x]` Navigation & UI Polish
-  - [x] Replaced inline headers with a unified, universal `NavBar` component across all core pages
-  - [x] Added a sticky scrolling "Home" link to ensure seamless navigation
-  - [x] Implemented bold and underline hover states globally for a better tactile feel
+We moved fast to build a complete, polished product. Here's a snapshot of our key development milestones:
 
-- `[x]` **CoverLetterGenius UI & UX Polish (25/July/2026)**
-  - `[x]` Added bold neo-brutalist styling to the component header and title
-  - `[x]` Fixed terminal animation timing using `Promise.all` to synchronize properly with the lightning-fast Gemini API
-  - `[x]` Updated input field placeholders to clearly distinguish them from inserted data using global `::placeholder` styling
-  - `[x]` Fixed button hover effects to properly clear inline shadows and translate correctly for the neo-brutalist aesthetic
-  - `[x]` Resolved TypeScript errors related to `React.CSSProperties` handling
-
-- `[x]` **Mock Interview & Voice AI (26/July/2026)**
-  - `[x]` Integrated `@vapi-ai/web` to power real-time voice AI interviews for mock sessions
-  - `[x]` Resolved Vite ESM interop issues causing `Vapi is not a constructor` runtime errors
-  - `[x]` Refined Neo-Brutalist layout for the Mock Interview page by stacking side-tabs vertically flush against the left edge
-  - `[x]` Added smooth pop-out hover animations to the mode selection tabs
-  - `[x]` Fixed absolute positioning overflows that were causing the global blue background to leak into the page layout when dropdowns were opened
-  - `[x]` Fixed aggressive auto-scrolling bug that hid the chat underneath the sticky navbar
-  - `[x]` Implemented smart natural language detection to gracefully end the interview and pause the timer when the user types variations of 'end session'
-  - `[x]` Removed excessive page padding to keep the input interface snug at the bottom of the screen
-
-- `[x]` **Job Tracker CRUD Integration (26/July/2026)**
-  - `[x]` Developed the interactive Kanban-style dashboard for managing job applications
-  - `[x]` Connected the frontend Job Tracker to the backend REST API (`/api/job-applications`) for full CRUD functionality
-  - `[x]` Secured application data so users can only view and manage their own saved jobs
-  - `[x]` Ensured seamless drag-and-drop state updates synchronize perfectly with the PostgreSQL database
-
-
-- `[x]` **IQ Test Feature & Security Enhancements (26/July/2026)**
-  - `[x]` Built full Neo-Brutalist UI flow for the IQ Test (`IQTestLanding`, `IQTestScreen`, `IQTestReviewScreen`, `IQTestResultsScreen`)
-  - `[x]` Created a dynamic `PatternMatrix` component to render logic puzzles from `iqTestBank.ts`
-  - `[x]` Managed global test state (answers, time remaining) using `IQTestContext`
-  - `[x]` Secured the Gemini API integration by migrating prompt generation from the frontend to a new backend `/api/iqtest/summary` endpoint
-  - `[x]` Hardened the new backend endpoint with `Bucket4j` rate limiting (5 req/min per IP) and strict DTO input validation to prevent API abuse
-  - `[x]` Rotated leaked frontend API keys out of the `.env` file and integrated the frontend with the secured Spring Boot backend
+- **Core Infrastructure & Design:** Configured PostgreSQL, Spring Boot, Spring Security, and the React/Vite frontend. Built out the core Neo-Brutalist design system across the entire application.
+- **AI Integration:** Successfully wired up LangChain4j with Gemini 2.5 Flash for the Cover Letter Generator, Job Matching, and Resume Parsing engines.
+- **Interactive Mock Interviews:** Integrated `@vapi-ai/web` for real-time voice interviews, solved Vite ESM interop issues, and polished the chat interface with smart natural language detection ("end session").
+- **Job Tracker CRUD:** Built the interactive Kanban dashboard connected to secure, authenticated backend REST endpoints.
+- **IQ Test & Security Hardening:** Developed the logic puzzle `PatternMatrix`, managed global test states, and migrated sensitive API prompt generation to a heavily rate-limited, validated backend endpoint. Leaked keys were successfully rotated and eliminated from the client.
