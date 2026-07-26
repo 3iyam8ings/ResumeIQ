@@ -131,3 +131,13 @@ Once those three things are running, just open `http://localhost:5173` in your b
   - `[x]` Updated input field placeholders to clearly distinguish them from inserted data using global `::placeholder` styling
   - `[x]` Fixed button hover effects to properly clear inline shadows and translate correctly for the neo-brutalist aesthetic
   - `[x]` Resolved TypeScript errors related to `React.CSSProperties` handling
+
+- `[x]` **Mock Interview & Voice AI (26/July/2026)**
+  - `[x]` Integrated `@vapi-ai/web` to power real-time voice AI interviews for mock sessions
+  - `[x]` Resolved Vite ESM interop issues causing `Vapi is not a constructor` runtime errors
+  - `[x]` Refined Neo-Brutalist layout for the Mock Interview page by stacking side-tabs vertically flush against the left edge
+  - `[x]` Added smooth pop-out hover animations to the mode selection tabs
+  - `[x]` Fixed absolute positioning overflows that were causing the global blue background to leak into the page layout when dropdowns were opened
+  - `[x]` Fixed aggressive auto-scrolling bug that hid the chat underneath the sticky navbar
+  - `[x]` Implemented smart natural language detection to gracefully end the interview and pause the timer when the user types variations of 'end session'
+  - `[x]` Removed excessive page padding to keep the input interface snug at the bottom of the screen

@@ -1,6 +1,25 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import Vapi from '@vapi-ai/web';
+import * as VapiPackage from '@vapi-ai/web';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// `@vapi-ai/web`'s build output has shipped the Vapi class in different shapes across
+// versions/bundlers: sometimes as the default export, sometimes as a named export, and
+// sometimes ESM/CJS interop hands you the raw module instead of the class itself. A plain
+// `import Vapi from '@vapi-ai/web'` can therefore silently bind `Vapi` to something that
+// isn't callable with `new`, producing "Vapi is not a constructor" at runtime with no
+// build-time warning. Resolving it defensively here fixes that regardless of which shape
+// the installed version actually exports.
+type VapiInstance = {
+  on: (event: string, cb: (...args: any[]) => void) => void;
+  removeAllListeners: () => void;
+  start: (assistant: Record<string, unknown>) => Promise<unknown>;
+  stop: () => void;
+};
+type VapiCtor = new (apiKey: string) => VapiInstance;
+const Vapi = (((VapiPackage as any).default?.default)
+  ?? (VapiPackage as any).default
+  ?? (VapiPackage as any).Vapi
+  ?? (VapiPackage as unknown as VapiCtor)) as VapiCtor;
 
 // ============================================================================
 // TYPES
@@ -26,12 +45,33 @@ const MISSING_VAPI_KEY = 'Please add VITE_VAPI_PUBLIC_KEY to your frontend .env 
 const MISSING_GEMINI_KEY = 'Please add VITE_GEMINI_API_KEY to your frontend .env file!';
 const ERROR_START_MESSAGE = 'Error connecting to AI. Please check your API key.';
 const ERROR_SEND_MESSAGE = 'Error connecting to AI.';
+const ERROR_VOICE_START_MESSAGE =
+  'Could not start the voice interview. Check the browser console / network tab for the exact error from Vapi.';
 const FALLBACK_FIRST_QUESTION = "Hello! Let's begin the interview. Can you tell me about yourself?";
 const FALLBACK_FOLLOW_UP = 'Could you elaborate on that?';
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
+// NOTE: These two constants are intentionally separate. `GEMINI_MODEL_TEXT` is passed
+// straight to Google's own SDK (which accepts the latest Gemini model slugs). Vapi's
+// "google" model provider only accepts a whitelist of model names it explicitly supports,
+// which historically lags behind Google's own releases (e.g. gemini-1.5-pro,
+// gemini-1.5-flash-002, gemini-1.0-pro). Passing an unsupported slug like
+// "gemini-2.5-flash" to Vapi causes assistant creation to fail silently (a rejected
+// promise with no UI feedback), which is why the voice interview previously did nothing
+// when clicked. Re-check Vapi's dashboard/docs for their current supported list before
+// changing this value.
+const GEMINI_MODEL_TEXT = 'gemini-2.5-flash';
+const GEMINI_MODEL_VAPI = 'gemini-1.5-pro';
+
 const MAX_CONTEXT_MESSAGES = 16;
 const KICKOFF_PROMPT = 'Please introduce yourself briefly and ask the very first interview question.';
+
+// Explicit transcriber config for Vapi, rather than relying on an account-level default
+// (which may not be configured, causing another silent assistant-creation failure).
+const VAPI_TRANSCRIBER = {
+  provider: 'deepgram',
+  model: 'nova-2',
+  language: 'en',
+} as const;
 
 const buildSystemPrompt = (mode: Mode, role: string, candidate: string, company: string) =>
   `You are a Senior Technical Recruiter named Alex conducting a Mock Interview for a ${role} role at ${company}. 
@@ -134,6 +174,47 @@ const NeoSelect = ({ value, options, onChange, color, prefix }: { value: string,
   );
 };
 
+// A single reusable "neo-brutalist" pill button that owns its own hover state.
+// Replaces the previously duplicated isStartHovered / manual boxShadow-transform
+// logic that was copy-pasted across the start / restart / stop-voice buttons.
+interface NeoButtonProps {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  bg: string;
+  type?: 'button' | 'submit';
+}
+
+const NeoButton: React.FC<NeoButtonProps> = ({ children, onClick, disabled = false, bg, type = 'button' }) => {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        backgroundColor: bg,
+        color: '#1c1b1b',
+        border: '4px solid #1c1b1b',
+        borderRadius: '9999px',
+        padding: '16px 32px',
+        fontWeight: 800,
+        fontSize: '16px',
+        transition: 'all 0.2s ease',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
+        boxShadow: hovered && !disabled ? '0px 0px 0px 0px #1c1b1b' : '4px 4px 0px 0px #1c1b1b',
+        transform: hovered && !disabled ? 'translate(4px, 4px)' : 'translate(0px, 0px)',
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
 // ============================================================================
 // STYLES
 // ============================================================================
@@ -171,7 +252,7 @@ const styles: Record<string, React.CSSProperties> = {
     minHeight: '80vh',
     display: 'flex',
     flexDirection: 'column',
-    paddingBottom: '250px',
+    paddingBottom: '40px',
   },
   modeTabWrap: { position: 'absolute', left: 0, top: '5%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' },
   modeTabButton: {
@@ -258,28 +339,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
   chatArea: { flex: 1, display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '32px' },
   startWrap: { textAlign: 'center', marginTop: '40px' },
-  startButtonBase: {
-    backgroundColor: '#c4b5fd',
-    color: '#1c1b1b',
-    border: '4px solid #1c1b1b',
-    borderRadius: '9999px',
-    padding: '16px 32px',
-    fontWeight: 800,
-    fontSize: '16px',
-    transition: 'all 0.2s ease',
-    cursor: 'pointer',
-  },
-  stopButtonBase: {
-    backgroundColor: '#fca5a5',
-    color: '#1c1b1b',
-    border: '4px solid #1c1b1b',
-    borderRadius: '9999px',
-    padding: '16px 32px',
-    fontWeight: 800,
-    fontSize: '16px',
-    transition: 'all 0.2s ease',
-    cursor: 'pointer',
-  },
   messageMeta: {
     fontSize: '10px',
     fontWeight: 700,
@@ -403,16 +462,23 @@ const MockInterview: React.FC = () => {
   const [showModeDropdown, setShowModeDropdown] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
-  const [isStartHovered, setIsStartHovered] = useState(false);
   const [isModeHovered, setIsModeHovered] = useState(false);
   const [isMockModeHovered, setIsMockModeHovered] = useState(false);
 
   const [sessionSeconds, setSessionSeconds] = useState(0);
   const [isInterviewActive, setIsInterviewActive] = useState(false);
 
+  // True only while we're waiting on vapi.start() to resolve/reject, so the button
+  // can show feedback and can't be double-clicked while a call is being created.
+  const [isConnecting, setIsConnecting] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const modeTabRef = useRef<HTMLDivElement>(null);
-  const vapiRef = useRef<Vapi | null>(null);
+  const vapiRef = useRef<VapiInstance | null>(null);
+
+  // Holds the system prompt for the active session so handleSendText doesn't need
+  // to reconstruct it (with misleading fallback strings) on every message.
+  const systemPromptRef = useRef<string>('');
 
   // ---- helpers -----------------------------------------------------------
   const resetInterview = useCallback(() => {
@@ -426,7 +492,7 @@ const MockInterview: React.FC = () => {
   const getVapi = useCallback(() => {
     if (!vapiRef.current) {
       const apiKey = import.meta.env.VITE_VAPI_PUBLIC_KEY;
-      if (apiKey && apiKey !== 'dummy_key') {
+      if (apiKey) {
         const vapiInstance = new Vapi(apiKey);
 
         vapiInstance.on('call-start', () => {
@@ -452,8 +518,12 @@ const MockInterview: React.FC = () => {
         });
 
         vapiInstance.on('error', (e) => {
-          console.error("Vapi Error:", e);
+          // This fires for errors *during* an active call. Errors from a failed
+          // vapi.start() request (bad config, invalid model, auth issues) are caught
+          // separately in startInterview, since that's a rejected promise, not this event.
+          console.error('Vapi error:', e);
           setIsInterviewActive(false);
+          setIsConnecting(false);
           setIsTyping(false);
         });
 
@@ -474,7 +544,13 @@ const MockInterview: React.FC = () => {
 
   // ---- effects -------------------------------------------------------------
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
 
     const userMessageCount = messages.filter((m) => m.role === 'user').length;
     if (userMessageCount >= FEEDBACK_TRIGGER_USER_MESSAGE_COUNT && !feedback) {
@@ -521,6 +597,7 @@ const MockInterview: React.FC = () => {
     setShowValidationError(false);
 
     const systemPrompt = buildSystemPrompt(mode, jobRole, candidateName, companyName);
+    systemPromptRef.current = systemPrompt;
 
     if (interactionMode === 'voice') {
       const vapi = getVapi();
@@ -529,21 +606,34 @@ const MockInterview: React.FC = () => {
         return;
       }
 
-      vapi.start({
-        name: "Mock Interviewer",
-        firstMessage: FALLBACK_FIRST_QUESTION,
-        model: {
-          provider: "google",
-          model: GEMINI_MODEL,
-          messages: [
-            { role: "system", content: systemPrompt }
-          ]
-        },
-        voice: {
-          provider: "11labs",
-          voiceId: "bIHbv24MWmeRgasZH58o" // Realistic professional voice
-        }
-      });
+      setIsConnecting(true);
+      try {
+        // vapi.start() makes a real API call to create the assistant/call. It can
+        // reject (invalid public key, unsupported model name, bad voice id, etc).
+        // Previously this wasn't awaited or caught, so failures were completely
+        // silent — the button just appeared to do nothing.
+        await vapi.start({
+          name: 'Mock Interviewer',
+          firstMessage: FALLBACK_FIRST_QUESTION,
+          transcriber: VAPI_TRANSCRIBER,
+          model: {
+            provider: 'google',
+            model: GEMINI_MODEL_VAPI,
+            messages: [
+              { role: 'system', content: systemPrompt }
+            ]
+          },
+          voice: {
+            provider: '11labs',
+            voiceId: 'bIHbv24MWmeRgasZH58o' // Realistic professional voice
+          }
+        });
+      } catch (err) {
+        console.error('Vapi start failed:', err);
+        alert(ERROR_VOICE_START_MESSAGE);
+      } finally {
+        setIsConnecting(false);
+      }
     } else {
       // Start Text Interview
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -558,7 +648,7 @@ const MockInterview: React.FC = () => {
 
       try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: GEMINI_MODEL, systemInstruction: systemPrompt });
+        const model = genAI.getGenerativeModel({ model: GEMINI_MODEL_TEXT, systemInstruction: systemPrompt });
 
         const result = await model.generateContent(KICKOFF_PROMPT);
         const firstQuestion = result.response.text() || FALLBACK_FIRST_QUESTION;
@@ -590,13 +680,24 @@ const MockInterview: React.FC = () => {
     setInput('');
     const newMessages: Message[] = [...messages, { role: 'user', content: userMessage }];
     setMessages(newMessages);
+
+    const cleanMsg = userMessage.replace(/[.,!?;:]/g, ' ').trim();
+    const endRegex = /(end|stop|quit|finish|exit)\s*(the\s*)?(session|interview|chat)/i;
+    
+    if (endRegex.test(cleanMsg)) {
+      setIsInterviewActive(false);
+      return;
+    }
+
     setIsTyping(true);
 
-    const systemPrompt = buildSystemPrompt(mode, jobRole || 'Candidate', candidateName || 'Candidate', companyName || 'Company');
+    // Reuse the system prompt captured when the session started, instead of
+    // rebuilding it with silently-wrong fallback values.
+    const systemPrompt = systemPromptRef.current || buildSystemPrompt(mode, jobRole, candidateName, companyName);
 
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: GEMINI_MODEL, systemInstruction: systemPrompt });
+      const model = genAI.getGenerativeModel({ model: GEMINI_MODEL_TEXT, systemInstruction: systemPrompt });
 
       const result = await model.generateContent({ contents: toGeminiContents(newMessages) });
       const aiResponse = result.response.text() || FALLBACK_FOLLOW_UP;
@@ -625,6 +726,8 @@ const MockInterview: React.FC = () => {
   }, [isInterviewActive, isTyping]);
 
   // ---- render --------------------------------------------------------------
+  const missingRequiredFields = !jobRole.trim() || !candidateName.trim() || !companyName.trim();
+
   return (
     <div style={styles.page}>
       {/* Side Tabs */}
@@ -691,7 +794,7 @@ const MockInterview: React.FC = () => {
           <div style={styles.headerBadgeRow}>
             <span style={styles.sessionBadge}>SESSION: {formatSessionTime(sessionSeconds)}</span>
             <span style={isInterviewActive ? styles.aiActiveBadge : styles.aiInactiveBadge}>
-              AI: {isInterviewActive ? (interactionMode === 'voice' ? 'LISTENING / SPEAKING' : 'ACTIVE') : 'OFFLINE'}
+              AI: {isInterviewActive ? (interactionMode === 'voice' ? 'LISTENING / SPEAKING' : 'ACTIVE') : (isConnecting ? 'CONNECTING…' : 'OFFLINE')}
             </span>
           </div>
         </div>
@@ -701,7 +804,7 @@ const MockInterview: React.FC = () => {
           {!isInterviewActive && messages.length === 0 ? (
             <div style={styles.startWrap}>
               <div style={{ marginBottom: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                {showValidationError && (!jobRole.trim() || !candidateName.trim() || !companyName.trim()) && (
+                {showValidationError && missingRequiredFields && (
                   <div style={{
                     backgroundColor: '#fca5a5',
                     border: '3px solid #1c1b1b',
@@ -812,18 +915,9 @@ const MockInterview: React.FC = () => {
                   />
                 </div>
               </div>
-              <button
-                onClick={startInterview}
-                onMouseEnter={() => setIsStartHovered(true)}
-                onMouseLeave={() => setIsStartHovered(false)}
-                style={{
-                  ...styles.startButtonBase,
-                  boxShadow: isStartHovered ? '0px 0px 0px 0px #1c1b1b' : '4px 4px 0px 0px #1c1b1b',
-                  transform: isStartHovered ? 'translate(4px, 4px)' : 'translate(0px, 0px)',
-                }}
-              >
-                START {interactionMode === 'voice' ? 'VOICE' : 'TEXT'} INTERVIEW
-              </button>
+              <NeoButton onClick={startInterview} disabled={isConnecting} bg="#c4b5fd">
+                {isConnecting ? 'CONNECTING…' : `START ${interactionMode === 'voice' ? 'VOICE' : 'TEXT'} INTERVIEW`}
+              </NeoButton>
             </div>
           ) : (
             <>
@@ -844,21 +938,9 @@ const MockInterview: React.FC = () => {
               {/* Restart Button when interview is inactive but messages exist */}
               {!isInterviewActive && messages.length > 0 && (
                 <div style={styles.startWrap}>
-                  <button
-                    onClick={startInterview}
-                    disabled={!jobRole.trim()}
-                    onMouseEnter={() => setIsStartHovered(true)}
-                    onMouseLeave={() => setIsStartHovered(false)}
-                    style={{
-                      ...styles.startButtonBase,
-                      opacity: !jobRole.trim() ? 0.5 : 1,
-                      cursor: !jobRole.trim() ? 'not-allowed' : 'pointer',
-                      boxShadow: isStartHovered && jobRole.trim() ? '0px 0px 0px 0px #1c1b1b' : '4px 4px 0px 0px #1c1b1b',
-                      transform: isStartHovered && jobRole.trim() ? 'translate(4px, 4px)' : 'translate(0px, 0px)',
-                    }}
-                  >
-                    START NEW {interactionMode === 'voice' ? 'VOICE' : 'TEXT'} INTERVIEW
-                  </button>
+                  <NeoButton onClick={startInterview} disabled={!jobRole.trim() || isConnecting} bg="#c4b5fd">
+                    {isConnecting ? 'CONNECTING…' : `START NEW ${interactionMode === 'voice' ? 'VOICE' : 'TEXT'} INTERVIEW`}
+                  </NeoButton>
                 </div>
               )}
             </>
@@ -883,8 +965,6 @@ const MockInterview: React.FC = () => {
               </div>
             </div>
           )}
-
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Interaction Area (Input form or End button) */}
@@ -916,21 +996,13 @@ const MockInterview: React.FC = () => {
             </form>
           ) : (
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
-              <button
-                onClick={stopInterview}
-                onMouseEnter={() => setIsStartHovered(true)}
-                onMouseLeave={() => setIsStartHovered(false)}
-                style={{
-                  ...styles.stopButtonBase,
-                  boxShadow: isStartHovered ? '0px 0px 0px 0px #1c1b1b' : '4px 4px 0px 0px #1c1b1b',
-                  transform: isStartHovered ? 'translate(4px, 4px)' : 'translate(0px, 0px)',
-                }}
-              >
+              <NeoButton onClick={stopInterview} bg="#fca5a5">
                 END VOICE INTERVIEW
-              </button>
+              </NeoButton>
             </div>
           )
         )}
+        <div ref={messagesEndRef} />
       </div>
     </div>
   );
