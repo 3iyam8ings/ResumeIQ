@@ -15,6 +15,7 @@ ResumeIQ is a full-stack tool I put together that uses Google's Gemini 2.5 Flash
 - **Figure out what to learn next:** If you aren't ready for the job yet, share your portfolio or GitHub. The AI will look at your current projects and generate a step-by-step roadmap of exactly what you need to learn.
 - **Keep track of everything:** There's a built-in drag-and-drop Kanban dashboard where you can save jobs and track where you are in the application process.
 - **Take the IQ Test:** A fun, built-in logic and spatial reasoning test with dynamic pattern matrix puzzles and a personalized cognitive profile.
+- **Take a break:** Grinding job applications is exhausting. Jump into the hidden Super Mario Arena mini-game directly from your dashboard for a quick nostalgia trip.
 
 ## The Vibe
 
@@ -65,12 +66,13 @@ Once everything is running, just open `http://localhost:5173` in your browser!
 
 ---
 
-## Hackathon Progress (July 24-26, 2026)
+## Hackathon Progress (July 24-27, 2026)
 
 Here's a quick rundown of what was accomplished during the hackathon:
 - Setup PostgreSQL, Spring Boot, Spring Security, and the React frontend.
-- Nailed down the Neo-Brutalist design system across all pages.
+- Nailed down the Neo-Brutalist design system across all pages and polished UI components (buttons, tilted badges, styling).
 - Hooked up LangChain4j with Gemini 2.5 Flash for the Cover Letter Generator, Job Matching, and Resume Parsing.
 - Integrated `@vapi-ai/web` for real-time voice interviews and added smart natural language detection to end sessions gracefully.
 - Built a full Kanban Job Tracker with drag-and-drop support, hooked into secure REST endpoints.
 - Built out the IQ Test feature (the logic puzzles) and secured the AI prompt generation on the backend to protect our API keys from leaking to the browser.
+- Integrated the "Super Mario Arena" mini-game seamlessly into the dashboard for a well-deserved break from job hunting.

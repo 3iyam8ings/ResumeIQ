@@ -180,16 +180,18 @@ const styles: { [key: string]: React.CSSProperties } = {
   footerCta: {
     backgroundColor: COLORS.gold,
     color: 'white',
-    border: 'none',
+    border: `3px solid ${COLORS.ink}`,
     borderRadius: '9999px',
-    padding: '12px 24px',
-    fontFamily: FONTS.display,
-    fontSize: '14px',
+    padding: '8px 32px',
+    fontFamily: FONTS.mono,
+    fontSize: '13px',
     fontWeight: 700,
+    textTransform: 'uppercase',
     cursor: 'pointer',
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
-    gap: '8px',
+    justifyContent: 'center',
   },
 };
 
@@ -386,13 +388,13 @@ const Signup: React.FC = () => {
 
       {/* Purple Footer */}
       <footer style={styles.footer}>
-        <div onClick={() => navigate('/login')} style={styles.footerItem}>
-          <span style={styles.footerItemIcon}>➔]</span>
-          <span style={styles.footerItemLabel}>Sign In</span>
+        <div onClick={() => navigate('/login')} style={styles.footerCta}>
+          <span style={{ fontSize: '18px' }}>➔]</span>
+          Sign In
         </div>
-        <div onClick={() => navigate('/signup')} style={styles.footerCta}>
-          <span style={{ fontSize: '18px' }}>👤+</span>
-          Create Account
+        <div onClick={() => navigate('/signup')} style={styles.footerItem}>
+          <span style={styles.footerItemIcon}>👤+</span>
+          <span style={styles.footerItemLabel}>Create Account</span>
         </div>
       </footer>
     </div>

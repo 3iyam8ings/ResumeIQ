@@ -132,6 +132,8 @@ const styles: { [key: string]: React.CSSProperties } = {
 const IQTestReviewScreen: React.FC = () => {
   const navigate = useNavigate();
   const { answers } = useIQTest();
+  const [isHoveringBack, setIsHoveringBack] = React.useState(false);
+  const [isHoveringSubmit, setIsHoveringSubmit] = React.useState(false);
 
   const totalQuestions = iqTestBank.length;
   const answeredCount = Object.keys(answers).length;
@@ -182,7 +184,17 @@ const IQTestReviewScreen: React.FC = () => {
 
       {/* Footer Nav */}
       <footer style={styles.footer}>
-        <button onClick={() => navigate('/test')} style={styles.backButton}>
+        <button 
+          onClick={() => navigate('/test')} 
+          style={{
+            ...styles.backButton,
+            transform: isHoveringBack ? 'translate(6px, 6px)' : 'none',
+            boxShadow: isHoveringBack ? 'none' : SHADOW,
+            transition: 'transform 0.1s, box-shadow 0.1s'
+          }}
+          onMouseEnter={() => setIsHoveringBack(true)}
+          onMouseLeave={() => setIsHoveringBack(false)}
+        >
           <span className="material-symbols-outlined">arrow_back</span>
           BACK TO TEST
         </button>
@@ -194,9 +206,13 @@ const IQTestReviewScreen: React.FC = () => {
             ...styles.submitButton,
             backgroundColor: allAnswered ? '#F08080' : '#e5e5e5',
             cursor: allAnswered ? 'pointer' : 'not-allowed',
-            boxShadow: allAnswered ? SHADOW : 'none',
             opacity: allAnswered ? 1 : 0.6,
+            transform: (allAnswered && isHoveringSubmit) ? 'translate(6px, 6px)' : 'none',
+            boxShadow: (allAnswered && isHoveringSubmit) ? 'none' : (allAnswered ? SHADOW : 'none'),
+            transition: 'transform 0.1s, box-shadow 0.1s'
           }}
+          onMouseEnter={() => setIsHoveringSubmit(true)}
+          onMouseLeave={() => setIsHoveringSubmit(false)}
         >
           SUBMIT TEST
           <span className="material-symbols-outlined">send</span>

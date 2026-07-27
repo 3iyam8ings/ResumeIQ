@@ -11,6 +11,7 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
   const [file, setFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState<string>('');
   const [isHovering, setIsHovering] = useState(false);
+  const [isHoveringDropzone, setIsHoveringDropzone] = useState(false);
   const [loading, setLoading] = useState(false);
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [analysisResult, setAnalysisResult] = useState<any | null>(null);
@@ -172,14 +173,18 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
           
           {/* Drop Resume Container */}
           <div 
+            onMouseEnter={() => setIsHoveringDropzone(true)}
+            onMouseLeave={() => setIsHoveringDropzone(false)}
             style={{
               backgroundColor: 'var(--panel-white)',
               border: '4px dashed #000',
               borderRadius: '20px',
               padding: '60px 40px',
               textAlign: 'center',
-              boxShadow: '6px 6px 0px #000',
-              position: 'relative'
+              position: 'relative',
+              transition: 'all 0.1s ease',
+              transform: isHoveringDropzone ? 'translate(6px, 6px)' : 'none',
+              boxShadow: isHoveringDropzone ? 'none' : '6px 6px 0px #000'
             }}
           >
             <input 

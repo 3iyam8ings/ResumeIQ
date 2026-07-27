@@ -18,6 +18,7 @@ import { Outlet } from 'react-router-dom'
 import NavBar from './components/NavBar'
 import CoverLetterGenius from './components/CoverLetterGenius'
 import MockInterview from './components/MockInterview'
+import ArenaScreen from './components/ArenaScreen'
 
 function AuthenticatedLayout({ userProfile }: { userProfile: any }) {
   return (
@@ -82,17 +83,19 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/home" element={<Home isAuthenticated={isAuthenticated ?? false} userProfile={userProfile} />} />
           <Route path="/report" element={<Report userProfile={userProfile} />} />
+          <Route path="/arena" element={<ArenaScreen />} />
           <Route element={isAuthenticated ? <AuthenticatedLayout userProfile={userProfile} /> : <Navigate to="/signup" />}>
             <Route path="/dashboard" element={<Dashboard userProfile={userProfile} />} />
             <Route path="/cover-letter" element={<CoverLetterGenius userProfile={userProfile} />} />
             <Route path="/mock-interview" element={<MockInterview userProfile={userProfile} />} />
           </Route>
-          <Route path="/iqtest" element={<IQTestLanding userProfile={userProfile} />} />
-
-          <Route path="/test" element={<IQTestProvider><Outlet /></IQTestProvider>}>
-            <Route index element={<IQTestScreen />} />
-            <Route path="review" element={<IQTestReviewScreen />} />
-            <Route path="results" element={<IQTestResultsScreen />} />
+          <Route element={<IQTestProvider><Outlet /></IQTestProvider>}>
+            <Route path="/iqtest" element={<IQTestLanding userProfile={userProfile} />} />
+            <Route path="/test">
+              <Route index element={<IQTestScreen />} />
+              <Route path="review" element={<IQTestReviewScreen />} />
+              <Route path="results" element={<IQTestResultsScreen />} />
+            </Route>
           </Route>
           <Route path="/" element={isAuthenticated ? <Navigate to="/home" /> : <Navigate to="/signup" />} />
           <Route path="*" element={isAuthenticated ? <Navigate to="/home" /> : <Navigate to="/signup" />} />

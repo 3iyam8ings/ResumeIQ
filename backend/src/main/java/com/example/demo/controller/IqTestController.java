@@ -15,10 +15,30 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Exposes the IQ test cognitive-profile summary endpoint.
+ * Rate-limited per client IP (5 requests/minute) to prevent abuse of the
+ * underlying
+ * Gemini call, and validates the incoming payload before generating a summary.
+ */
 @RestController
 @RequestMapping("/api/iqtest")
 public class IqTestController {
 
+    /* ------------------------------------------------------------------ */
+    /* Rate limit config */
+    /* ------------------------------------------------------------------ */
+    private static final int RATE_LIMIT_CAPACITY = 5;
+    private static final Duration RATE_LIMIT_REFILL_PERIOD = Duration.ofMinutes(1);
+    // Simple bound so the per-IP bucket cache can't grow forever under sustained
+    // traffic
+    // from many distinct IPs. Not a true LRU eviction — just a pragmatic safety
+    // valve.
+    private static final int MAX_CACHE_ENTRIES = 10_000;
+
+    /* ------------------------------------------------------------------ */
+    /* Dependencies */
+    /* ------------------------------------------------------------------ */
     private final IqTestService iqTestService;
 
     // IP-based rate limiting cache
@@ -29,26 +49,9 @@ public class IqTestController {
         this.iqTestService = iqTestService;
     }
 
-    private Bucket resolveBucket(String ip) {
-        return cache.computeIfAbsent(ip, this::newBucket);
-    }
-
-    private Bucket newBucket(String ip) {
-        // Limit to 5 requests per minute per IP to prevent API abuse
-        Bandwidth limit = Bandwidth.builder()
-                .capacity(5)
-                .refillGreedy(5, Duration.ofMinutes(1))
-                .build();
-        return Bucket.builder().addLimit(limit).build();
-    }
-
-    private String getClientIP(HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null) {
-            return request.getRemoteAddr();
-        }
-        return xfHeader.split(",")[0];
-    }
+    /* ------------------------------------------------------------------ */
+    /* Endpoint */
+    /* ------------------------------------------------------------------ */
 
     @PostMapping("/summary")
     public ResponseEntity<?> getSummary(@RequestBody IqTestRequest request, HttpServletRequest httpRequest) {
@@ -66,5 +69,44 @@ public class IqTestController {
 
         String summary = iqTestService.generateSummary(request);
         return ResponseEntity.ok(new IqTestSummaryResponse(summary));
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Rate limiting helpers */
+    /* ------------------------------------------------------------------ */
+
+    private Bucket resolveBucket(String ip) {
+        if (cache.size() >= MAX_CACHE_ENTRIES) {
+            // Pragmatic safety valve: reset the whole cache rather than let it grow
+            // unbounded. This briefly resets everyone's rate limit, which is an
+            // acceptable tradeoff versus an unbounded memory leak.
+            cache.clear();
+        }
+        return cache.computeIfAbsent(ip, this::newBucket);
+    }
+
+    private Bucket newBucket(String ip) {
+        // Limit to 5 requests per minute per IP to prevent API abuse
+        Bandwidth limit = Bandwidth.builder()
+                .capacity(RATE_LIMIT_CAPACITY)
+                .refillGreedy(RATE_LIMIT_CAPACITY, RATE_LIMIT_REFILL_PERIOD)
+                .build();
+        return Bucket.builder().addLimit(limit).build();
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Request helpers */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Returns the actual TCP connection IP. Deliberately does NOT trust the
+     * X-Forwarded-For header, since that header is set by the client and can be
+     * spoofed to a different value on every request, bypassing the rate limiter.
+     * If this app is later deployed behind a trusted reverse proxy/load balancer
+     * that overwrites X-Forwarded-For with the real client IP, that header can be
+     * reintroduced safely at that point.
+     */
+    private String getClientIP(HttpServletRequest request) {
+        return request.getRemoteAddr();
     }
 }

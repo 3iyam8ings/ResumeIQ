@@ -49,6 +49,8 @@ const DECORATIVE_BLOCK_COUNT = 6;
 /* ------------------------------------------------------------------ */
 /* Styles (values unchanged from original — only grouped/named here)  */
 /* ------------------------------------------------------------------ */
+const getTerminalDotStyle = (color: string): React.CSSProperties => ({ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: color });
+
 const styles: { [key: string]: React.CSSProperties } = {
   page: {
     minHeight: '100vh',
@@ -164,7 +166,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     transform: 'rotate(2deg)',
   },
   terminalHeader: { display: 'flex', alignItems: 'center', padding: '16px', borderBottom: '2px solid #333', gap: '8px' },
-  terminalDot: (color: string): React.CSSProperties => ({ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: color }),
   terminalHeaderLabel: { ...FONTS.labelMono, color: '#3DDC84', fontSize: '12px', marginLeft: '16px' },
 
   terminalBody: { padding: '32px', ...FONTS.labelMono, color: '#3DDC84', fontSize: '14px', lineHeight: 1.8, flex: 1, display: 'flex', flexDirection: 'column' },
@@ -272,9 +273,9 @@ const IQTestLanding: React.FC<IQTestLandingProps> = ({ userProfile }) => {
           <div style={styles.terminalWindow}>
             {/* Terminal Header */}
             <div style={styles.terminalHeader}>
-              <div style={styles.terminalDot('#ff5f56')} />
-              <div style={styles.terminalDot('#ffbd2e')} />
-              <div style={styles.terminalDot('#27c93f')} />
+              <div style={getTerminalDotStyle('#ff5f56')} />
+              <div style={getTerminalDotStyle('#ffbd2e')} />
+              <div style={getTerminalDotStyle('#27c93f')} />
               <span style={styles.terminalHeaderLabel}>IQ_CORE_V2.0</span>
             </div>
 

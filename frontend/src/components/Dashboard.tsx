@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-/* ------------------------------------------------------------------ */
-/* Types                                                                */
-/* ------------------------------------------------------------------ */
+/* ====================================================================== */
+/* 1. TYPES                                                                */
+/* ====================================================================== */
 interface JobApplication {
   id?: number;
   companyName: string;
@@ -11,15 +12,18 @@ interface JobApplication {
   appliedDate: string;
   matchScore: number;
   notes: string;
+  isSynced?: boolean;
 }
 
 interface DashboardProps {
   userProfile?: any;
 }
 
-/* ------------------------------------------------------------------ */
-/* Config                                                               */
-/* ------------------------------------------------------------------ */
+type ToastState = { message: string; type: 'success' | 'error' } | null;
+
+/* ====================================================================== */
+/* 2. CONSTANTS / CONFIG                                                   */
+/* ====================================================================== */
 const API_URL = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api/applications`
   : 'http://127.0.0.1:8082/api/applications';
@@ -51,9 +55,23 @@ const EMPTY_FORM_STATE: JobApplication = {
   notes: '',
 };
 
-/* ------------------------------------------------------------------ */
-/* Styles (values unchanged from original — only grouped/named here)  */
-/* ------------------------------------------------------------------ */
+// Moved out of the component body — previously this array was re-created on
+// every render, which meant the terminal's useEffect dependency was pointing
+// at a brand-new array each time (harmless here since .length never changes,
+// but wasteful and a bit confusing to follow).
+const TERMINAL_MESSAGES = [
+  'Welcome to ResumeIQ — your AI career co-pilot.',
+  'Module: Resume Analyzer — instant match scoring against job descriptions.',
+  'Module: Cover Letter Generator — tailored letters in seconds.',
+  'Module: Mock Interview — AI-powered practice sessions.',
+  'Module: Job Tracker — visualize every application, end to end.',
+  'Module: Terminal IQ Test — benchmark your cognitive edge.',
+  'System ready. Awaiting input.',
+];
+
+/* ====================================================================== */
+/* 3. STYLES (values unchanged from original — only grouped/named here)   */
+/* ====================================================================== */
 const styles = {
   page: { fontFamily: '"Plus Jakarta Sans", sans-serif', padding: '0 24px', color: '#1c1b1b', position: 'relative' } as React.CSSProperties,
 
@@ -114,18 +132,19 @@ const styles = {
 
   analyticsGrid: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', marginBottom: '48px' },
   chartCard: { border: '4px solid #1c1b1b', borderRadius: '16px', backgroundColor: '#fff', padding: '24px', boxShadow: '6px 6px 0px 0px #1c1b1b', position: 'relative' as const, minHeight: '300px' },
-  chartCardHeaderRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' },
-  chartCardTitle: { margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' },
-  chartCardRange: { fontFamily: '"JetBrains Mono", monospace', fontSize: '12px', fontWeight: 700, color: '#6b7280' },
-  chartAxisRow: { display: 'flex', justifyContent: 'space-between', fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', fontWeight: 700, marginTop: '8px', color: '#6b7280' },
 
   terminalCard: { backgroundColor: '#111827', border: '4px solid #1c1b1b', borderRadius: '16px', padding: '24px', boxShadow: '6px 6px 0px 0px #1c1b1b', color: '#34d399', fontFamily: '"JetBrains Mono", monospace', fontSize: '13px', display: 'flex', flexDirection: 'column' as const },
   terminalDots: { display: 'flex', gap: '8px', marginBottom: '24px' },
   terminalDot: (color: string): React.CSSProperties => ({ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: color }),
   terminalBody: { display: 'flex', flexDirection: 'column' as const, gap: '12px' },
   terminalLine: { margin: 0 },
-  terminalErrorLine: { color: '#ef4444' },
   terminalCursor: { margin: 0, marginTop: '16px' },
+
+  arenaCard: { display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', backgroundColor: '#8b5cf6', backgroundImage: 'linear-gradient(45deg, #7c3aed 25%, transparent 25%, transparent 75%, #7c3aed 75%, #7c3aed), linear-gradient(45deg, #7c3aed 25%, transparent 25%, transparent 75%, #7c3aed 75%, #7c3aed)', backgroundSize: '20px 20px', backgroundPosition: '0 0, 10px 10px', border: '4px solid #1c1b1b' },
+  arenaInner: { backgroundColor: '#fff', border: '4px solid #1c1b1b', padding: '24px', textAlign: 'center' as const, boxShadow: '8px 8px 0px 0px #1c1b1b' },
+  arenaTitle: { fontSize: '28px', fontWeight: 900, textTransform: 'uppercase' as const, marginBottom: '8px', letterSpacing: '2px' },
+  arenaSubtitle: { fontWeight: 600, opacity: 0.8, marginBottom: '24px' },
+  arenaButton: { backgroundColor: '#ef4444', color: '#fff', border: '4px solid #1c1b1b', padding: '16px 32px', fontSize: '20px', fontWeight: 800, textTransform: 'uppercase' as const, boxShadow: '6px 6px 0px 0px #1c1b1b', cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s' },
 
   modalOverlay: { position: 'fixed' as const, top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '24px' },
   modalCard: { backgroundColor: '#fff', border: '4px solid #1c1b1b', borderRadius: '16px', padding: '32px', boxShadow: '8px 8px 0px 0px #1c1b1b', width: '100%', maxWidth: '500px', position: 'relative' as const },
@@ -145,7 +164,6 @@ const styles = {
   saveButtonBase: { flex: 1, backgroundColor: '#10b981', color: '#fff', border: '3px solid #1c1b1b', borderRadius: '8px', padding: '12px', fontWeight: 800, fontSize: '16px', boxShadow: '3px 3px 0px 0px #1c1b1b' },
   deleteButtonBase: { backgroundColor: '#ef4444', color: '#fff', border: '3px solid #1c1b1b', borderRadius: '8px', padding: '12px 16px', fontWeight: 800, boxShadow: '3px 3px 0px 0px #1c1b1b' },
 
-  // JobCard styles
   jobCardBase: { backgroundColor: '#fff', border: '3px solid #1c1b1b', borderRadius: '12px', padding: '16px', boxShadow: '4px 4px 0px 0px #1c1b1b', cursor: 'pointer', transition: 'transform 0.1s ease-in-out' },
   jobCardTopRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' },
   jobCardCompany: { fontSize: '10px', fontWeight: 800, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' },
@@ -157,29 +175,396 @@ const styles = {
   jobCardDueIcon: { fontSize: '14px' },
 };
 
-/* ------------------------------------------------------------------ */
-/* Dashboard component                                                  */
-/* ------------------------------------------------------------------ */
+/* ====================================================================== */
+/* 4. SMALL PRESENTATIONAL SUBCOMPONENTS                                   */
+/*    (kept in this file, but pulled out of the main JSX tree so the       */
+/*    Dashboard render function reads top-to-bottom like an outline)      */
+/* ====================================================================== */
+
+const Toast = ({ toast }: { toast: ToastState }) => {
+  if (!toast) return null;
+  return (
+    <div style={{ ...styles.toastBase, backgroundColor: toast.type === 'success' ? '#34d399' : '#f87171' }}>
+      <span className="material-symbols-outlined">{toast.type === 'success' ? 'check_circle' : 'error'}</span>
+      {toast.message}
+    </div>
+  );
+};
+
+const StatCard = ({
+  label,
+  icon,
+  value,
+  subtext,
+  backgroundColor,
+}: {
+  label: string;
+  icon: string;
+  value: string | number;
+  subtext: string;
+  backgroundColor: string;
+}) => (
+  <div style={{ ...styles.statCardBase, backgroundColor }}>
+    <div style={styles.statCardHeaderRow}>
+      <span>{label}</span>
+      <span className="material-symbols-outlined" style={styles.statCardIcon}>{icon}</span>
+    </div>
+    <div style={styles.statCardValue}>{value}</div>
+    <div style={styles.statCardSubtext}>{subtext}</div>
+  </div>
+);
+
+const JobCard = ({
+  app,
+  color,
+  isFaded = false,
+  onClick,
+  isCompactView = false,
+}: {
+  app: JobApplication;
+  color: string;
+  isFaded?: boolean;
+  onClick?: () => void;
+  isCompactView?: boolean;
+}) => {
+  // NOTE (bug/edge case, left as-is — see chat notes):
+  // `app.matchScore` defaults to 0, and 0 is falsy in JS, so a genuine
+  // score of 0 will render the "applied on <date>" row instead of a
+  // "MATCH: 0%" badge. Flagging rather than silently changing the
+  // behavior since it may be intentional (0 == "no score entered yet").
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        ...styles.jobCardBase,
+        opacity: isFaded ? 0.6 : 1,
+        padding: isCompactView ? '8px 12px' : '16px',
+        border: app.isSynced === false ? '3px dashed #f59e0b' : '3px solid #1c1b1b',
+        position: 'relative',
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.transform = 'translate(-2px, -2px)')}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = 'none')}
+    >
+      {app.isSynced === false && (
+        <span
+          className="material-symbols-outlined"
+          style={{ position: 'absolute', top: '-10px', right: '-10px', backgroundColor: '#f59e0b', color: '#fff', borderRadius: '50%', padding: '2px', fontSize: '14px', border: '2px solid #1c1b1b', zIndex: 10 }}
+          title="Sync Failed (Offline Mode)"
+        >
+          sync_problem
+        </span>
+      )}
+      <div style={{ ...styles.jobCardTopRow, marginBottom: isCompactView ? 0 : '8px' }}>
+        <span style={styles.jobCardCompany}>{app.companyName}</span>
+        {!isCompactView && <span className="material-symbols-outlined" style={styles.jobCardEditIcon}>edit</span>}
+      </div>
+      {!isCompactView && <h4 style={styles.jobCardTitle}>{app.jobTitle}</h4>}
+      <div style={styles.jobCardFooterRow}>
+        {app.matchScore ? (
+          <span style={styles.jobCardMatchBadge(color)}>MATCH: {app.matchScore}%</span>
+        ) : (
+          !isCompactView && (
+            <span style={styles.jobCardDueRow}>
+              <span className="material-symbols-outlined" style={styles.jobCardDueIcon}>calendar_today</span>
+              {app.appliedDate ? `Applied ${new Date(app.appliedDate).toLocaleDateString()}` : 'No date set'}
+            </span>
+          )
+        )}
+      </div>
+    </div>
+  );
+};
+
+const KanbanColumn = ({
+  status,
+  apps,
+  isCompactView,
+  onCardClick,
+}: {
+  status: string;
+  apps: JobApplication[];
+  isCompactView: boolean;
+  onCardClick: (app: JobApplication) => void;
+}) => (
+  <div>
+    <div style={{ ...styles.laneHeader, backgroundColor: LANE_COLORS[status] }}>
+      <span>{status}</span>
+      <span style={styles.laneCount}>{apps.length}</span>
+    </div>
+    <div style={styles.laneCardStack}>
+      {status === 'Offer' && apps.length > 0 && (
+        <div style={styles.congratsBox}>
+          <span style={styles.congratsText}>CONGRATS!</span>
+        </div>
+      )}
+
+      {apps.length === 0 ? (
+        <div style={styles.emptyLane}>No applications yet</div>
+      ) : (
+        apps.map((app) => (
+          <JobCard
+            key={app.id}
+            app={app}
+            color={CARD_COLORS[status]}
+            isFaded={status === 'Rejected'}
+            onClick={() => onCardClick(app)}
+            isCompactView={isCompactView}
+          />
+        ))
+      )}
+    </div>
+  </div>
+);
+
+const TerminalPanel = ({ messageCount }: { messageCount: number }) => (
+  <div style={styles.terminalCard}>
+    <div style={styles.terminalDots}>
+      <div style={styles.terminalDot('#ef4444')}></div>
+      <div style={styles.terminalDot('#f59e0b')}></div>
+      <div style={styles.terminalDot('#10b981')}></div>
+    </div>
+    <div style={styles.terminalBody}>
+      {TERMINAL_MESSAGES.slice(0, messageCount).map((msg, i) => (
+        <p key={i} style={styles.terminalLine}>{'>'} {msg}</p>
+      ))}
+      <p style={styles.terminalCursor} className="animate-pulse">_</p>
+    </div>
+  </div>
+);
+
+const ArenaPromo = ({ onNavigate }: { onNavigate: () => void }) => (
+  <div style={{ ...styles.chartCard, ...styles.arenaCard }}>
+    <div style={styles.arenaInner}>
+      <h2 style={styles.arenaTitle}>Super Mario Arena</h2>
+      <p style={styles.arenaSubtitle}>Ready to take a break from the grind?</p>
+      <button
+        onClick={onNavigate}
+        style={styles.arenaButton}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translate(4px, 4px)';
+          e.currentTarget.style.boxShadow = '2px 2px 0px 0px #1c1b1b';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'none';
+          e.currentTarget.style.boxShadow = '6px 6px 0px 0px #1c1b1b';
+        }}
+      >
+        Head to Arena
+      </button>
+    </div>
+  </div>
+);
+
+// Extracted the custom status dropdown into its own component — it owns
+// its open/close state internally now, instead of that state living on
+// the Dashboard (see "Dropdown state leak" bug note in chat).
+const StatusDropdown = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (status: string) => void;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        style={{ ...styles.fieldSelect, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
+      >
+        <span>{value || 'Select Status'}</span>
+        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+          {isOpen ? 'expand_less' : 'expand_more'}
+        </span>
+      </div>
+      {isOpen && (
+        <>
+          <div
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }}
+            onClick={() => setIsOpen(false)}
+          />
+          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '8px', backgroundColor: '#fff', border: '3px solid #1c1b1b', borderRadius: '8px', boxShadow: '4px 4px 0px 0px #1c1b1b', zIndex: 100, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            {STATUS_COLUMNS.map((statusOption, idx) => (
+              <div
+                key={statusOption}
+                onClick={() => {
+                  onChange(statusOption);
+                  setIsOpen(false);
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f5c445'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#fff'; }}
+                style={{ padding: '12px 16px', cursor: 'pointer', fontWeight: 600, borderBottom: idx === STATUS_COLUMNS.length - 1 ? 'none' : '2px solid #1c1b1b', transition: 'background-color 0.1s', userSelect: 'none' }}
+              >
+                {statusOption}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+const ApplicationModal = ({
+  editingApp,
+  formState,
+  formError,
+  formLoading,
+  onFieldChange,
+  onSubmit,
+  onDelete,
+  onClose,
+}: {
+  editingApp: JobApplication | null;
+  formState: JobApplication;
+  formError: string | null;
+  formLoading: boolean;
+  onFieldChange: (patch: Partial<JobApplication>) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  onDelete: () => void;
+  onClose: () => void;
+}) => (
+  <div style={styles.modalOverlay}>
+    <div style={styles.modalCard}>
+      <button onClick={onClose} style={styles.modalCloseButton}>&times;</button>
+      <h2 style={styles.modalTitle}>{editingApp ? 'Edit Application' : 'New Application'}</h2>
+
+      {formError && <div style={styles.modalErrorBanner}>{formError}</div>}
+
+      <form onSubmit={onSubmit} style={styles.form}>
+        <div>
+          <label htmlFor="app-company-name" style={styles.fieldLabel}>Company Name *</label>
+          <input
+            id="app-company-name"
+            type="text"
+            value={formState.companyName}
+            onChange={(e) => onFieldChange({ companyName: e.target.value })}
+            style={styles.fieldInput}
+            placeholder="e.g. Google"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="app-job-title" style={styles.fieldLabel}>Job Title *</label>
+          <input
+            id="app-job-title"
+            type="text"
+            value={formState.jobTitle}
+            onChange={(e) => onFieldChange({ jobTitle: e.target.value })}
+            style={styles.fieldInput}
+            placeholder="e.g. Software Engineer"
+          />
+        </div>
+
+        <div style={styles.fieldRow}>
+          <div style={styles.fieldRowItem}>
+            <label style={styles.fieldLabel}>Status</label>
+            <StatusDropdown value={formState.status} onChange={(status) => onFieldChange({ status })} />
+          </div>
+          <div style={styles.fieldRowItem}>
+            <label htmlFor="app-match-score" style={styles.fieldLabel}>Match Score (0-100)</label>
+            <input
+              id="app-match-score"
+              type="number"
+              min="0"
+              max="100"
+              value={formState.matchScore}
+              onChange={(e) => onFieldChange({ matchScore: parseInt(e.target.value) || 0 })}
+              style={styles.fieldInput}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="app-notes" style={styles.fieldLabel}>Notes</label>
+          <textarea
+            id="app-notes"
+            value={formState.notes}
+            onChange={(e) => onFieldChange({ notes: e.target.value })}
+            rows={3}
+            style={styles.fieldTextarea}
+            placeholder="Add any interview notes or links here..."
+          />
+        </div>
+
+        <div style={styles.formActionsRow}>
+          <button
+            type="submit"
+            disabled={formLoading}
+            style={{ ...styles.saveButtonBase, cursor: formLoading ? 'not-allowed' : 'pointer', opacity: formLoading ? 0.7 : 1, transition: 'transform 0.1s, box-shadow 0.1s' }}
+            onMouseEnter={(e) => {
+              if (!formLoading) {
+                e.currentTarget.style.transform = 'translate(3px, 3px)';
+                e.currentTarget.style.boxShadow = 'none';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!formLoading) {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.boxShadow = '3px 3px 0px 0px #1c1b1b';
+              }
+            }}
+          >
+            {formLoading ? 'Saving...' : 'Save Application'}
+          </button>
+
+          {editingApp && (
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={formLoading}
+              style={{ ...styles.deleteButtonBase, cursor: formLoading ? 'not-allowed' : 'pointer' }}
+            >
+              <span className="material-symbols-outlined">delete</span>
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
+  </div>
+);
+
+/* ====================================================================== */
+/* 5. DASHBOARD (main component)                                           */
+/* ====================================================================== */
 const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
-  /* ---------------- State ---------------- */
+  const navigate = useNavigate();
+
+  /* ---- Data state ---- */
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(false);
 
+  /* ---- Modal / form state ---- */
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingApp, setEditingApp] = useState<JobApplication | null>(null);
-
   const [formState, setFormState] = useState<JobApplication>(EMPTY_FORM_STATE);
   const [formError, setFormError] = useState<string | null>(null);
   const [formLoading, setFormLoading] = useState(false);
 
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  /* ---- UI-only state ---- */
+  const [toast, setToast] = useState<ToastState>(null);
+  const [isHighScoreFilterEnabled, setIsHighScoreFilterEnabled] = useState(false);
+  const [isCompactView, setIsCompactView] = useState(false);
+  const [terminalIndex, setTerminalIndex] = useState(0);
 
-  /* ---------------- Effects ---------------- */
+  /* -------------------------------------------------------------- */
+  /* Effects                                                          */
+  /* -------------------------------------------------------------- */
   useEffect(() => {
     fetchApplications();
   }, []);
 
-  /* ---------------- API calls ---------------- */
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTerminalIndex((prev) => (prev + 1) % (TERMINAL_MESSAGES.length + 1));
+    }, 1500);
+    return () => clearInterval(timer);
+  }, []);
+
+  /* -------------------------------------------------------------- */
+  /* API calls                                                        */
+  /* -------------------------------------------------------------- */
   const fetchApplications = async () => {
     setLoading(true);
     try {
@@ -187,9 +572,15 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
       if (response.ok) {
         const data = await response.json();
         setApplications(data);
+        localStorage.setItem('job_applications', JSON.stringify(data));
+      } else {
+        const localData = localStorage.getItem('job_applications');
+        if (localData) setApplications(JSON.parse(localData));
       }
     } catch (err: any) {
       console.error(err);
+      const localData = localStorage.getItem('job_applications');
+      if (localData) setApplications(JSON.parse(localData));
     } finally {
       setLoading(false);
     }
@@ -214,27 +605,48 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
       const url = isEdit ? `${API_URL}/${editingApp.id}` : API_URL;
       const method = isEdit ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formState,
-          matchScore: Number(formState.matchScore),
-        }),
-        credentials: 'include',
-      });
+      let savedApp = { ...formState, matchScore: Number(formState.matchScore) };
+      let success = false;
 
-      if (response.ok) {
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(savedApp),
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          savedApp = data; // use backend ID if available
+          success = true;
+        }
+        // NOTE (bug, flagged not fixed): a non-ok response (e.g. a 400/500
+        // from the server) falls through with success still false and no
+        // offline fallback — only a *thrown* network error gets the
+        // fallback-to-localStorage treatment below. So "backend reachable
+        // but rejected the request" and "backend unreachable" behave
+        // inconsistently. Worth deciding which behavior you actually want.
+      } catch (err) {
+        console.error('Backend failed, falling back to local storage', err);
+        success = true; // Still consider it a success for frontend fallback
+        if (!isEdit) savedApp.id = Date.now(); // fake ID
+        savedApp.isSynced = false;
+      }
+
+      if (success) {
+        setApplications((prev) => {
+          const updated = isEdit
+            ? prev.map((app) => (app.id === savedApp.id ? savedApp : app))
+            : [savedApp, ...prev];
+          localStorage.setItem('job_applications', JSON.stringify(updated));
+          return updated;
+        });
         showToast(isEdit ? 'Application updated successfully!' : 'Application added successfully!', 'success');
         closeModal();
-        fetchApplications();
       } else {
         setFormError('Failed to save application. Please try again.');
       }
-    } catch (err) {
-      setFormError('Network error. Please try again.');
     } finally {
       setFormLoading(false);
     }
@@ -248,28 +660,35 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
     }
 
     setFormLoading(true);
-    setFormError(null);
+    let success = false;
     try {
       const response = await fetch(`${API_URL}/${editingApp.id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
-
-      if (response.ok) {
-        showToast('Application deleted.', 'success');
-        closeModal();
-        fetchApplications();
-      } else {
-        setFormError('Failed to delete application.');
-      }
+      if (response.ok) success = true;
     } catch (err) {
-      setFormError('Network error. Please try again.');
-    } finally {
-      setFormLoading(false);
+      console.error('Backend delete failed, falling back to local storage', err);
+      success = true;
     }
+
+    if (success) {
+      setApplications((prev) => {
+        const updated = prev.filter((app) => app.id !== editingApp.id);
+        localStorage.setItem('job_applications', JSON.stringify(updated));
+        return updated;
+      });
+      showToast('Application deleted successfully!', 'success');
+      closeModal();
+    } else {
+      setFormError('Failed to delete application.');
+    }
+    setFormLoading(false);
   };
 
-  /* ---------------- UI helpers ---------------- */
+  /* -------------------------------------------------------------- */
+  /* UI helpers                                                        */
+  /* -------------------------------------------------------------- */
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
@@ -295,41 +714,37 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
     setEditingApp(null);
   };
 
-  /* ---------------- Derived data ---------------- */
+  /* -------------------------------------------------------------- */
+  /* Derived data                                                      */
+  /* -------------------------------------------------------------- */
   const getLaneApplications = (status: string) => {
-    return applications
-      .filter((app) => app.status === status)
-      .sort((a, b) => new Date(b.appliedDate || 0).getTime() - new Date(a.appliedDate || 0).getTime());
+    let filtered = applications.filter((app) => app.status === status);
+    if (isHighScoreFilterEnabled) {
+      filtered = filtered.filter((app) => app.matchScore >= 80);
+    }
+    return filtered.sort((a, b) => new Date(b.appliedDate || 0).getTime() - new Date(a.appliedDate || 0).getTime());
   };
 
-  const calculateAvgScore = () => {
-    if (applications.length === 0) return 0;
-    const total = applications.reduce((acc, curr) => acc + (curr.matchScore || 0), 0);
-    return Math.round(total / applications.length);
-  };
+  const avgScore = applications.length
+    ? Math.round(applications.reduce((acc, curr) => acc + (curr.matchScore || 0), 0) / applications.length)
+    : 0;
 
-  const getActiveInterviewsCount = () => {
-    return getLaneApplications('Interview').length;
-  };
+  const activeInterviewsCount = getLaneApplications('Interview').length;
 
-  const getAppliedThisWeekCount = () => {
+  const appliedThisWeekCount = (() => {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     return applications.filter((app) => app.appliedDate && new Date(app.appliedDate) >= sevenDaysAgo).length;
-  };
+  })();
 
-  /* ---------------- Render ---------------- */
+  /* -------------------------------------------------------------- */
+  /* Render                                                            */
+  /* -------------------------------------------------------------- */
   return (
     <div style={styles.page}>
-      {/* Toast Notification */}
-      {toast && (
-        <div style={{ ...styles.toastBase, backgroundColor: toast.type === 'success' ? '#34d399' : '#f87171' }}>
-          <span className="material-symbols-outlined">{toast.type === 'success' ? 'check_circle' : 'error'}</span>
-          {toast.message}
-        </div>
-      )}
+      <Toast toast={toast} />
 
-      {/* Header Section */}
+      {/* ---- Header ---- */}
       <div style={styles.headerRow}>
         <div>
           <div style={styles.headerBadge}>[DASHBOARD: OVERVIEW]</div>
@@ -352,265 +767,68 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
         </button>
       </div>
 
-      {/* Summary Cards */}
+      {/* ---- Summary stats ---- */}
       <div style={styles.statGrid}>
-        <div style={{ ...styles.statCardBase, backgroundColor: '#fbbf24' }}>
-          <div style={styles.statCardHeaderRow}>
-            <span>[TOTAL_APPS]</span>
-            <span className="material-symbols-outlined" style={styles.statCardIcon}>rocket_launch</span>
-          </div>
-          <div style={styles.statCardValue}>{applications.length}</div>
-          <div style={styles.statCardSubtext}>{getAppliedThisWeekCount()} applied this week</div>
-        </div>
-
-        <div style={{ ...styles.statCardBase, backgroundColor: '#34d399' }}>
-          <div style={styles.statCardHeaderRow}>
-            <span>[AVG_RESUME_SCORE]</span>
-            <span className="material-symbols-outlined" style={styles.statCardIcon}>analytics</span>
-          </div>
-          <div style={styles.statCardValue}>{calculateAvgScore()}%</div>
-          <div style={styles.statCardSubtext}>Optimized for FAANG</div>
-        </div>
-
-        <div style={{ ...styles.statCardBase, backgroundColor: '#60a5fa' }}>
-          <div style={styles.statCardHeaderRow}>
-            <span>[ACTIVE_INTERVIEWS]</span>
-            <span className="material-symbols-outlined" style={styles.statCardIcon}>forum</span>
-          </div>
-          <div style={styles.statCardValue}>{String(getActiveInterviewsCount()).padStart(2, '0')}</div>
-          <div style={styles.statCardSubtext}>Keep up the momentum</div>
-        </div>
+        <StatCard label="[TOTAL_APPS]" icon="rocket_launch" backgroundColor="#fbbf24"
+          value={applications.length} subtext={`${appliedThisWeekCount} applied this week`} />
+        <StatCard label="[AVG_RESUME_SCORE]" icon="analytics" backgroundColor="#34d399"
+          value={`${avgScore}%`} subtext="Optimized for FAANG" />
+        <StatCard label="[ACTIVE_INTERVIEWS]" icon="forum" backgroundColor="#60a5fa"
+          value={String(activeInterviewsCount).padStart(2, '0')} subtext="Keep up the momentum" />
       </div>
 
-      {/* Job Tracker */}
+      {/* ---- Job tracker (kanban) ---- */}
       <div style={styles.sectionHeaderRow}>
         <h2 style={styles.sectionHeaderTitle}>Job Tracker</h2>
         <div style={styles.sectionHeaderActions}>
-          <button style={styles.iconButton}>
+          <button
+            onClick={() => setIsHighScoreFilterEnabled(!isHighScoreFilterEnabled)}
+            style={{ ...styles.iconButton, backgroundColor: isHighScoreFilterEnabled ? '#fcd34d' : '#fff' }}
+            title="High Match Score Only (>80%)"
+          >
             <span className="material-symbols-outlined">filter_list</span>
           </button>
-          <button style={styles.iconButton}>
-            <span className="material-symbols-outlined">view_kanban</span>
+          <button
+            onClick={() => setIsCompactView(!isCompactView)}
+            style={{ ...styles.iconButton, backgroundColor: isCompactView ? '#c4b5fd' : '#fff' }}
+            title="Toggle Compact View"
+          >
+            <span className="material-symbols-outlined">{isCompactView ? 'view_list' : 'view_kanban'}</span>
           </button>
         </div>
       </div>
 
       <div style={styles.kanbanGrid}>
-        {STATUS_COLUMNS.map((status) => {
-          const appsInLane = getLaneApplications(status);
-
-          return (
-            <div key={status}>
-              <div style={{ ...styles.laneHeader, backgroundColor: LANE_COLORS[status] }}>
-                <span>{status}</span>
-                <span style={styles.laneCount}>{appsInLane.length}</span>
-              </div>
-              <div style={styles.laneCardStack}>
-                {status === 'Offer' && appsInLane.length > 0 && (
-                  <div style={styles.congratsBox}>
-                    <span style={styles.congratsText}>CONGRATS!</span>
-                  </div>
-                )}
-
-                {appsInLane.length === 0 ? (
-                  <div style={styles.emptyLane}>No applications yet</div>
-                ) : (
-                  appsInLane.map((app) => (
-                    <JobCard
-                      key={app.id}
-                      app={app}
-                      color={CARD_COLORS[status]}
-                      isFaded={status === 'Rejected'}
-                      onClick={() => openModal(app)}
-                    />
-                  ))
-                )}
-              </div>
-            </div>
-          );
-        })}
+        {STATUS_COLUMNS.map((status) => (
+          <KanbanColumn
+            key={status}
+            status={status}
+            apps={getLaneApplications(status)}
+            isCompactView={isCompactView}
+            onCardClick={openModal}
+          />
+        ))}
       </div>
 
-      {/* Analytics Section (from image 2) */}
+      {/* ---- Analytics / promo row ---- */}
       <div style={styles.analyticsGrid}>
-        <div style={styles.chartCard}>
-          <div style={styles.chartCardHeaderRow}>
-            <h3 style={styles.chartCardTitle}>
-              <span className="material-symbols-outlined">monitoring</span> Resume Score History
-            </h3>
-            <span style={styles.chartCardRange}>JAN - JUN 2024</span>
-          </div>
-          {/* Mock Chart SVG */}
-          <svg viewBox="0 0 500 200" style={{ width: '100%', height: '200px' }}>
-            <polygon points="0,200 0,150 100,140 200,90 300,110 400,60 500,70 500,200" fill="#f3efe8" />
-            <polyline points="0,150 100,140 200,90 300,110 400,60 500,70" fill="none" stroke="#1c1b1b" strokeWidth="4" strokeLinejoin="round" />
-            <line x1="0" y1="200" x2="500" y2="200" stroke="#1c1b1b" strokeWidth="4" />
-          </svg>
-          <div style={styles.chartAxisRow}>
-            <span>JAN</span><span>FEB</span><span>MAR</span><span>APR</span><span>MAY</span><span>JUN</span>
-          </div>
-        </div>
-
-        <div style={styles.terminalCard}>
-          <div style={styles.terminalDots}>
-            <div style={styles.terminalDot('#ef4444')}></div>
-            <div style={styles.terminalDot('#f59e0b')}></div>
-            <div style={styles.terminalDot('#10b981')}></div>
-          </div>
-          <div style={styles.terminalBody}>
-            <p style={styles.terminalLine}>{'>'} Initializing Resume Scan...</p>
-            <p style={styles.terminalLine}>{'>'} Scanning: Software_Engineer_V4.pdf</p>
-            <p style={styles.terminalLine}>{'>'} Target: Google L5 Requirements</p>
-            <p style={styles.terminalLine}>{'>'} <span style={styles.terminalErrorLine}>Error: Missing "Kubernetes" keyword.</span></p>
-            <p style={styles.terminalLine}>{'>'} Suggestion: Quantify impact in section 3.</p>
-            <p style={styles.terminalLine}>{'>'} Score Prediction: 94/100 after edits.</p>
-            <p style={styles.terminalCursor} className="animate-pulse">_</p>
-          </div>
-        </div>
+        <ArenaPromo onNavigate={() => navigate('/arena')} />
+        <TerminalPanel messageCount={terminalIndex} />
       </div>
 
-      {/* Add/Edit Modal */}
+      {/* ---- Add/Edit modal ---- */}
       {isModalOpen && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalCard}>
-            <button onClick={closeModal} style={styles.modalCloseButton}>
-              &times;
-            </button>
-            <h2 style={styles.modalTitle}>{editingApp ? 'Edit Application' : 'New Application'}</h2>
-
-            {formError && <div style={styles.modalErrorBanner}>{formError}</div>}
-
-            <form onSubmit={handleSubmit} style={styles.form}>
-              <div>
-                <label htmlFor="app-company-name" style={styles.fieldLabel}>Company Name *</label>
-                <input
-                  id="app-company-name"
-                  type="text"
-                  value={formState.companyName}
-                  onChange={(e) => setFormState({ ...formState, companyName: e.target.value })}
-                  style={styles.fieldInput}
-                  placeholder="e.g. Google"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="app-job-title" style={styles.fieldLabel}>Job Title *</label>
-                <input
-                  id="app-job-title"
-                  type="text"
-                  value={formState.jobTitle}
-                  onChange={(e) => setFormState({ ...formState, jobTitle: e.target.value })}
-                  style={styles.fieldInput}
-                  placeholder="e.g. Software Engineer"
-                />
-              </div>
-
-              <div style={styles.fieldRow}>
-                <div style={styles.fieldRowItem}>
-                  <label htmlFor="app-status" style={styles.fieldLabel}>Status</label>
-                  <select
-                    id="app-status"
-                    value={formState.status}
-                    onChange={(e) => setFormState({ ...formState, status: e.target.value })}
-                    style={styles.fieldSelect}
-                  >
-                    <option value="Applied">Applied</option>
-                    <option value="OA">OA</option>
-                    <option value="Interview">Interview</option>
-                    <option value="Offer">Offer</option>
-                    <option value="Rejected">Rejected</option>
-                  </select>
-                </div>
-                <div style={styles.fieldRowItem}>
-                  <label htmlFor="app-match-score" style={styles.fieldLabel}>Match Score (0-100)</label>
-                  <input
-                    id="app-match-score"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={formState.matchScore}
-                    onChange={(e) => setFormState({ ...formState, matchScore: parseInt(e.target.value) || 0 })}
-                    style={styles.fieldInput}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="app-notes" style={styles.fieldLabel}>Notes</label>
-                <textarea
-                  id="app-notes"
-                  value={formState.notes}
-                  onChange={(e) => setFormState({ ...formState, notes: e.target.value })}
-                  rows={3}
-                  style={styles.fieldTextarea}
-                  placeholder="Add any interview notes or links here..."
-                />
-              </div>
-
-              <div style={styles.formActionsRow}>
-                <button
-                  type="submit"
-                  disabled={formLoading}
-                  style={{ ...styles.saveButtonBase, cursor: formLoading ? 'not-allowed' : 'pointer', opacity: formLoading ? 0.7 : 1 }}
-                >
-                  {formLoading ? 'Saving...' : 'Save Application'}
-                </button>
-
-                {editingApp && (
-                  <button
-                    type="button"
-                    onClick={handleDelete}
-                    disabled={formLoading}
-                    style={{ ...styles.deleteButtonBase, cursor: formLoading ? 'not-allowed' : 'pointer' }}
-                  >
-                    <span className="material-symbols-outlined">delete</span>
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
-        </div>
+        <ApplicationModal
+          editingApp={editingApp}
+          formState={formState}
+          formError={formError}
+          formLoading={formLoading}
+          onFieldChange={(patch) => setFormState((prev) => ({ ...prev, ...patch }))}
+          onSubmit={handleSubmit}
+          onDelete={handleDelete}
+          onClose={closeModal}
+        />
       )}
-    </div>
-  );
-};
-
-/* ------------------------------------------------------------------ */
-/* JobCard subcomponent                                                 */
-/* ------------------------------------------------------------------ */
-const JobCard = ({
-  app,
-  color,
-  isFaded = false,
-  onClick,
-}: {
-  app: JobApplication;
-  color: string;
-  isFaded?: boolean;
-  onClick?: () => void;
-}) => {
-  return (
-    <div
-      onClick={onClick}
-      style={{ ...styles.jobCardBase, opacity: isFaded ? 0.6 : 1 }}
-      onMouseEnter={(e) => (e.currentTarget.style.transform = 'translate(-2px, -2px)')}
-      onMouseLeave={(e) => (e.currentTarget.style.transform = 'none')}
-    >
-      <div style={styles.jobCardTopRow}>
-        <span style={styles.jobCardCompany}>{app.companyName}</span>
-        <span className="material-symbols-outlined" style={styles.jobCardEditIcon}>edit</span>
-      </div>
-      <h4 style={styles.jobCardTitle}>{app.jobTitle}</h4>
-      <div style={styles.jobCardFooterRow}>
-        {app.matchScore ? (
-          <span style={styles.jobCardMatchBadge(color)}>MATCH: {app.matchScore}%</span>
-        ) : (
-          <span style={styles.jobCardDueRow}>
-            <span className="material-symbols-outlined" style={styles.jobCardDueIcon}>calendar_today</span>
-            {app.appliedDate ? `Applied ${new Date(app.appliedDate).toLocaleDateString()}` : 'No date set'}
-          </span>
-        )}
-      </div>
     </div>
   );
 };

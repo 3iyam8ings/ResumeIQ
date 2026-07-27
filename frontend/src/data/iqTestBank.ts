@@ -1,7 +1,12 @@
 import type { Question } from '../context/IQTestContext';
 
+/**
+ * IQ Test question bank.
+ * Total: 20 questions — 2 pattern-matrix, 4 Logical, 4 Spatial, 5 Verbal, 5 Numerical.
+ * Grouped below by category for readability; order is unchanged from the original file.
+ */
 export const iqTestBank: Question[] = [
-  // ---------- EXISTING PATTERN QUESTIONS (2) ----------
+  // ---------- PATTERN-MATRIX QUESTIONS (2) ----------
   {
     id: 'q1',
     category: 'Logical',
@@ -20,7 +25,10 @@ export const iqTestBank: Question[] = [
       { type: 'square', filled: true, color: '#8b2e2d' }, // red square
       { type: 'circle', filled: false, dashed: true }
     ],
-    correctAnswerIndex: 3
+    // Row rule: shape repeats at position 1 & 3, fill flips between them (row1: circle outline→filled,
+    // row2: square outline→filled). Row 3 starts filled (diamond), so position 3 should repeat the
+    // row's shape (diamond) with fill flipped to outline — i.e. optionShapes[1], not optionShapes[3].
+    correctAnswerIndex: 1
   },
   {
     id: 'q2',
@@ -33,11 +41,19 @@ export const iqTestBank: Question[] = [
       { type: 'diamond', filled: true, color: '#f5c445' }, { type: 'circle', filled: true, color: '#f5c445' }, { type: 'square', filled: false },
       { type: 'square', filled: false }, { type: 'diamond', filled: false }, { type: 'empty' }
     ],
-    options: ['Rotated Hexagon (0°)', 'Inverted Triangle Cluster', 'Double Concentric Circles', 'Asymmetric Grid Pattern'],
-    correctAnswerIndex: 0
+    options: [],
+    optionShapes: [
+      { type: 'square', filled: true, color: '#f5c445' },
+      { type: 'circle', filled: true, color: '#f5c445' },
+      { type: 'diamond', filled: false },
+      { type: 'circle', filled: false }
+    ],
+    // Row 3 is row 1's shapes cyclically shifted right (square, diamond, [circle]), and since row 3's
+    // first two tiles are both outline, the missing tile should flip to filled — a filled yellow circle.
+    correctAnswerIndex: 1
   },
 
-  // ---------- NEW LOGICAL (4) ----------
+  // ---------- LOGICAL (4) ----------
   {
     id: 'log-1',
     category: 'Logical',
@@ -84,7 +100,7 @@ export const iqTestBank: Question[] = [
     explanation: 'This is a valid contrapositive: if the consequence (cancellation) didn’t happen, the condition (rain) didn’t happen either.',
   },
 
-  // ---------- NEW SPATIAL (4) ----------
+  // ---------- SPATIAL (4) ----------
   {
     id: 'spa-1',
     category: 'Spatial',
@@ -126,7 +142,7 @@ export const iqTestBank: Question[] = [
     explanation: 'Rotating clockwise from pointing right by a quarter turn makes it point down.',
   },
 
-  // ---------- NEW VERBAL (5) ----------
+  // ---------- VERBAL (5) ----------
   {
     id: 'ver-1',
     category: 'Verbal',
@@ -183,7 +199,7 @@ export const iqTestBank: Question[] = [
     explanation: 'We only know about roses being red; the non-rose flowers’ color is unstated, so they may or may not be red.',
   },
 
-  // ---------- NEW NUMERICAL (5) ----------
+  // ---------- NUMERICAL (5) ----------
   {
     id: 'num-1',
     category: 'Numerical',

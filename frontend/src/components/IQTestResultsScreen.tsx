@@ -321,9 +321,10 @@ const IQTestResultsScreen: React.FC = () => {
           
           {/* Terminal Body */}
           <div style={{ padding: '32px', ...fonts.labelMono, color: '#3DDC84', fontSize: '14px', lineHeight: 1.8, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div>{'>'} Initializing cognitive pattern recognition...</div>
-            <div>{'>'} Processing 40 data points...</div>
-            <div>{'>'} Cross-referencing global population distribution...</div>
+            <div>{'>'} Terminal IQ Test — analysis_engine_v2.0.4.sh</div>
+            <div>{'>'} Loaded 20 responses across 4 cognitive domains...</div>
+            <div>{'>'} Scoring: Logical, Spatial, Verbal, Numerical...</div>
+            <div>{'>'} Comparing against global benchmark population...</div>
             <div style={{ marginBottom: '16px' }}>{'>'} [STATUS: COMPLETE]</div>
 
             <div style={{ color: '#fff' }}>{'>'} Analysis summary:</div>
