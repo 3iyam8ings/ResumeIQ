@@ -16,6 +16,8 @@ sitemap*
 frontend/node_modules/
 frontend/dist/
 frontend/.eslintcache
+frontend/.env.production
+
 
 # Java / Backend
 backend/build/
