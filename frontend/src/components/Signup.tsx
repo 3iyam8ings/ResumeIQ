@@ -272,7 +272,7 @@ const Signup: React.FC = () => {
         </div>
         <div style={styles.headerNav}>
           <span onClick={() => navigate('/features')} style={styles.headerNavItem}>FEATURES</span>
-          <span onClick={() => navigate('/home')} style={styles.headerNavItem}>GO BACK TO HOME</span>
+
           <span style={styles.headerNavItemActive}>SIGN UP</span>
         </div>
       </header>
