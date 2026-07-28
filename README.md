@@ -76,3 +76,5 @@ Here's a quick rundown of what was accomplished during the hackathon:
 - Built a full Kanban Job Tracker with drag-and-drop support, hooked into secure REST endpoints.
 - Built out the IQ Test feature (the logic puzzles) and secured the AI prompt generation on the backend to protect our API keys from leaking to the browser.
 - Integrated the "Super Mario Arena" mini-game seamlessly into the dashboard for a well-deserved break from job hunting.
+- Polished the Features showcase page with immersive custom background images and retro pixel fonts for the IQ Test and Super Mario Arena cards.
+- Scattered interactive, perfectly-cropped hidden pixelated mushrooms across the app that teleport users straight into the Mario minigame.

@@ -19,6 +19,7 @@ import NavBar from './components/NavBar'
 import CoverLetterGenius from './components/CoverLetterGenius'
 import MockInterview from './components/MockInterview'
 import ArenaScreen from './components/ArenaScreen'
+import FeaturesShowcase from './components/FeaturesShowcase'
 
 function AuthenticatedLayout({ userProfile }: { userProfile: any }) {
   return (
@@ -76,6 +77,7 @@ function App() {
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '100vh' }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <Routes>
+          <Route path="/features" element={<FeaturesShowcase />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/set-password" element={isAuthenticated ? <SetPassword /> : <Navigate to="/signup" />} />

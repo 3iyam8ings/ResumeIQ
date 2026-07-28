@@ -272,7 +272,7 @@ const Signup: React.FC = () => {
           <span style={styles.headerBrandTitle}>ResumeIQ</span>
         </div>
         <div style={styles.headerNav}>
-          <span style={styles.headerNavItem}>FEATURES</span>
+          <span onClick={() => navigate('/features')} style={styles.headerNavItem}>FEATURES</span>
           <span onClick={() => navigate('/home')} style={styles.headerNavItem}>GO BACK TO HOME</span>
           <span style={styles.headerNavItemActive}>SIGN UP</span>
         </div>

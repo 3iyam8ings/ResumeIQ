@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from './NavBar';
+import MushroomButton from './MushroomButton';
 
 interface HomeProps {
   isAuthenticated?: boolean;
@@ -332,6 +333,7 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
         }
       `}</style>
       </div>
+      <MushroomButton />
     </div>
   );
 };

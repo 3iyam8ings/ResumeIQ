@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from './NavBar';
 import { useIQTest } from '../context/IQTestContext';
+import MushroomButton from './MushroomButton';
 
 /* ------------------------------------------------------------------ */
 /* Types                                                                */
@@ -306,6 +307,7 @@ const IQTestLanding: React.FC<IQTestLandingProps> = ({ userProfile }) => {
           "For entertainment and self-insight purposes, not a clinical assessment"
         </div>
       </footer>
+      <MushroomButton />
     </div>
   );
 };

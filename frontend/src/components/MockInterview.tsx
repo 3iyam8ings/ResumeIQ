@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import * as VapiPackage from '@vapi-ai/web';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import NavBar from './NavBar';
+import MushroomButton from './MushroomButton';
 
 // `@vapi-ai/web`'s build output has shipped the Vapi class in different shapes across
 // versions/bundlers: sometimes as the default export, sometimes as a named export, and
@@ -1004,6 +1006,7 @@ const MockInterview: React.FC = () => {
         )}
         <div ref={messagesEndRef} />
       </div>
+      <MushroomButton />
     </div>
   );
 };
