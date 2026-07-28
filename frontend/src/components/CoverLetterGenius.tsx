@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { useNavigate } from 'react-router-dom';
+import NavBar from './NavBar';
 import MushroomButton from './MushroomButton';
 
 // ============================================================================

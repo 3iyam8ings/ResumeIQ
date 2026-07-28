@@ -84,12 +84,12 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/home" element={<Home isAuthenticated={isAuthenticated ?? false} userProfile={userProfile} />} />
-          <Route path="/report" element={<Report />} />
+          <Route path="/report" element={<Report userProfile={userProfile} />} />
           <Route path="/arena" element={<ArenaScreen />} />
           <Route element={isAuthenticated ? <AuthenticatedLayout userProfile={userProfile} /> : <Navigate to="/signup" />}>
             <Route path="/dashboard" element={<Dashboard userProfile={userProfile} />} />
             <Route path="/cover-letter" element={<CoverLetterGenius userProfile={userProfile} />} />
-            <Route path="/mock-interview" element={<MockInterview />} />
+            <Route path="/mock-interview" element={<MockInterview userProfile={userProfile} />} />
           </Route>
           <Route element={<IQTestProvider><Outlet /></IQTestProvider>}>
             <Route path="/iqtest" element={<IQTestLanding userProfile={userProfile} />} />

@@ -79,7 +79,7 @@ const SkeletonBox = ({ height = 80, width = '100%' }: { height?: number; width?:
   }} />
 );
 
-const Report: React.FC = () => {
+const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const result: AnalysisResult | null = (location.state as any)?.result || null;
@@ -87,6 +87,7 @@ const Report: React.FC = () => {
   const [optimizedBullet, setOptimizedBullet] = useState<string | null>(null);
   const [rewriteLoading, setRewriteLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [navHover, setNavHover] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });

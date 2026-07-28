@@ -157,6 +157,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '64px',
   },
   terminalDots: { display: 'flex', gap: '8px', marginBottom: '12px' },
+  terminalDot: (color: string): React.CSSProperties => ({ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: color }),
   terminalBody: { fontFamily: FONTS.mono, color: COLORS.terminalGreen, fontSize: '14px', lineHeight: 1.6 },
   terminalLine: { margin: '0 0 4px 0' },
   terminalLineLast: { margin: 0 },
@@ -193,13 +194,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: 'center',
   },
 };
-
-const terminalDot = (color: string): React.CSSProperties => ({
-  width: '12px',
-  height: '12px',
-  borderRadius: '50%',
-  backgroundColor: color,
-});
 
 /* ------------------------------------------------------------------ */
 /* Component                                                            */
@@ -379,9 +373,9 @@ const Signup: React.FC = () => {
         {/* Interactive Terminal Decoration */}
         <div style={styles.terminalCard}>
           <div style={styles.terminalDots}>
-            <div style={terminalDot('#FF5F56')}></div>
-            <div style={terminalDot('#FFBD2E')}></div>
-            <div style={terminalDot('#27C93F')}></div>
+            <div style={styles.terminalDot('#FF5F56')}></div>
+            <div style={styles.terminalDot('#FFBD2E')}></div>
+            <div style={styles.terminalDot('#27C93F')}></div>
           </div>
           <div style={styles.terminalBody}>
             <p style={styles.terminalLine}>{'>'} resumeiq --version 2.4.0-stable</p>
