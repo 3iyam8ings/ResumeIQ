@@ -228,7 +228,7 @@ public class AuthController {
             tokenRepository.save(resetToken);
 
             // 5. Send the real email asynchronously
-            String resetLink = "http://localhost:5173/reset-password?token=" + rawToken;
+            String resetLink = "https://resume-iq-steel.vercel.app/reset-password?token=" + rawToken;
             emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
         }
 
