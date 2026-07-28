@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import * as VapiPackage from '@vapi-ai/web';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import NavBar from './NavBar';
 import MushroomButton from './MushroomButton';
 
 // `@vapi-ai/web`'s build output has shipped the Vapi class in different shapes across

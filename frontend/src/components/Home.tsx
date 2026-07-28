@@ -8,7 +8,7 @@ interface HomeProps {
   userProfile?: any;
 }
 
-const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
+const Home: React.FC<HomeProps> = ({ userProfile }) => {
   const [file, setFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState<string>('');
   const [isHovering, setIsHovering] = useState(false);
