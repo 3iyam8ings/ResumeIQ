@@ -48,6 +48,121 @@ const INFO_CARDS = [
 const DECORATIVE_BLOCK_COUNT = 6;
 
 /* ------------------------------------------------------------------ */
+/* Responsive breakpoints                                              */
+/* Inline styles can't use CSS media queries, so viewport width is     */
+/* tracked in JS and used to pick size/layout overrides per breakpoint */
+/* (same approach as IQTestScreen.tsx / NavBar.tsx / PatternMatrix.tsx)*/
+/* ------------------------------------------------------------------ */
+const BREAKPOINTS = { mobile: 640, tablet: 1024 };
+
+type ViewportCategory = 'mobile' | 'tablet' | 'desktop';
+
+const getViewportCategory = (width: number): ViewportCategory => {
+  if (width < BREAKPOINTS.mobile) return 'mobile';
+  if (width < BREAKPOINTS.tablet) return 'tablet';
+  return 'desktop';
+};
+
+const useViewportCategory = (): ViewportCategory => {
+  const [category, setCategory] = useState<ViewportCategory>(() =>
+    typeof window !== 'undefined' ? getViewportCategory(window.innerWidth) : 'desktop'
+  );
+
+  useEffect(() => {
+    const handleResize = () => setCategory(getViewportCategory(window.innerWidth));
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return category;
+};
+
+// Size/spacing/layout overrides only — colors and structure (border, radius,
+// shadow style) stay identical across breakpoints. Merge these on top of
+// `styles.<key>` at render time, e.g. `{ ...styles.heroCard, ...responsive.heroCard }`.
+const getResponsiveStyles = (viewport: ViewportCategory) => {
+  const isMobile = viewport === 'mobile';
+  const isTablet = viewport === 'tablet';
+
+  return {
+    page: {
+      padding: isMobile ? '12px' : isTablet ? '16px' : '24px',
+    } as React.CSSProperties,
+    titleWrapper: {
+      margin: isMobile ? '0 auto 20px auto' : isTablet ? '0 auto 32px auto' : '0 auto 48px auto',
+    } as React.CSSProperties,
+    titleBadge: {
+      padding: isMobile ? '8px 16px' : isTablet ? '10px 20px' : '12px 24px',
+      boxShadow: isMobile ? '4px 4px 0px 0px #1c1b1b' : isTablet ? '6px 6px 0px 0px #1c1b1b' : '8px 8px 0px 0px #1c1b1b',
+      fontSize: isMobile ? '24px' : isTablet ? '32px' : '42px',
+    } as React.CSSProperties,
+    mainGrid: {
+      gridTemplateColumns: isMobile || isTablet ? '1fr' : '1fr 1fr',
+      gap: isMobile ? '24px' : isTablet ? '32px' : '64px',
+    } as React.CSSProperties,
+    statusPill: {
+      padding: isMobile ? '6px 16px' : isTablet ? '7px 20px' : '8px 24px',
+      fontSize: isMobile ? '12px' : isTablet ? '13px' : '14px',
+    } as React.CSSProperties,
+    heroCard: {
+      padding: isMobile ? '24px 20px' : isTablet ? '36px 28px' : '48px 40px',
+      gap: isMobile ? '12px' : '16px',
+    } as React.CSSProperties,
+    heroTitle: {
+      fontSize: isMobile ? '28px' : isTablet ? '36px' : '48px',
+    } as React.CSSProperties,
+    heroBody: {
+      fontSize: isMobile ? '14px' : isTablet ? '16px' : '18px',
+    } as React.CSSProperties,
+    infoCardRow: {
+      gap: isMobile ? '8px' : isTablet ? '12px' : '16px',
+    } as React.CSSProperties,
+    infoCard: {
+      padding: isMobile ? '14px 6px' : isTablet ? '18px 12px' : '24px 16px',
+      gap: isMobile ? '6px' : '12px',
+    } as React.CSSProperties,
+    infoCardIcon: {
+      fontSize: isMobile ? '20px' : isTablet ? '24px' : '28px',
+    } as React.CSSProperties,
+    infoCardText: {
+      fontSize: isMobile ? '9px' : isTablet ? '10px' : '12px',
+    } as React.CSSProperties,
+    startButton: {
+      padding: isMobile ? '14px 28px' : isTablet ? '16px 36px' : '20px 48px',
+      fontSize: isMobile ? '15px' : isTablet ? '17px' : '20px',
+      marginTop: isMobile ? '4px' : '16px',
+      width: isMobile ? '100%' : undefined,
+      justifyContent: (isMobile ? 'center' : undefined) as React.CSSProperties['justifyContent'],
+    } as React.CSSProperties,
+    rightColumn: {
+      minHeight: isMobile ? '320px' : isTablet ? '400px' : '500px',
+    } as React.CSSProperties,
+    topBadge: {
+      top: isMobile ? '-10px' : '-20px',
+      right: isMobile ? '-10px' : '-20px',
+      padding: isMobile ? '8px 16px' : '12px 24px',
+      fontSize: isMobile ? '13px' : '16px',
+    } as React.CSSProperties,
+    terminalBody: {
+      padding: isMobile ? '20px' : isTablet ? '26px' : '32px',
+      fontSize: isMobile ? '12px' : isTablet ? '13px' : '14px',
+    } as React.CSSProperties,
+    decorativeBlockGrid: {
+      display: (isMobile ? 'none' : 'flex') as React.CSSProperties['display'],
+    } as React.CSSProperties,
+    footer: {
+      marginTop: isMobile ? '32px' : isTablet ? '48px' : '64px',
+      margin: isMobile ? '32px auto 0 auto' : isTablet ? '48px auto 0 auto' : '64px auto 0 auto',
+      padding: isMobile ? '16px 0' : '24px 0',
+    } as React.CSSProperties,
+    footerDisclaimer: {
+      fontSize: isMobile ? '11px' : '14px',
+    } as React.CSSProperties,
+  };
+};
+
+/* ------------------------------------------------------------------ */
 /* Styles (values unchanged from original — only grouped/named here)  */
 /* ------------------------------------------------------------------ */
 const getTerminalDotStyle = (color: string): React.CSSProperties => ({ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: color });
@@ -198,6 +313,8 @@ const IQTestLanding: React.FC<IQTestLandingProps> = ({ userProfile }) => {
   const { resetTest } = useIQTest();
   const [bootText, setBootText] = useState<string[]>([]);
   const [isHoveringStart, setIsHoveringStart] = useState(false);
+  const viewport = useViewportCategory();
+  const responsive = getResponsiveStyles(viewport);
 
   useEffect(() => {
     let i = 0;
@@ -210,40 +327,40 @@ const IQTestLanding: React.FC<IQTestLandingProps> = ({ userProfile }) => {
   }, []);
 
   return (
-    <div style={styles.page}>
+    <div style={{ ...styles.page, ...responsive.page }}>
       {/* Top Universal Navbar */}
       <NavBar userProfile={userProfile} />
 
       {/* Page Title */}
-      <div style={styles.titleWrapper}>
-        <h1 style={styles.titleBadge}>Terminal IQTest</h1>
+      <div style={{ ...styles.titleWrapper, ...responsive.titleWrapper }}>
+        <h1 style={{ ...styles.titleBadge, ...responsive.titleBadge }}>Terminal IQTest</h1>
       </div>
 
       {/* Main Grid */}
-      <main style={styles.mainGrid}>
+      <main style={{ ...styles.mainGrid, ...responsive.mainGrid }}>
         {/* Left Column */}
         <div style={styles.leftColumn}>
-          <div style={styles.statusPill}>[ TEST STATUS: READY ]</div>
+          <div style={{ ...styles.statusPill, ...responsive.statusPill }}>[ TEST STATUS: READY ]</div>
 
           {/* Yellow Hero Card */}
-          <div style={styles.heroCard}>
-            <h2 style={styles.heroTitle}>
+          <div style={{ ...styles.heroCard, ...responsive.heroCard }}>
+            <h2 style={{ ...styles.heroTitle, ...responsive.heroTitle }}>
               Discover Your
               <br />
               IQ Score
             </h2>
-            <p style={styles.heroBody}>
+            <p style={{ ...styles.heroBody, ...responsive.heroBody }}>
               Unleash your cognitive potential with our science-inspired assessment. Designed by psychometric
               experts to provide rapid, accurate insights into your fluid intelligence and spatial reasoning.
             </p>
           </div>
 
           {/* 3 Info Cards */}
-          <div style={styles.infoCardRow}>
+          <div style={{ ...styles.infoCardRow, ...responsive.infoCardRow }}>
             {INFO_CARDS.map((item, idx) => (
-              <div key={idx} style={styles.infoCard}>
-                <span className="material-symbols-outlined" style={styles.infoCardIcon}>{item.icon}</span>
-                <span style={styles.infoCardText}>{item.text}</span>
+              <div key={idx} style={{ ...styles.infoCard, ...responsive.infoCard }}>
+                <span className="material-symbols-outlined" style={{ ...styles.infoCardIcon, ...responsive.infoCardIcon }}>{item.icon}</span>
+                <span style={{ ...styles.infoCardText, ...responsive.infoCardText }}>{item.text}</span>
               </div>
             ))}
           </div>
@@ -255,6 +372,7 @@ const IQTestLanding: React.FC<IQTestLandingProps> = ({ userProfile }) => {
             }}
             style={{
               ...styles.startButton,
+              ...responsive.startButton,
               transform: isHoveringStart ? 'translate(6px, 6px)' : 'none',
               boxShadow: isHoveringStart ? 'none' : SHADOW,
             }}
@@ -267,9 +385,9 @@ const IQTestLanding: React.FC<IQTestLandingProps> = ({ userProfile }) => {
         </div>
 
         {/* Right Column (Terminal) */}
-        <div style={styles.rightColumn}>
+        <div style={{ ...styles.rightColumn, ...responsive.rightColumn }}>
           {/* Top 2% Badge */}
-          <div style={styles.topBadge}>TOP 2%</div>
+          <div style={{ ...styles.topBadge, ...responsive.topBadge }}>TOP 2%</div>
 
           <div style={styles.terminalWindow}>
             {/* Terminal Header */}
@@ -281,7 +399,7 @@ const IQTestLanding: React.FC<IQTestLandingProps> = ({ userProfile }) => {
             </div>
 
             {/* Terminal Body */}
-            <div style={styles.terminalBody}>
+            <div style={{ ...styles.terminalBody, ...responsive.terminalBody }}>
               {bootText.map((text, i) => (
                 <div key={i}>{text}</div>
               ))}
@@ -290,8 +408,8 @@ const IQTestLanding: React.FC<IQTestLandingProps> = ({ userProfile }) => {
                 <span className="animate-pulse">_</span>
               </div>
 
-              {/* Decorative blocks inside terminal */}
-              <div style={styles.decorativeBlockGrid}>
+              {/* Decorative blocks inside terminal — hidden on mobile to save vertical space */}
+              <div style={{ ...styles.decorativeBlockGrid, ...responsive.decorativeBlockGrid }}>
                 {Array.from({ length: DECORATIVE_BLOCK_COUNT }, (_, i) => (
                   <div key={i} style={styles.decorativeBlock} />
                 ))}
@@ -302,8 +420,8 @@ const IQTestLanding: React.FC<IQTestLandingProps> = ({ userProfile }) => {
       </main>
 
       {/* Footer */}
-      <footer style={styles.footer}>
-        <div style={styles.footerDisclaimer}>
+      <footer style={{ ...styles.footer, ...responsive.footer }}>
+        <div style={{ ...styles.footerDisclaimer, ...responsive.footerDisclaimer }}>
           "For entertainment and self-insight purposes, not a clinical assessment"
         </div>
       </footer>

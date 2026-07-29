@@ -94,6 +94,96 @@ const styles: { [key: string]: React.CSSProperties } = {
 };
 
 /* ------------------------------------------------------------------ */
+/* Responsive breakpoints                                              */
+/* Inline styles can't use CSS media queries, so viewport width is     */
+/* tracked in JS and used to pick size overrides per breakpoint.       */
+/* ------------------------------------------------------------------ */
+const BREAKPOINTS = { mobile: 640, tablet: 1024 };
+
+type ViewportCategory = 'mobile' | 'tablet' | 'desktop';
+
+const getViewportCategory = (width: number): ViewportCategory => {
+  if (width < BREAKPOINTS.mobile) return 'mobile';
+  if (width < BREAKPOINTS.tablet) return 'tablet';
+  return 'desktop';
+};
+
+const useViewportCategory = (): ViewportCategory => {
+  const [category, setCategory] = useState<ViewportCategory>(() =>
+    typeof window !== 'undefined' ? getViewportCategory(window.innerWidth) : 'desktop'
+  );
+
+  useEffect(() => {
+    const handleResize = () => setCategory(getViewportCategory(window.innerWidth));
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return category;
+};
+
+// Size/spacing overrides only — colors, borders, and structure stay identical
+// to the base `styles` object across breakpoints. Merge these on top of
+// `styles.<key>` at render time (e.g. `{ ...styles.header, ...responsive.header }`).
+const getResponsiveStyles = (viewport: ViewportCategory) => {
+  const isMobile = viewport === 'mobile';
+  const isTablet = viewport === 'tablet';
+
+  return {
+    header: {
+      padding: isMobile ? '16px' : isTablet ? '20px 28px' : '24px 48px',
+      flexWrap: (isMobile ? 'wrap' : 'nowrap') as React.CSSProperties['flexWrap'],
+      rowGap: isMobile ? '12px' : undefined,
+    } as React.CSSProperties,
+    progressTrack: {
+      width: isMobile ? '100px' : isTablet ? '150px' : '200px',
+    } as React.CSSProperties,
+    timerPill: {
+      padding: isMobile ? '6px 16px' : isTablet ? '7px 20px' : '8px 24px',
+      fontSize: isMobile ? '13px' : isTablet ? '14px' : '16px',
+    } as React.CSSProperties,
+    timerIcon: {
+      fontSize: isMobile ? '16px' : '18px',
+    } as React.CSSProperties,
+    main: {
+      padding: isMobile ? '0 12px 16px 12px' : isTablet ? '0 20px 24px 20px' : '0 24px 32px 24px',
+      gap: isMobile ? '12px' : isTablet ? '18px' : '24px',
+    } as React.CSSProperties,
+    questionPanel: {
+      padding: isMobile ? '20px' : isTablet ? '32px' : '48px',
+      gap: isMobile ? '16px' : isTablet ? '24px' : '32px',
+      boxShadow: isMobile
+        ? '0px 5px 0px 0px #1c1b1b, 0px 0px 0px 2px #1c1b1b'
+        : '0px 8px 0px 0px #1c1b1b, 0px 0px 0px 3px #1c1b1b',
+    } as React.CSSProperties,
+    questionPrompt: {
+      fontSize: isMobile ? '17px' : isTablet ? '20px' : '24px',
+    } as React.CSSProperties,
+    answerGrid: {
+      gap: isMobile ? '10px' : isTablet ? '12px' : '16px',
+    } as React.CSSProperties,
+    answerOptionBase: {
+      padding: isMobile ? '14px 8px' : isTablet ? '18px' : '24px',
+    } as React.CSSProperties,
+    answerOptionText: {
+      fontSize: isMobile ? '14px' : isTablet ? '17px' : '20px',
+    } as React.CSSProperties,
+    answerShapeSize: isMobile ? 32 : isTablet ? 40 : 48,
+    footer: {
+      padding: isMobile ? '0 12px 16px 12px' : isTablet ? '0 20px 24px 20px' : '0 24px 32px 24px',
+    } as React.CSSProperties,
+    reportIssue: {
+      fontSize: isMobile ? '10px' : '12px',
+    } as React.CSSProperties,
+    nextButtonBase: {
+      padding: isMobile ? '10px 18px' : isTablet ? '14px 28px' : '16px 40px',
+      fontSize: isMobile ? '14px' : isTablet ? '16px' : '18px',
+    } as React.CSSProperties,
+  };
+};
+
+/* ------------------------------------------------------------------ */
 /* Component                                                            */
 /* ------------------------------------------------------------------ */
 const IQTestScreen: React.FC = () => {
@@ -110,12 +200,15 @@ const IQTestScreen: React.FC = () => {
     initialIndex >= 0 && initialIndex < iqTestBank.length ? initialIndex : 0
   );
   const [showReportIssue, setShowReportIssue] = useState(false);
+  const [isNextHovered, setIsNextHovered] = useState(false);
   const [timeLeft, setTimeLeft] = useState(
     timeRemaining[currentIndex] !== undefined ? timeRemaining[currentIndex] : TIME_PER_QUESTION
   );
 
   const currentQuestion = iqTestBank[currentIndex];
   const advancedForIndexRef = useRef<number | null>(null);
+  const viewport = useViewportCategory();
+  const responsive = getResponsiveStyles(viewport);
 
   /* ---------------- Effects ---------------- */
   useEffect(() => {
@@ -176,13 +269,13 @@ const IQTestScreen: React.FC = () => {
       )}
 
       {/* Top Navbar */}
-      <header style={styles.header}>
+      <header style={{ ...styles.header, ...responsive.header }}>
         <div style={styles.headerLeft}>
           <div style={styles.questionCounter}>
             [QUESTION {currentIndex + 1} OF {iqTestBank.length}]
           </div>
           {/* Yellow Progress Bar */}
-          <div style={styles.progressTrack}>
+          <div style={{ ...styles.progressTrack, ...responsive.progressTrack }}>
             <div
               style={{
                 ...styles.progressFillBase,
@@ -194,8 +287,8 @@ const IQTestScreen: React.FC = () => {
 
         <div style={styles.percentComplete}>{percentComplete}% Complete</div>
 
-        <div style={styles.timerPill}>
-          <span className="material-symbols-outlined" style={styles.timerIcon}>timer</span>
+        <div style={{ ...styles.timerPill, ...responsive.timerPill }}>
+          <span className="material-symbols-outlined" style={{ ...styles.timerIcon, ...responsive.timerIcon }}>timer</span>
           <span style={{ color: timeLeft <= 10 ? '#ff5252' : '#ffffff' }}>
             00:{timeLeft.toString().padStart(2, '0')}
           </span>
@@ -203,16 +296,16 @@ const IQTestScreen: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main style={styles.main}>
+      <main style={{ ...styles.main, ...responsive.main }}>
         {/* Question Panel */}
-        <div style={styles.questionPanel}>
-          <h2 style={styles.questionPrompt}>{currentQuestion.prompt}</h2>
+        <div style={{ ...styles.questionPanel, ...responsive.questionPanel }}>
+          <h2 style={{ ...styles.questionPrompt, ...responsive.questionPrompt }}>{currentQuestion.prompt}</h2>
 
           {currentQuestion.grid && <PatternMatrix grid={currentQuestion.grid} />}
         </div>
 
         {/* Answer Grid */}
-        <div style={styles.answerGrid}>
+        <div style={{ ...styles.answerGrid, ...responsive.answerGrid }}>
           {(currentQuestion.optionShapes || currentQuestion.options).map((option, idx) => {
             const isSelected = answers[currentIndex] === idx;
             const isShape = typeof option !== 'string';
@@ -223,6 +316,7 @@ const IQTestScreen: React.FC = () => {
                 onClick={() => handleSelectAnswer(idx)}
                 style={{
                   ...styles.answerOptionBase,
+                  ...responsive.answerOptionBase,
                   backgroundColor: isSelected ? '#8FE3B0' : '#f5f5f5',
                   border: isSelected ? BORDER : '2px solid transparent',
                   boxShadow: isSelected ? 'none' : '0px 4px 0px 0px #1c1b1b, 0px 0px 0px 2px #1c1b1b',
@@ -230,9 +324,9 @@ const IQTestScreen: React.FC = () => {
                 }}
               >
                 {isShape ? (
-                  <ShapeRenderer shape={option} size={48} />
+                  <ShapeRenderer shape={option} size={responsive.answerShapeSize} />
                 ) : (
-                  <div style={styles.answerOptionText}>{option}</div>
+                  <div style={{ ...styles.answerOptionText, ...responsive.answerOptionText }}>{option}</div>
                 )}
               </div>
             );
@@ -241,32 +335,24 @@ const IQTestScreen: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer style={styles.footer}>
-        <div onClick={() => setShowReportIssue(true)} style={styles.reportIssue}>
+      <footer style={{ ...styles.footer, ...responsive.footer }}>
+        <div onClick={() => setShowReportIssue(true)} style={{ ...styles.reportIssue, ...responsive.reportIssue }}>
           <span className="material-symbols-outlined" style={styles.reportIssueIcon}>flag</span>
           Report Issue
         </div>
 
         <button
           onClick={handleNext}
-          onMouseEnter={(e) => {
-            if (isAnswered) {
-              e.currentTarget.style.transform = 'translate(6px, 6px)';
-              e.currentTarget.style.boxShadow = 'none';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (isAnswered) {
-              e.currentTarget.style.transform = 'none';
-              e.currentTarget.style.boxShadow = SHADOW;
-            }
-          }}
+          onMouseEnter={() => setIsNextHovered(true)}
+          onMouseLeave={() => setIsNextHovered(false)}
           disabled={!isAnswered}
           style={{
             ...styles.nextButtonBase,
+            ...responsive.nextButtonBase,
             backgroundColor: isAnswered ? '#c3a8fd' : '#e5e5e5',
             cursor: isAnswered ? 'pointer' : 'not-allowed',
-            boxShadow: isAnswered ? SHADOW : 'none',
+            boxShadow: isAnswered && !isNextHovered ? SHADOW : 'none',
+            transform: isAnswered && isNextHovered ? 'translate(6px, 6px)' : 'none',
             opacity: isAnswered ? 1 : 0.6,
           }}
         >

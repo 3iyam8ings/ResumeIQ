@@ -127,6 +127,58 @@ const styles: { [key: string]: React.CSSProperties } = {
 };
 
 /* ------------------------------------------------------------------ */
+/* Responsive overrides                                                */
+/* Inline styles above win over plain CSS, so mobile/tablet rules here */
+/* use !important and target the className hooks applied below.       */
+/* ------------------------------------------------------------------ */
+const ResponsiveStyles = () => (
+  <style>{`
+    .iqr-main { box-sizing: border-box; }
+    .iqr-question-grid { box-sizing: border-box; }
+    .iqr-cell { box-sizing: border-box; }
+
+    /* Tablet */
+    @media (max-width: 900px) {
+      .iqr-header { padding: 10px 20px !important; }
+      .iqr-main { padding: 32px 20px !important; gap: 28px !important; }
+      .iqr-intro-title { font-size: 36px !important; }
+      .iqr-question-grid { padding: 24px !important; gap: 12px !important; }
+      .iqr-cell { font-size: 20px !important; }
+    }
+
+    /* Mobile */
+    @media (max-width: 640px) {
+      .iqr-header { padding: 8px 14px !important; }
+      .iqr-header-logo { height: 28px !important; }
+      .iqr-header-title { font-size: 10px !important; letter-spacing: 0 !important; }
+
+      .iqr-main { padding: 20px 12px !important; gap: 20px !important; }
+      .iqr-intro-title { font-size: 26px !important; margin-bottom: 8px !important; }
+      .iqr-intro-body { font-size: 13px !important; }
+
+      .iqr-question-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 8px !important;
+        padding: 14px !important;
+        border-radius: 14px !important;
+      }
+      .iqr-cell { font-size: 14px !important; border-radius: 8px !important; }
+
+      .iqr-footer { padding: 12px 14px !important; gap: 8px !important; }
+      .iqr-btn { padding: 10px 16px !important; font-size: 13px !important; gap: 4px !important; }
+      .iqr-btn .material-symbols-outlined { font-size: 18px !important; }
+      .iqr-btn-text { display: none !important; }
+    }
+
+    @media (max-width: 380px) {
+      .iqr-question-grid { grid-template-columns: repeat(4, 1fr) !important; }
+      .iqr-cell { font-size: 13px !important; }
+      .iqr-btn { padding: 10px 14px !important; }
+    }
+  `}</style>
+);
+
+/* ------------------------------------------------------------------ */
 /* Component                                                            */
 /* ------------------------------------------------------------------ */
 const IQTestReviewScreen: React.FC = () => {
@@ -141,31 +193,33 @@ const IQTestReviewScreen: React.FC = () => {
 
   return (
     <div style={styles.page}>
+      <ResponsiveStyles />
       {/* Top Navbar */}
-      <header style={styles.header}>
+      <header className="iqr-header" style={styles.header}>
         <div style={styles.headerBrand} onClick={() => navigate('/home')}>
-          <img src="/logo.png" alt="ResumeIQ Logo" style={styles.headerBrandLogo} />
+          <img className="iqr-header-logo" src="/logo.png" alt="ResumeIQ Logo" style={styles.headerBrandLogo} />
         </div>
-        <div style={styles.headerTitle}>Review Submission</div>
+        <div className="iqr-header-title" style={styles.headerTitle}>Review Submission</div>
       </header>
 
       {/* Main Content */}
-      <main style={styles.main}>
+      <main className="iqr-main" style={styles.main}>
         <div style={styles.introWrapper}>
-          <h1 style={styles.introTitle}>Ready to submit?</h1>
-          <p style={styles.introBody}>
+          <h1 className="iqr-intro-title" style={styles.introTitle}>Ready to submit?</h1>
+          <p className="iqr-intro-body" style={styles.introBody}>
             You have answered <strong style={styles.introBodyStrong}>{answeredCount}</strong> out of{' '}
             <strong style={styles.introBodyStrong}>{totalQuestions}</strong> questions.
           </p>
         </div>
 
         {/* Grid */}
-        <div style={styles.questionGrid}>
+        <div className="iqr-question-grid" style={styles.questionGrid}>
           {iqTestBank.map((_, idx) => {
             const isAnswered = answers[idx] !== undefined;
             return (
               <div
                 key={idx}
+                className="iqr-cell"
                 onClick={() => navigate(`/test?q=${idx}`)}
                 style={{
                   ...styles.questionCellBase,
@@ -183,9 +237,10 @@ const IQTestReviewScreen: React.FC = () => {
       </main>
 
       {/* Footer Nav */}
-      <footer style={styles.footer}>
-        <button 
-          onClick={() => navigate('/test')} 
+      <footer className="iqr-footer" style={styles.footer}>
+        <button
+          className="iqr-btn"
+          onClick={() => navigate('/test')}
           style={{
             ...styles.backButton,
             transform: isHoveringBack ? 'translate(6px, 6px)' : 'none',
@@ -196,10 +251,11 @@ const IQTestReviewScreen: React.FC = () => {
           onMouseLeave={() => setIsHoveringBack(false)}
         >
           <span className="material-symbols-outlined">arrow_back</span>
-          BACK TO TEST
+          <span className="iqr-btn-text">BACK TO TEST</span>
         </button>
 
         <button
+          className="iqr-btn"
           onClick={() => navigate('/test/results')}
           disabled={!allAnswered}
           style={{
@@ -214,7 +270,7 @@ const IQTestReviewScreen: React.FC = () => {
           onMouseEnter={() => setIsHoveringSubmit(true)}
           onMouseLeave={() => setIsHoveringSubmit(false)}
         >
-          SUBMIT TEST
+          <span className="iqr-btn-text">SUBMIT TEST</span>
           <span className="material-symbols-outlined">send</span>
         </button>
       </footer>

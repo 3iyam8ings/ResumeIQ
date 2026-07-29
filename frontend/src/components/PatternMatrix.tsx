@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { ShapeData } from '../context/IQTestContext';
 
 /* ------------------------------------------------------------------ */
@@ -19,6 +19,51 @@ const STROKE_COLOR = '#1c1b1b';
 const FILLED_STROKE_WIDTH = 3;
 const DASHED_STROKE_WIDTH = 2;
 const DASH_PATTERN = '6,6';
+
+/* ------------------------------------------------------------------ */
+/* Responsive breakpoints                                              */
+/* Inline styles can't use CSS media queries, so viewport width is     */
+/* tracked in JS and used to pick size overrides per breakpoint        */
+/* (same approach as IQTestScreen.tsx / NavBar.tsx).                   */
+/* ------------------------------------------------------------------ */
+const BREAKPOINTS = { mobile: 640, tablet: 1024 };
+
+type ViewportCategory = 'mobile' | 'tablet' | 'desktop';
+
+const getViewportCategory = (width: number): ViewportCategory => {
+  if (width < BREAKPOINTS.mobile) return 'mobile';
+  if (width < BREAKPOINTS.tablet) return 'tablet';
+  return 'desktop';
+};
+
+const useViewportCategory = (): ViewportCategory => {
+  const [category, setCategory] = useState<ViewportCategory>(() =>
+    typeof window !== 'undefined' ? getViewportCategory(window.innerWidth) : 'desktop'
+  );
+
+  useEffect(() => {
+    const handleResize = () => setCategory(getViewportCategory(window.innerWidth));
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return category;
+};
+
+// Cell/shape/gap sizes only — colors and structure stay identical across
+// breakpoints. CELL_PIXEL_SIZE / DEFAULT_SHAPE_SIZE above remain the
+// desktop values so nothing changes for existing desktop callers.
+const getResponsiveMatrixConfig = (viewport: ViewportCategory) => {
+  switch (viewport) {
+    case 'mobile':
+      return { cellSize: 52, shapeSize: 30, gap: '6px', padding: '10px', missingFontSize: '16px' };
+    case 'tablet':
+      return { cellSize: 64, shapeSize: 38, gap: '7px', padding: '12px', missingFontSize: '20px' };
+    default:
+      return { cellSize: CELL_PIXEL_SIZE, shapeSize: DEFAULT_SHAPE_SIZE, gap: '8px', padding: '16px', missingFontSize: '24px' };
+  }
+};
 
 /* ------------------------------------------------------------------ */
 /* Styles (values unchanged from original — only grouped/named here)  */
@@ -99,8 +144,11 @@ export const ShapeRenderer: React.FC<{ shape: ShapeData; size?: number }> = ({ s
 /* PatternMatrix                                                        */
 /* ------------------------------------------------------------------ */
 export const PatternMatrix: React.FC<PatternMatrixProps> = ({ grid }) => {
+  const viewport = useViewportCategory();
+  const { cellSize, shapeSize, gap, padding, missingFontSize } = getResponsiveMatrixConfig(viewport);
+
   return (
-    <div style={styles.matrixWrapper}>
+    <div style={{ ...styles.matrixWrapper, gap, padding }}>
       {grid.map((shape, idx) => {
         // The missing cell is whichever one the question data actually marks as empty,
         // rather than assuming it's always the last cell in a 3x3 grid.
@@ -110,13 +158,15 @@ export const PatternMatrix: React.FC<PatternMatrixProps> = ({ grid }) => {
             key={idx}
             style={{
               ...styles.cellBase,
+              width: `${cellSize}px`,
+              height: `${cellSize}px`,
               backgroundColor: isMissing ? '#e0e0e0' : '#ffffff',
             }}
           >
             {isMissing ? (
-              <span style={styles.missingCellMark}>?</span>
+              <span style={{ ...styles.missingCellMark, fontSize: missingFontSize }}>?</span>
             ) : (
-              <ShapeRenderer shape={shape} size={DEFAULT_SHAPE_SIZE} />
+              <ShapeRenderer shape={shape} size={shapeSize} />
             )}
           </div>
         );
