@@ -86,12 +86,18 @@ public class FallbackProxyController {
         }
 
         HttpEntity<byte[]> entity = new HttpEntity<>(body, headers);
-        ResponseEntity<byte[]> response = restTemplate.exchange(
-                targetUrl, HttpMethod.valueOf(request.getMethod()), entity, byte[].class);
+        try {
+            ResponseEntity<byte[]> response = restTemplate.exchange(
+                    targetUrl, HttpMethod.valueOf(request.getMethod()), entity, byte[].class);
 
-        // Build a clean response — pass through status and headers
-        return ResponseEntity.status(response.getStatusCode())
-                .headers(response.getHeaders())
-                .body(response.getBody());
+            // Build a clean response — pass through status and headers
+            return ResponseEntity.status(response.getStatusCode())
+                    .headers(response.getHeaders())
+                    .body(response.getBody());
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorMsg = "Proxy Error: Unable to reach backend at " + targetUrl + ". Exception: " + e.getMessage();
+            return ResponseEntity.status(502).body(errorMsg.getBytes());
+        }
     }
 }
