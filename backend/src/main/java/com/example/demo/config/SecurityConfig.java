@@ -69,7 +69,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "https://resume-iq-steel.vercel.app", "https://resumeiq-4wpk.onrender.com"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "https://resume-iq-teal.vercel.app", "https://resumeiq-4wpk.onrender.com"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // Allow cookies (JSESSIONID)
@@ -130,7 +130,7 @@ public class SecurityConfig {
     private AuthenticationSuccessHandler oauth2SuccessHandler() {
         return (request, response, authentication) -> {
             // Redirect back to the React app homepage
-            response.sendRedirect("https://resume-iq-steel.vercel.app/");
+            response.sendRedirect("https://resume-iq-teal.vercel.app/");
         };
     }
 
@@ -139,7 +139,7 @@ public class SecurityConfig {
             String errorMsg = exception instanceof OAuth2AuthenticationException
                     ? ((OAuth2AuthenticationException) exception).getError().getErrorCode()
                     : "oauth2_error";
-            response.sendRedirect("https://resume-iq-steel.vercel.app/signup?error=" + errorMsg);
+            response.sendRedirect("https://resume-iq-teal.vercel.app/signup?error=" + errorMsg);
         };
     }
 }
