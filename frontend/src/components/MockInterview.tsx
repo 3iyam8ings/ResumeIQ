@@ -516,6 +516,12 @@ const MockInterview: React.FC = () => {
               ...prev,
               { role: message.role === 'user' ? 'user' : 'assistant', content: message.transcript }
             ]);
+          } else if (message.type === 'end-of-call-report') {
+            // Vapi doesn't pass a reason to the 'call-end' event itself — the
+            // actual cause (e.g. "silence-timed-out", "mic-permission-denied",
+            // "pipeline-error-...") only shows up here. Logging it is what lets
+            // us diagnose *why* a call ended instead of guessing.
+            console.log('[Vapi] Call ended. Reason:', message.endedReason, message);
           }
         });
 
@@ -608,6 +614,22 @@ const MockInterview: React.FC = () => {
         return;
       }
 
+      // Vapi requests mic access internally, but if the browser blocks or the
+      // user dismisses that prompt, vapi.start() doesn't reliably surface it as
+      // a rejected promise — instead the call plays the first message (since
+      // that's just TTS output, unrelated to the mic) and then ends almost
+      // immediately once Vapi realizes there's no audio input, with no visible
+      // error. Requesting the mic ourselves first turns that into a clear,
+      // catchable error before the call ever starts.
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((track) => track.stop());
+      } catch (micErr) {
+        console.error('Microphone permission error:', micErr);
+        alert('Microphone access is required for the voice interview. Please allow microphone access in your browser (check the icon in the address bar) and try again.');
+        return;
+      }
+
       setIsConnecting(true);
       try {
         // vapi.start() makes a real API call to create the assistant/call. It can
@@ -618,6 +640,12 @@ const MockInterview: React.FC = () => {
           name: 'Mock Interviewer',
           firstMessage: FALLBACK_FIRST_QUESTION,
           transcriber: VAPI_TRANSCRIBER,
+          // Without an explicit value, a slow/quiet mic input (or a brief gap
+          // while the candidate is thinking) can trip Vapi's default silence
+          // timeout and end the call right after the greeting. 60s gives the
+          // candidate real time to start answering.
+          silenceTimeoutSeconds: 60,
+          maxDurationSeconds: 1800,
           model: {
             provider: 'google',
             model: GEMINI_MODEL_VAPI,
@@ -685,7 +713,7 @@ const MockInterview: React.FC = () => {
 
     const cleanMsg = userMessage.replace(/[.,!?;:]/g, ' ').trim();
     const endRegex = /(end|stop|quit|finish|exit)\s*(the\s*)?(session|interview|chat)/i;
-    
+
     if (endRegex.test(cleanMsg)) {
       setIsInterviewActive(false);
       return;
