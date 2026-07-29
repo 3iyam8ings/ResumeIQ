@@ -113,6 +113,7 @@ const NeoSelect = ({ value, options, onChange, color, prefix }: { value: string,
   return (
     <div ref={containerRef} style={{ position: 'relative', flex: '1 1 calc(50% - 16px)', boxSizing: 'border-box' }}>
       <div
+        className="mi-neo-select-trigger"
         onClick={() => setIsOpen(!isOpen)}
         style={{
           backgroundColor: color,
@@ -197,6 +198,7 @@ const NeoButton: React.FC<NeoButtonProps> = ({ children, onClick, disabled = fal
       disabled={disabled}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      className="mi-neo-button"
       style={{
         backgroundColor: bg,
         color: '#1c1b1b',
@@ -444,6 +446,77 @@ const styles: Record<string, React.CSSProperties> = {
     flexShrink: 0,
   },
 };
+
+// ============================================================================
+// RESPONSIVE OVERRIDES
+// Inline styles above always win over plain CSS, so these breakpoints use
+// !important and target the className hooks applied in the JSX below.
+//
+// The trickiest part of this layout on small screens: `modeTabWrap` is
+// absolutely positioned at the page's left edge with vertical (rotated)
+// text. That's fine on desktop where `contentWrap` (max-width 800px) sits
+// well clear of it, but on mobile `contentWrap` spans nearly the full
+// viewport, so the tab literally overlaps the header card's left edge. Below
+// 640px we drop the absolute positioning and lay the two tabs out as a
+// normal-flow horizontal row above the header instead.
+// ============================================================================
+const ResponsiveStyles = () => (
+  <style>{`
+    /* Tablet */
+    @media (max-width: 900px) {
+      .mi-content-wrap { padding: 0 16px !important; }
+      .mi-header-title { font-size: 20px !important; }
+    }
+
+    /* Mobile */
+    @media (max-width: 640px) {
+      .mi-mode-tab-wrap {
+        position: static !important;
+        flex-direction: row !important;
+        align-items: stretch !important;
+        width: 100% !important;
+        margin-bottom: 16px !important;
+        padding: 0 16px !important;
+        box-sizing: border-box !important;
+        gap: 8px !important;
+      }
+      .mi-mode-tab-button {
+        writing-mode: horizontal-tb !important;
+        border-radius: 8px !important;
+        border-left: 4px solid #1c1b1b !important;
+        flex: 1 1 0 !important;
+        text-align: center !important;
+        padding: 10px 6px !important;
+        font-size: 10px !important;
+        letter-spacing: 0.02em !important;
+      }
+      .mi-mode-dropdown { margin-left: 0 !important; position: absolute !important; left: 16px !important; right: 16px !important; top: 100% !important; }
+
+      .mi-content-wrap { padding: 0 12px !important; }
+      .mi-header-card { padding: 16px !important; flex-wrap: wrap !important; gap: 10px !important; }
+      .mi-header-title { font-size: 18px !important; }
+      .mi-header-meta { font-size: 10px !important; }
+      .mi-header-badge-row { flex-wrap: wrap !important; gap: 8px !important; }
+
+      .mi-msg-bubble { max-width: 92% !important; font-size: 13px !important; padding: 12px 16px !important; }
+      .mi-feedback-card { max-width: 100% !important; padding: 16px !important; }
+
+      .mi-setup-input { padding: 12px 16px !important; font-size: 14px !important; }
+      .mi-neo-select-trigger { padding: 12px 16px !important; font-size: 14px !important; }
+
+      .mi-input-form { padding: 6px 10px !important; gap: 8px !important; }
+      .mi-text-input { padding: 10px 16px !important; font-size: 14px !important; }
+      .mi-mic-button { width: 34px !important; height: 34px !important; }
+      .mi-send-button { width: 40px !important; height: 40px !important; }
+
+      .mi-neo-button { padding: 12px 20px !important; font-size: 13px !important; }
+    }
+
+    @media (max-width: 380px) {
+      .mi-mode-tab-button { font-size: 9px !important; padding: 8px 4px !important; }
+    }
+  `}</style>
+);
 
 // ============================================================================
 // COMPONENT
@@ -760,10 +833,20 @@ const MockInterview: React.FC = () => {
 
   return (
     <div style={styles.page}>
+      <ResponsiveStyles />
+      {/* NOTE: `NavBar` was imported but not rendered anywhere in this file
+          before this pass — that looked like an accidental drop rather than
+          an intentional omission (MushroomButton, imported the same way, IS
+          rendered below). Re-enabling it here since NavBar takes no required
+          props elsewhere in this codebase; remove this line if this page is
+          meant to be nav-less on purpose. */}
+      <NavBar />
+
       {/* Side Tabs */}
-      <div style={styles.modeTabWrap} ref={modeTabRef}>
+      <div className="mi-mode-tab-wrap" style={styles.modeTabWrap} ref={modeTabRef}>
         {/* Difficulty Selector */}
         <div
+          className="mi-mode-tab-button"
           onClick={() => !isInterviewActive && setShowModeDropdown(!showModeDropdown)}
           onMouseEnter={() => setIsMockModeHovered(true)}
           onMouseLeave={() => setIsMockModeHovered(false)}
@@ -780,6 +863,7 @@ const MockInterview: React.FC = () => {
 
         {/* Text/Voice Toggle */}
         <div
+          className="mi-mode-tab-button"
           onClick={toggleInteractionMode}
           onMouseEnter={() => setIsModeHovered(true)}
           onMouseLeave={() => setIsModeHovered(false)}
@@ -797,7 +881,7 @@ const MockInterview: React.FC = () => {
         </div>
 
         {showModeDropdown && !isInterviewActive && (
-          <div style={styles.modeDropdown}>
+          <div className="mi-mode-dropdown" style={styles.modeDropdown}>
             {MODE_OPTIONS.map((m, idx) => (
               <div
                 key={m}
@@ -814,14 +898,14 @@ const MockInterview: React.FC = () => {
         )}
       </div>
 
-      <div style={styles.contentWrap}>
+      <div className="mi-content-wrap" style={styles.contentWrap}>
         {/* Header */}
-        <div style={styles.headerCard}>
+        <div className="mi-header-card" style={styles.headerCard}>
           <div>
-            <h1 style={styles.headerTitle}>{jobRole ? `${jobRole} Interview` : 'Mock Interview Setup'}</h1>
-            <div style={styles.headerMeta}>[ ROLE: {roleCategory.toUpperCase()} ]  [ LEVEL: {jobLevel.toUpperCase()} ]</div>
+            <h1 className="mi-header-title" style={styles.headerTitle}>{jobRole ? `${jobRole} Interview` : 'Mock Interview Setup'}</h1>
+            <div className="mi-header-meta" style={styles.headerMeta}>[ ROLE: {roleCategory.toUpperCase()} ]  [ LEVEL: {jobLevel.toUpperCase()} ]</div>
           </div>
-          <div style={styles.headerBadgeRow}>
+          <div className="mi-header-badge-row" style={styles.headerBadgeRow}>
             <span style={styles.sessionBadge}>SESSION: {formatSessionTime(sessionSeconds)}</span>
             <span style={isInterviewActive ? styles.aiActiveBadge : styles.aiInactiveBadge}>
               AI: {isInterviewActive ? (interactionMode === 'voice' ? 'LISTENING / SPEAKING' : 'ACTIVE') : (isConnecting ? 'CONNECTING…' : 'OFFLINE')}
@@ -857,6 +941,7 @@ const MockInterview: React.FC = () => {
                   value={candidateName}
                   onChange={(e) => setCandidateName(e.target.value)}
                   placeholder="Your Name"
+                  className="mi-setup-input"
                   style={{
                     backgroundColor: '#fff',
                     border: '4px solid #1c1b1b',
@@ -885,6 +970,7 @@ const MockInterview: React.FC = () => {
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
                     placeholder="Target Company"
+                    className="mi-setup-input"
                     style={{
                       backgroundColor: '#fff',
                       border: '4px solid #1c1b1b',
@@ -905,6 +991,7 @@ const MockInterview: React.FC = () => {
                     value={jobRole}
                     onChange={(e) => setJobRole(e.target.value)}
                     placeholder="Target Job Role"
+                    className="mi-setup-input"
                     style={{
                       backgroundColor: '#fff',
                       border: '4px solid #1c1b1b',
@@ -957,7 +1044,7 @@ const MockInterview: React.FC = () => {
                   const isUser = msg.role === 'user';
                   return (
                     <div key={idx} style={messageColumnStyle(isUser)}>
-                      <div style={messageBubbleStyle(isUser)}>{msg.content}</div>
+                      <div className="mi-msg-bubble" style={messageBubbleStyle(isUser)}>{msg.content}</div>
                       <div style={styles.messageMeta}>
                         {isUser ? 'YOU' : 'INTERVIEWER AI'}
                       </div>
@@ -985,7 +1072,7 @@ const MockInterview: React.FC = () => {
           {/* Feedback Module */}
           {feedback && !isInterviewActive && (
             <div style={styles.feedbackOuter}>
-              <div style={styles.feedbackCard}>
+              <div className="mi-feedback-card" style={styles.feedbackCard}>
                 <div style={styles.feedbackTag}>AI POST-INTERVIEW FEEDBACK</div>
                 <div style={styles.feedbackChipsRow}>
                   <span style={styles.feedbackChipGood}>[Specific ✓]</span>
@@ -1000,11 +1087,12 @@ const MockInterview: React.FC = () => {
         {/* Interaction Area (Input form or End button) */}
         {isInterviewActive && (
           interactionMode === 'text' ? (
-            <form onSubmit={handleSendText} style={styles.inputForm}>
+            <form onSubmit={handleSendText} className="mi-input-form" style={styles.inputForm}>
               <button
                 type="button"
                 onClick={stopInterview}
                 title="End Text Interview"
+                className="mi-mic-button"
                 style={{ ...styles.micButton, backgroundColor: '#fca5a5', cursor: 'pointer', outline: 'none' }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#1c1b1b' }}>
@@ -1016,9 +1104,10 @@ const MockInterview: React.FC = () => {
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isTyping}
                 placeholder="Type your answer here..."
+                className="mi-text-input"
                 style={styles.textInput}
               />
-              <button type="submit" disabled={isTyping || !input.trim()} style={styles.sendButton}>
+              <button type="submit" disabled={isTyping || !input.trim()} className="mi-send-button" style={styles.sendButton}>
                 <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>
                   send
                 </span>

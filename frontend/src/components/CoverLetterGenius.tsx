@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI } from '@google/genai';
-import { useNavigate } from 'react-router-dom';
 import NavBar from './NavBar';
 import MushroomButton from './MushroomButton';
 
@@ -22,11 +21,16 @@ interface CoverLetterGeniusProps {
 // ============================================================================
 const TONE_OPTIONS: Tone[] = ['Formal', 'Friendly', 'Confident'];
 
-const TONE_PILL_POSITIONS: Record<Tone, string> = {
-  Formal: '4px',
-  Friendly: '92px',
-  Confident: '180px',
-};
+// BUGFIX: this used to be a Record<Tone, string> of hardcoded pixel offsets
+// (e.g. '92px') sized for one specific container width. That only lined up
+// with the label above it as long as the tone switch was exactly as wide as
+// it was originally designed for — the moment the sidebar goes full-width on
+// mobile (or any width changes), the sliding pill drifts away from its
+// label. Deriving the offset as a percentage of the option's index keeps it
+// aligned at any container width, since both the pill and the option cells
+// below are sized in the same percentage units.
+const tonePillLeft = (t: Tone) => `${(TONE_OPTIONS.indexOf(t) / TONE_OPTIONS.length) * 100}%`;
+const TONE_OPTION_WIDTH = `${100 / TONE_OPTIONS.length}%`;
 
 const DEFAULTS = {
   company: 'TechNova Solutions Inc.',
@@ -128,18 +132,20 @@ const styles: Record<string, React.CSSProperties> = {
   toneSwitch: {
     position: 'relative',
     display: 'flex',
-    gap: '8px',
     backgroundColor: '#fff',
     border: '3px solid #1c1b1b',
     borderRadius: '999px',
     padding: '4px',
     boxShadow: '2px 2px 0px 0px #1c1b1b',
+    width: '100%',
+    maxWidth: '260px',
+    boxSizing: 'border-box',
   },
   toneSwitchPillBase: {
     position: 'absolute',
     top: '4px',
     bottom: '4px',
-    width: '80px',
+    width: TONE_OPTION_WIDTH,
     backgroundColor: '#fca5a5',
     border: '2px solid #1c1b1b',
     borderRadius: '999px',
@@ -150,7 +156,7 @@ const styles: Record<string, React.CSSProperties> = {
   toneOption: {
     position: 'relative',
     zIndex: 2,
-    width: '80px',
+    width: TONE_OPTION_WIDTH,
     textAlign: 'center',
     padding: '4px 0',
     borderRadius: '999px',
@@ -159,6 +165,7 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     color: '#1c1b1b',
     transition: 'color 0.3s ease',
+    boxSizing: 'border-box',
   },
 
   draftTextarea: {
@@ -294,6 +301,42 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 // ============================================================================
+// RESPONSIVE OVERRIDES
+// Inline styles above always win over plain CSS, so these breakpoints use
+// !important and target the className hooks applied in the JSX below.
+// ============================================================================
+const ResponsiveStyles = () => (
+  <style>{`
+    /* Tablet */
+    @media (max-width: 900px) {
+      .clg-page { padding: 0 16px !important; }
+      .clg-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+      .clg-title { font-size: 26px !important; }
+      .clg-draft-textarea { min-height: 300px !important; }
+    }
+
+    /* Mobile */
+    @media (max-width: 640px) {
+      .clg-page { padding: 0 12px !important; }
+      .clg-header-wrap { padding: 16px !important; flex-wrap: wrap !important; gap: 10px !important; }
+      .clg-title { font-size: 20px !important; }
+      .clg-status-line { font-size: 11px !important; padding: 6px 12px !important; }
+
+      .clg-editor-panel, .clg-target-role-card { padding: 16px !important; }
+      .clg-editor-header-row { flex-wrap: wrap !important; gap: 12px !important; }
+      .clg-tone-switch { max-width: 100% !important; }
+
+      .clg-draft-textarea { min-height: 220px !important; padding: 16px !important; font-size: 13px !important; }
+
+      .clg-actions-row { flex-wrap: wrap !important; gap: 10px !important; }
+      .clg-generate-btn, .clg-copy-btn { padding: 10px 18px !important; font-size: 12px !important; flex: 1 1 auto !important; justify-content: center !important; white-space: nowrap !important; }
+
+      .clg-pro-tip-card { padding: 12px 16px !important; }
+    }
+  `}</style>
+);
+
+// ============================================================================
 // COMPONENT
 // ============================================================================
 const CoverLetterGenius: React.FC<CoverLetterGeniusProps> = ({ userProfile }) => {
@@ -422,27 +465,36 @@ Keep it concise, professional, and highlight how my skills align perfectly with 
 
   // ---- render --------------------------------------------------------------
   return (
-    <div style={styles.page}>
+    <div className="clg-page" style={styles.page}>
+      <ResponsiveStyles />
+      {/* NOTE: `NavBar` was imported but not rendered anywhere in this file
+          before this pass — that looked like an accidental drop rather than
+          an intentional omission (MushroomButton, imported the same way, IS
+          rendered below). Re-enabling it here since NavBar takes no required
+          props elsewhere in this codebase; remove this line if this page is
+          meant to be nav-less on purpose. */}
+      <NavBar />
+
       {/* Header */}
-      <div style={styles.headerWrap}>
-        <h1 style={styles.title}>Cover Letter Genius</h1>
-        <div style={styles.statusLine}>[ STATUS: {statusText} ]</div>
+      <div className="clg-header-wrap" style={styles.headerWrap}>
+        <h1 className="clg-title" style={styles.title}>Cover Letter Genius</h1>
+        <div className="clg-status-line" style={styles.statusLine}>[ STATUS: {statusText} ]</div>
       </div>
 
-      <div style={styles.grid}>
+      <div className="clg-grid" style={styles.grid}>
         {/* ---------------- Left Side: Editor ---------------- */}
-        <div style={styles.editorPanel}>
-          <div style={styles.editorHeaderRow}>
+        <div className="clg-editor-panel" style={styles.editorPanel}>
+          <div className="clg-editor-header-row" style={styles.editorHeaderRow}>
             <div style={styles.editorHeaderLabel}>
               <span className="material-symbols-outlined">edit_note</span> Drafting...
             </div>
 
-            <div style={styles.toneSwitch}>
+            <div className="clg-tone-switch" style={styles.toneSwitch}>
               {/* Sliding Pink Bubble */}
               <div
                 style={{
                   ...styles.toneSwitchPillBase,
-                  left: TONE_PILL_POSITIONS[tone],
+                  left: tonePillLeft(tone),
                 }}
               />
               {TONE_OPTIONS.map((t) => (
@@ -456,16 +508,18 @@ Keep it concise, professional, and highlight how my skills align perfectly with 
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
+            className="clg-draft-textarea"
             style={styles.draftTextarea}
             placeholder="Your generated cover letter will appear here..."
           />
 
-          <div style={styles.actionsRow}>
+          <div className="clg-actions-row" style={styles.actionsRow}>
             <button
               onClick={generateCoverLetter}
               disabled={isGenerating}
               onMouseEnter={() => setIsGenerateHovered(true)}
               onMouseLeave={() => setIsGenerateHovered(false)}
+              className="clg-generate-btn"
               style={{
                 ...styles.generateButton,
                 cursor: isGenerating ? 'not-allowed' : 'pointer',
@@ -481,6 +535,7 @@ Keep it concise, professional, and highlight how my skills align perfectly with 
               onClick={copyToClipboard}
               onMouseEnter={() => setIsCopyHovered(true)}
               onMouseLeave={() => setIsCopyHovered(false)}
+              className="clg-copy-btn"
               style={{
                 ...styles.copyButtonBase,
                 color: copied ? '#10b981' : '#1c1b1b', // Green when copied
@@ -498,7 +553,7 @@ Keep it concise, professional, and highlight how my skills align perfectly with 
 
         {/* ---------------- Right Side: Target Role Sidebar ---------------- */}
         <div style={styles.sidebar}>
-          <div style={styles.targetRoleCard}>
+          <div className="clg-target-role-card" style={styles.targetRoleCard}>
             <div style={styles.targetRoleHeader}>
               <span className="material-symbols-outlined">work</span> Target Role
             </div>
@@ -555,7 +610,7 @@ Keep it concise, professional, and highlight how my skills align perfectly with 
             )}
           </div>
 
-          <div style={styles.proTipCard}>
+          <div className="clg-pro-tip-card" style={styles.proTipCard}>
             <div style={styles.proTipIconWrap}>
               <span className="material-symbols-outlined">lightbulb</span>
             </div>
