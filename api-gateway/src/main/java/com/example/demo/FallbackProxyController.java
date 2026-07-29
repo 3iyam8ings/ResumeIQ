@@ -51,7 +51,7 @@ public class FallbackProxyController {
             }
         }
 
-        if (!headers.containsKey("X-Forwarded-Host")) {
+        if (!headers.containsHeader("X-Forwarded-Host")) {
             headers.add("X-Forwarded-Host", request.getHeader("Host"));
         }
 
