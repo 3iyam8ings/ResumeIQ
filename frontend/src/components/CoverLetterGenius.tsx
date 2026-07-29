@@ -191,6 +191,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: '8px',
     boxShadow: '4px 4px 0px 0px #1c1b1b',
+    transition: 'transform 0.15s ease, box-shadow 0.15s ease',
   },
   copyButtonBase: {
     backgroundColor: '#fff',
@@ -204,7 +205,7 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '8px',
     boxShadow: '4px 4px 0px 0px #1c1b1b',
     cursor: 'pointer',
-    transition: 'color 0.3s ease',
+    transition: 'color 0.3s ease, transform 0.15s ease, box-shadow 0.15s ease',
   },
 
   sidebar: { display: 'flex', flexDirection: 'column', gap: '24px' },
@@ -306,6 +307,8 @@ const CoverLetterGenius: React.FC<CoverLetterGeniusProps> = ({ userProfile }) =>
   const [statusText, setStatusText] = useState(STATUS.READY);
   const [copied, setCopied] = useState(false);
   const [visibleLogLines, setVisibleLogLines] = useState(0);
+  const [isGenerateHovered, setIsGenerateHovered] = useState(false);
+  const [isCopyHovered, setIsCopyHovered] = useState(false);
 
   // ---- effects -------------------------------------------------------------
   // Reveals the terminal log lines one by one while a generation is running.
@@ -461,9 +464,13 @@ Keep it concise, professional, and highlight how my skills align perfectly with 
             <button
               onClick={generateCoverLetter}
               disabled={isGenerating}
+              onMouseEnter={() => setIsGenerateHovered(true)}
+              onMouseLeave={() => setIsGenerateHovered(false)}
               style={{
                 ...styles.generateButton,
                 cursor: isGenerating ? 'not-allowed' : 'pointer',
+                transform: isGenerateHovered ? 'translate(4px, 4px)' : 'translate(0, 0)',
+                boxShadow: isGenerateHovered ? '0px 0px 0px 0px #1c1b1b' : '4px 4px 0px 0px #1c1b1b',
               }}
             >
               <span className="material-symbols-outlined">refresh</span>
@@ -472,9 +479,13 @@ Keep it concise, professional, and highlight how my skills align perfectly with 
 
             <button
               onClick={copyToClipboard}
+              onMouseEnter={() => setIsCopyHovered(true)}
+              onMouseLeave={() => setIsCopyHovered(false)}
               style={{
                 ...styles.copyButtonBase,
                 color: copied ? '#10b981' : '#1c1b1b', // Green when copied
+                transform: isCopyHovered ? 'translate(4px, 4px)' : 'translate(0, 0)',
+                boxShadow: isCopyHovered ? '0px 0px 0px 0px #1c1b1b' : '4px 4px 0px 0px #1c1b1b',
               }}
             >
               <span className="material-symbols-outlined">
