@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { useNavigate } from 'react-router-dom';
 import NavBar from './NavBar';
 import MushroomButton from './MushroomButton';
@@ -337,6 +337,34 @@ ${requirements || DEFAULTS.requirements}
 The tone should be ${tone}.
 Keep it concise, professional, and highlight how my skills align perfectly with their goals. Sign it with my name: ${userProfile?.name || '[Your Name]'}. Use placeholders like [Target Position] if you don't know the specifics.`;
 
+  // ---- helpers (API) --------------------------------------------------------
+  // Gemini occasionally returns a transient 503 ("model overloaded / high demand").
+  // Retry a couple of times with a short delay before giving up.
+  const generateContentWithRetry = async (
+    genAI: GoogleGenAI,
+    retries = 2,
+    delayMs = 1500
+  ) => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        return await genAI.models.generateContent({
+          model: GEMINI_MODEL,
+          contents: buildPrompt(),
+        });
+      } catch (err: any) {
+        const message = err?.message || '';
+        const isOverloaded = message.includes('503') || /high demand|overloaded/i.test(message);
+        if (isOverloaded && attempt < retries) {
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          continue;
+        }
+        throw err;
+      }
+    }
+    // Unreachable, but keeps TypeScript happy about return type.
+    throw new Error('Failed to generate content after retries.');
+  };
+
   // ---- actions -------------------------------------------------------------
   const generateCoverLetter = async () => {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -350,23 +378,28 @@ Keep it concise, professional, and highlight how my skills align perfectly with 
     setDraft('Drafting...');
 
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+      const genAI = new GoogleGenAI({ apiKey });
 
       // Run the API call and the animation timer concurrently
       const minAnimTime = TERMINAL_LOG_LINES.length * TERMINAL_LINE_DELAY_MS;
       const [result] = await Promise.all([
-        model.generateContent(buildPrompt()),
+        generateContentWithRetry(genAI),
         new Promise((resolve) => setTimeout(resolve, minAnimTime))
       ]);
 
-      const text = result.response.text();
+      const text = result.text;
 
       setDraft(text || 'Failed to generate.');
       setStatusText(STATUS.COMPLETE);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setDraft('Error generating cover letter. Check console and API key.');
+      const message = err?.message || '';
+      const isOverloaded = message.includes('503') || /high demand|overloaded/i.test(message);
+      setDraft(
+        isOverloaded
+          ? "Gemini is overloaded right now (503 - high demand). This isn't an API key issue - wait a few seconds and hit Generate again."
+          : 'Error generating cover letter. Check console and API key.'
+      );
       setStatusText(STATUS.ERROR);
     } finally {
       setIsGenerating(false);
