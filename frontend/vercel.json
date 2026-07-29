@@ -2,15 +2,15 @@
     "rewrites": [
         {
             "source": "/api/:path*",
-            "destination": "https://resumeiq-gateway.onrender.com/api/:path*"
+            "destination": "https://resumeiq-4wpk.onrender.com/api/:path*"
         },
         {
             "source": "/oauth2/:path*",
-            "destination": "https://resumeiq-gateway.onrender.com/oauth2/:path*"
+            "destination": "https://resumeiq-4wpk.onrender.com/oauth2/:path*"
         },
         {
             "source": "/login/oauth2/:path*",
-            "destination": "https://resumeiq-gateway.onrender.com/login/oauth2/:path*"
+            "destination": "https://resumeiq-4wpk.onrender.com/login/oauth2/:path*"
         },
         {
             "source": "/(.*)",
