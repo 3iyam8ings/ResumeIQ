@@ -20,6 +20,12 @@ export default defineConfig({
         secure: false,
         cookieDomainRewrite: 'localhost',
       },
+      '/login/oauth2': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+        secure: false,
+        cookieDomainRewrite: 'localhost',
+      },
     }
   }
 })

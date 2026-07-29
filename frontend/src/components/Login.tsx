@@ -68,7 +68,7 @@ const FONTS = {
 } as const;
 
 // Same OAuth endpoint as before — untouched, just named so it isn't a magic string.
-const OAUTH_BASE_URL = 'https://resumeiq-gateway.onrender.com/oauth2/authorization';
+const OAUTH_BASE_URL = '/oauth2/authorization';
 
 const pillInputStyle: React.CSSProperties = {
   width: '100%',

@@ -223,7 +223,7 @@ const Signup: React.FC = () => {
   }, [location]);
 
   const handleOAuthLogin = (provider: string) => {
-    window.location.href = `https://resumeiq-gateway.onrender.com/oauth2/authorization/${provider}`;
+    window.location.href = `/oauth2/authorization/${provider}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
