@@ -41,25 +41,12 @@ function App() {
   const location = useLocation();
 
   useEffect(() => {
-    // These pages are available before sign-in. Avoid an expected 401 from the
-    // session endpoint every time a visitor opens an auth form.
-    const isPublicAuthPage = ['/login', '/signup', '/forgot-password', '/reset-password']
-      .includes(location.pathname);
-
-    if (isPublicAuthPage) {
-      setIsAuthenticated(false);
-      return;
-    }
-
-    // Check if the user is logged in
+    // Check if the user is logged in (fire and forget)
     fetch('/api/auth/me', { credentials: 'include' })
       .then(res => {
         if (res.ok) {
           res.json().then(data => setUserProfile(data));
           setIsAuthenticated(true);
-          if (location.pathname === '/') {
-            navigate('/home');
-          }
         } else {
           setIsAuthenticated(false);
         }
@@ -67,9 +54,21 @@ function App() {
       .catch(() => {
         setIsAuthenticated(false);
       });
+  }, []);
+
+  useEffect(() => {
+    if (location.pathname === '/') {
+      navigate('/home', { replace: true });
+    }
   }, [location.pathname, navigate]);
 
-  if (isAuthenticated === null) {
+  // List of paths that can be viewed without waiting for auth to resolve
+  const isPublicView = ['/', '/home', '/features', '/login', '/signup', '/forgot-password', '/reset-password', '/report'].includes(location.pathname) 
+    || location.pathname.startsWith('/test') 
+    || location.pathname === '/iqtest'
+    || location.pathname === '/arena';
+
+  if (isAuthenticated === null && !isPublicView) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: 'var(--bg)' }}><h2 style={{ color: 'var(--text-primary)' }}>Loading...</h2></div>;
   }
 
