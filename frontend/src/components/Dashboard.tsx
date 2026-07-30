@@ -287,7 +287,7 @@ const KanbanColumn = ({
   isCompactView: boolean;
   onCardClick: (app: JobApplication) => void;
 }) => (
-  <div>
+  <div className="dashboard-kanban-column">
     <div style={{ ...styles.laneHeader, backgroundColor: LANE_COLORS[status] }}>
       <span>{status}</span>
       <span style={styles.laneCount}>{apps.length}</span>
@@ -427,7 +427,7 @@ const ApplicationModal = ({
   onClose: () => void;
 }) => (
   <div style={styles.modalOverlay}>
-    <div style={styles.modalCard}>
+    <div style={styles.modalCard} className="dashboard-modal-card">
       <button onClick={onClose} style={styles.modalCloseButton}>&times;</button>
       <h2 style={styles.modalTitle}>{editingApp ? 'Edit Application' : 'New Application'}</h2>
 
@@ -458,7 +458,7 @@ const ApplicationModal = ({
           />
         </div>
 
-        <div style={styles.fieldRow}>
+        <div className="dashboard-field-row" style={styles.fieldRow}>
           <div style={styles.fieldRowItem}>
             <label style={styles.fieldLabel}>Status</label>
             <StatusDropdown value={formState.status} onChange={(status) => onFieldChange({ status })} />
@@ -742,14 +742,33 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
   /* Render                                                            */
   /* -------------------------------------------------------------- */
   return (
-    <div style={styles.page}>
+    <div className="dashboard-page" style={styles.page}>
+      <style>{`
+        @media (max-width: 900px) {
+          .dashboard-header-row { flex-wrap: wrap !important; gap: 16px !important; }
+          .dashboard-header-title { font-size: 34px !important; }
+          .dashboard-stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .dashboard-analytics-grid { grid-template-columns: 1fr !important; }
+          .dashboard-kanban-grid { grid-template-columns: none !important; grid-auto-flow: column !important; grid-auto-columns: 240px !important; overflow-x: auto !important; padding-bottom: 8px !important; }
+          .dashboard-kanban-column { min-width: 240px !important; }
+        }
+
+        @media (max-width: 480px) {
+          .dashboard-page { padding: 0 16px !important; }
+          .dashboard-header-title { font-size: 26px !important; }
+          .dashboard-stat-grid { grid-template-columns: 1fr !important; }
+          .dashboard-modal-card { padding: 20px !important; }
+          .dashboard-field-row { flex-direction: column !important; }
+        }
+      `}</style>
+
       <Toast toast={toast} />
 
       {/* ---- Header ---- */}
-      <div style={styles.headerRow}>
+      <div className="dashboard-header-row" style={styles.headerRow}>
         <div>
           <div style={styles.headerBadge}>[DASHBOARD: OVERVIEW]</div>
-          <h1 style={styles.headerTitle}>Welcome back, {userProfile?.name?.split(' ')[0] || 'User'}.</h1>
+          <h1 className="dashboard-header-title" style={styles.headerTitle}>Welcome back, {userProfile?.name?.split(' ')[0] || 'User'}.</h1>
           {loading && <p style={styles.loadingText}>Loading applications...</p>}
         </div>
         <button
@@ -769,7 +788,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
       </div>
 
       {/* ---- Summary stats ---- */}
-      <div style={styles.statGrid}>
+      <div className="dashboard-stat-grid" style={styles.statGrid}>
         <StatCard label="[TOTAL_APPS]" icon="rocket_launch" backgroundColor="#fbbf24"
           value={applications.length} subtext={`${appliedThisWeekCount} applied this week`} />
         <StatCard label="[AVG_RESUME_SCORE]" icon="analytics" backgroundColor="#34d399"
@@ -799,7 +818,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
         </div>
       </div>
 
-      <div style={styles.kanbanGrid}>
+      <div className="dashboard-kanban-grid" style={styles.kanbanGrid}>
         {STATUS_COLUMNS.map((status) => (
           <KanbanColumn
             key={status}
@@ -812,7 +831,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
       </div>
 
       {/* ---- Analytics / promo row ---- */}
-      <div style={styles.analyticsGrid}>
+      <div className="dashboard-analytics-grid" style={styles.analyticsGrid}>
         <ArenaPromo onNavigate={() => navigate('/arena')} />
         <TerminalPanel messageCount={terminalIndex} />
       </div>

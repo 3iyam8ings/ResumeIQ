@@ -141,18 +141,18 @@ const styles = {
 /* ====================================================================== */
 
 const Navbar = ({ onLogoClick }: { onLogoClick: () => void }) => (
-  <header style={styles.header}>
+  <header className="reset-navbar" style={styles.header}>
     <div style={styles.logoGroup} onClick={onLogoClick}>
       <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '32px' }} />
       <span style={styles.logoText}>ResumeIQ</span>
     </div>
-    <div style={fonts.labelMono}>[ VERSION: 2.0.4 ]</div>
+    <div className="reset-navbar-version" style={fonts.labelMono}>[ VERSION: 2.0.4 ]</div>
   </header>
 );
 
 const PageHeaderCard = () => (
-  <div style={styles.headerCard}>
-    <h1 style={styles.headerCardTitle}>New Password</h1>
+  <div className="reset-header-card" style={styles.headerCard}>
+    <h1 className="reset-header-title" style={styles.headerCardTitle}>New Password</h1>
     <p style={styles.headerCardSubtitle}>// Secure your account</p>
   </div>
 );
@@ -300,20 +300,36 @@ const ResetPassword: React.FC = () => {
   /* -------------------------------------------------------------- */
   return (
     <div style={styles.pageWrapper}>
+      <style>{`
+        @media (max-width: 768px) {
+          .reset-main { padding: 0 16px !important; margin-top: 48px !important; }
+          .reset-header-card { padding: 28px !important; }
+          .reset-header-title { font-size: 34px !important; }
+          .reset-form-body { padding: 28px !important; }
+        }
+
+        @media (max-width: 480px) {
+          .reset-navbar { padding: 10px 16px !important; }
+          .reset-navbar-version { display: none !important; }
+          .reset-header-title { font-size: 26px !important; }
+          .reset-form-body { padding: 20px !important; gap: 16px !important; }
+        }
+      `}</style>
+
       {error && <ErrorModal error={error} onClose={() => setError(null)} />}
 
       <Navbar onLogoClick={() => navigate('/home')} />
 
-      <main style={styles.main}>
+      <main className="reset-main" style={styles.main}>
         <PageHeaderCard />
 
         <div style={styles.terminalWindow}>
           <TerminalTitleBar />
 
-          <form onSubmit={handleSubmit} style={styles.form}>
+          <form onSubmit={handleSubmit} className="reset-form-body" style={styles.form}>
             {!token ? (
               <div style={{ backgroundColor: '#f87171', color: '#1c1b1b', padding: '16px', borderRadius: '12px', border: BORDER, ...fonts.labelMono, textAlign: 'center' }}>
-                ❌ Invalid or missing password reset token.<br/>Please request a new link.
+                ❌ Invalid or missing password reset token.<br />Please request a new link.
               </div>
             ) : successMsg ? (
               <SuccessBanner message={successMsg} />
