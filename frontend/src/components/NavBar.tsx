@@ -15,6 +15,7 @@ interface NavBarProps {
 /* ------------------------------------------------------------------ */
 const NAV_LINKS = [
   { label: 'Home', path: '/home' },
+  { label: 'Features', path: '/features' },
   { label: 'Cover Letter', path: '/cover-letter' },
   { label: 'Mock Interview', path: '/mock-interview' },
   { label: 'Job Tracker', path: '/dashboard' },

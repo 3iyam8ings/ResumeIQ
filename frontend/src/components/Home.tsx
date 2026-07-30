@@ -353,7 +353,6 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
       `}</style>
       </div>
       <MushroomButton />
-      <Footer />
     </div>
   );
 };
