@@ -353,6 +353,7 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
       `}</style>
       </div>
       <MushroomButton />
+      <Footer showNavLinks={true} />
     </div>
   );
 };
