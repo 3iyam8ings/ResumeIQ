@@ -262,25 +262,43 @@ const Signup: React.FC = () => {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
         }
+
+        @media (max-width: 768px) {
+          .signup-main { padding: 48px 16px 0 !important; gap: 28px !important; }
+          .signup-headline-card { padding: 28px !important; }
+          .signup-headline-title { font-size: 34px !important; }
+          .signup-form-card { padding: 28px !important; }
+          .signup-terminal-card { padding: 16px !important; margin-bottom: 40px !important; }
+        }
+
+        @media (max-width: 480px) {
+          .signup-header { padding: 10px 16px !important; flex-wrap: wrap !important; gap: 8px !important; }
+          .signup-header-nav { gap: 12px !important; }
+          .signup-headline-title { font-size: 26px !important; }
+          .signup-form-card { padding: 20px !important; }
+          .signup-oauth-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+          .signup-footer { padding: 12px 16px !important; }
+          .signup-footer-cta { padding: 8px 20px !important; }
+        }
       `}</style>
 
       {/* Top App Bar */}
-      <header style={styles.header}>
+      <header className="signup-header" style={styles.header}>
         <div style={styles.headerBrand} onClick={() => navigate('/home')}>
           <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '48px' }} />
           <span style={styles.headerBrandTitle}>ResumeIQ</span>
         </div>
-        <div style={styles.headerNav}>
+        <div className="signup-header-nav" style={styles.headerNav}>
           <span onClick={() => navigate('/features')} style={styles.headerNavItem}>FEATURES</span>
 
           <span style={styles.headerNavItemActive}>SIGN UP</span>
         </div>
       </header>
 
-      <main style={styles.main}>
+      <main className="signup-main" style={styles.main}>
         {/* Headline Container */}
-        <div style={styles.headlineCard}>
-          <h1 style={styles.headlineTitle}>
+        <div className="signup-headline-card" style={styles.headlineCard}>
+          <h1 className="signup-headline-title" style={styles.headlineTitle}>
             Join the <br />
             <span style={styles.headlineTitleHighlight}>[ FUTURE ]</span>
           </h1>
@@ -288,7 +306,7 @@ const Signup: React.FC = () => {
         </div>
 
         {/* Signup Form */}
-        <div style={styles.formCard}>
+        <div className="signup-form-card" style={styles.formCard}>
           {error && <ErrorModal error={error} onClose={() => setError(null)} />}
 
           <form onSubmit={handleSubmit} style={styles.form}>
@@ -352,7 +370,7 @@ const Signup: React.FC = () => {
             <hr style={styles.dividerLine} />
           </div>
 
-          <div style={styles.oauthGrid}>
+          <div className="signup-oauth-grid" style={styles.oauthGrid}>
             <button onClick={() => handleOAuthLogin('google')} style={styles.oauthButton}>
               <img src="https://www.google.com/favicon.ico" alt="Google" style={styles.oauthIcon} /> GOOGLE
             </button>
@@ -370,7 +388,7 @@ const Signup: React.FC = () => {
         </div>
 
         {/* Interactive Terminal Decoration */}
-        <div style={styles.terminalCard}>
+        <div className="signup-terminal-card" style={styles.terminalCard}>
           <div style={styles.terminalDots}>
             <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#FF5F56' }}></div>
             <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#FFBD2E' }}></div>
@@ -386,8 +404,8 @@ const Signup: React.FC = () => {
       </main>
 
       {/* Purple Footer */}
-      <footer style={styles.footer}>
-        <div onClick={() => navigate('/login')} style={styles.footerCta}>
+      <footer className="signup-footer" style={styles.footer}>
+        <div className="signup-footer-cta" onClick={() => navigate('/login')} style={styles.footerCta}>
           <span style={{ fontSize: '18px' }}>➔]</span>
           Sign In
         </div>

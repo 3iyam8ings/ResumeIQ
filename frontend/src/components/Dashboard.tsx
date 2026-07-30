@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Footer from './Footer';
 
 /* ====================================================================== */
 /* 1. TYPES                                                                */
@@ -829,6 +830,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
           onClose={closeModal}
         />
       )}
+      <Footer showNavLinks={true} />
     </div>
   );
 };

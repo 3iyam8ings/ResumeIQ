@@ -91,6 +91,7 @@ const pillInputStyle: React.CSSProperties = {
 
 const NavBar: React.FC<{ onLogoClick: () => void }> = ({ onLogoClick }) => (
   <header
+    className="login-navbar"
     style={{
       width: '100%',
       backgroundColor: COLORS.background,
@@ -113,12 +114,12 @@ const NavBar: React.FC<{ onLogoClick: () => void }> = ({ onLogoClick }) => (
       <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '48px' }} />
       <span style={{ ...FONTS.headlineMd, fontWeight: 900 }}>ResumeIQ</span>
     </div>
-    <div style={{ ...FONTS.labelMono }}>[ VERSION: 2.0.4 ]</div>
+    <div className="login-navbar-version" style={{ ...FONTS.labelMono }}>[ VERSION: 2.0.4 ]</div>
   </header>
 );
 
 const AiApprovedSticker: React.FC = () => (
-  <div style={{ position: 'absolute', top: '120px', left: '60px', transform: 'rotate(-15deg)', zIndex: 5 }}>
+  <div className="login-ai-sticker" style={{ position: 'absolute', top: '120px', left: '60px', transform: 'rotate(-15deg)', zIndex: 5 }}>
     <div
       style={{
         backgroundColor: COLORS.pink,
@@ -141,7 +142,7 @@ const AiApprovedSticker: React.FC = () => (
 );
 
 const IqBadge: React.FC = () => (
-  <div style={{ position: 'absolute', bottom: '5px', right: '80px', zIndex: 5, transform: 'rotate(-10deg) scale(1.15)' }}>
+  <div className="login-iq-badge" style={{ position: 'absolute', bottom: '5px', right: '80px', zIndex: 5, transform: 'rotate(-10deg) scale(1.15)' }}>
     <div
       style={{
         backgroundColor: COLORS.grey,
@@ -168,6 +169,7 @@ const IqBadge: React.FC = () => (
 
 const WelcomeBanner: React.FC = () => (
   <div
+    className="login-welcome-banner"
     style={{
       backgroundColor: COLORS.yellow,
       border: BORDER,
@@ -177,7 +179,7 @@ const WelcomeBanner: React.FC = () => (
       transform: 'rotate(-1deg)',
     }}
   >
-    <h1 style={{ ...FONTS.displayLg, color: COLORS.yellowTextDark, margin: 0, lineHeight: 1 }}>
+    <h1 className="login-welcome-title" style={{ ...FONTS.displayLg, color: COLORS.yellowTextDark, margin: 0, lineHeight: 1 }}>
       Welcome back [ USER ]
     </h1>
     <p
@@ -234,7 +236,7 @@ const LoginFormCard: React.FC<LoginFormProps> = ({
     </div>
 
     {/* Form Body */}
-    <form onSubmit={onSubmit} style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <form className="login-form-body" onSubmit={onSubmit} style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
         <label style={{ ...FONTS.labelMono, marginLeft: '8px' }}>EMAIL_ADDRESS</label>
         <input
@@ -340,6 +342,7 @@ const SignupPrompt: React.FC = () => (
 
 const BottomNav: React.FC<{ onSignIn: () => void; onSignUp: () => void }> = ({ onSignIn, onSignUp }) => (
   <footer
+    className="login-bottom-nav"
     style={{
       width: '100%',
       display: 'flex',
@@ -354,6 +357,7 @@ const BottomNav: React.FC<{ onSignIn: () => void; onSignUp: () => void }> = ({ o
   >
     {/* Sign In (INACTIVE) */}
     <div
+      className="login-bottom-nav-item"
       onClick={onSignIn}
       style={{
         display: 'flex',
@@ -372,6 +376,7 @@ const BottomNav: React.FC<{ onSignIn: () => void; onSignUp: () => void }> = ({ o
 
     {/* Create Account (ACTIVE) */}
     <div
+      className="login-bottom-nav-item"
       onClick={onSignUp}
       style={{
         display: 'flex',
@@ -459,6 +464,28 @@ const Login: React.FC = () => {
         overflowX: 'hidden',
       }}
     >
+      <style>{`
+        @media (max-width: 768px) {
+          .login-main { padding: 0 16px !important; margin-top: 48px !important; }
+          .login-welcome-banner { padding: 28px !important; }
+          .login-welcome-title { font-size: 34px !important; }
+          .login-form-body { padding: 28px !important; }
+          .login-ai-sticker { top: 90px !important; left: 20px !important; transform: rotate(-15deg) scale(0.85) !important; }
+          .login-iq-badge { bottom: 8px !important; right: 20px !important; transform: rotate(-10deg) scale(0.9) !important; }
+        }
+
+        @media (max-width: 480px) {
+          .login-navbar { padding: 10px 16px !important; }
+          .login-navbar-version { display: none !important; }
+          .login-welcome-title { font-size: 26px !important; }
+          .login-form-body { padding: 20px !important; gap: 16px !important; }
+          .login-ai-sticker { display: none !important; }
+          .login-iq-badge { display: none !important; }
+          .login-bottom-nav { padding: 16px !important; }
+          .login-bottom-nav-item { padding: 4px 16px !important; }
+        }
+      `}</style>
+
       {error && <ErrorModal error={error} onClose={() => setError(null)} />}
 
       <NavBar onLogoClick={() => navigate('/home')} />
@@ -467,6 +494,7 @@ const Login: React.FC = () => {
       <IqBadge />
 
       <main
+        className="login-main"
         style={{
           width: '100%',
           maxWidth: '448px',

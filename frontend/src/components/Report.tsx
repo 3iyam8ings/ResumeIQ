@@ -87,7 +87,6 @@ const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
   const [optimizedBullet, setOptimizedBullet] = useState<string | null>(null);
   const [rewriteLoading, setRewriteLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [navHover, setNavHover] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -140,9 +139,9 @@ const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
     <div style={{ backgroundColor: '#f5f0eb', minHeight: '100vh' }}>
 
       {/* Page Title */}
-      <div style={{ 
-        padding: '24px 24px 16px', 
-        maxWidth: '1200px', 
+      <div className="report-header" style={{
+        padding: '24px 24px 16px',
+        maxWidth: '1200px',
         margin: '0 auto',
         position: 'sticky',
         top: 0,
@@ -150,7 +149,7 @@ const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
         backgroundColor: '#f5f0eb',
         borderBottom: '2px solid transparent' // Optional, could add a border if needed
       }}>
-        <h1 style={{ fontWeight: 900, fontSize: '36px', margin: 0, letterSpacing: '-1px' }}>
+        <h1 className="report-title" style={{ fontWeight: 900, fontSize: '36px', margin: 0, letterSpacing: '-1px' }}>
           Detailed Analysis <span style={{ color: '#7c3aed' }}>Report</span>
         </h1>
         <p style={{ fontFamily: 'monospace', fontSize: '16px', opacity: 0.6, marginTop: 6, marginBottom: 0 }}>
@@ -171,10 +170,10 @@ const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
           </button>
         </div>
       ) : (
-        <div style={{ padding: '10px 24px 24px', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="report-content" style={{ padding: '10px 24px 24px', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
           {/* Main Grid Layout */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2.1fr', gap: '14px', alignItems: 'stretch' }}>
+          <div className="report-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2.1fr', gap: '14px', alignItems: 'stretch' }}>
 
             {/* ATS Match Score — left tall card */}
             <div style={{ ...cardStyle('#7ebbf5'), display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
@@ -210,7 +209,7 @@ const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
               {/* Matched Skills | Missing Skills — side by side */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', alignItems: 'stretch' }}>
+              <div className="report-skills-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', alignItems: 'stretch' }}>
 
                 {/* Matched Skills */}
                 <div style={{ backgroundColor: '#82db9b', border: '3px solid #000', borderRadius: '10px', padding: '16px' }}>
@@ -330,7 +329,7 @@ const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
                 </button>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '14px', alignItems: 'stretch' }}>
+              <div className="report-rewrite-grid" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '14px', alignItems: 'stretch' }}>
 
                 {/* Weak bullet */}
                 <div style={{ border: '3px solid #000', borderRadius: '8px', backgroundColor: '#ea7d7a', padding: '16px', height: '100%', boxSizing: 'border-box' }}>
@@ -343,7 +342,7 @@ const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
                 </div>
 
                 {/* Arrow */}
-                <div style={{ alignSelf: 'center', width: '28px', height: '28px', backgroundColor: '#fff', border: '3px solid #000', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 'bold', color: '#000' }}>➔</div>
+                <div className="report-rewrite-arrow" style={{ alignSelf: 'center', width: '28px', height: '28px', backgroundColor: '#fff', border: '3px solid #000', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 'bold', color: '#000' }}>➔</div>
 
                 {/* Optimized bullet */}
                 <div style={{ border: '3px solid #000', borderRadius: '8px', backgroundColor: '#82db9b', padding: '16px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -412,6 +411,23 @@ const Report: React.FC<{ userProfile?: any }> = ({ userProfile }) => {
         .btn-analyze:hover, .btn-analyze:active {
           transform: translate(4px, 4px);
           box-shadow: 0px 0px 0px #000 !important;
+        }
+
+        @media (max-width: 900px) {
+          .report-main-grid { grid-template-columns: 1fr !important; }
+        }
+
+        @media (max-width: 768px) {
+          .report-header { padding: 20px 16px 12px !important; }
+          .report-title { font-size: 28px !important; }
+          .report-content { padding: 8px 16px 24px !important; }
+          .report-rewrite-grid { grid-template-columns: 1fr !important; }
+          .report-rewrite-arrow { transform: rotate(90deg) !important; margin: 4px auto !important; }
+        }
+
+        @media (max-width: 480px) {
+          .report-skills-grid { grid-template-columns: 1fr !important; }
+          .report-title { font-size: 24px !important; }
         }
       `}</style>
     </div>

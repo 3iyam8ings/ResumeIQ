@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from './NavBar';
 import MushroomButton from './MushroomButton';
+import Footer from './Footer';
 
 interface HomeProps {
   isAuthenticated?: boolean;
@@ -61,44 +62,44 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
 
     // Background animation sequence
     const animateLogs = async () => {
-        setLogs([
-            '# ResumeIQ Processing v2.4.0',
-            'System ready... awaiting file upload.',
-            `> [CRITICAL] File detected: ${file?.name}`,
-            '> Initializing neural engine...',
-        ]);
-        await sleep(600);
+      setLogs([
+        '# ResumeIQ Processing v2.4.0',
+        'System ready... awaiting file upload.',
+        `> [CRITICAL] File detected: ${file?.name}`,
+        '> Initializing neural engine...',
+      ]);
+      await sleep(600);
+      if (isDone) return;
+      setLogs(prev => [...prev, '> Connection established with Claude API']);
+      await sleep(600);
+      if (isDone) return;
+      setLogs(prev => [...prev, '> Loading ATS heuristics...']);
+      await sleep(600);
+      if (isDone) return;
+      setLogs(prev => [...prev, '> Extracting text metadata...']);
+      await sleep(1000);
+      if (isDone) return;
+      setLogs(prev => [...prev, '> Analyzing formatting and structure...']);
+      await sleep(1000);
+      if (isDone) return;
+      if (jobDescription && jobDescription.trim().length > 0) {
+        setLogs(prev => [...prev, '> Cross-referencing job requirements...']);
+        await sleep(1200);
         if (isDone) return;
-        setLogs(prev => [...prev, '> Connection established with Claude API']);
-        await sleep(600);
+        setLogs(prev => [...prev, '> Calculating relevance score...']);
+      } else {
+        setLogs(prev => [...prev, '> Checking keyword density...']);
+        await sleep(1200);
         if (isDone) return;
-        setLogs(prev => [...prev, '> Loading ATS heuristics...']);
-        await sleep(600);
-        if (isDone) return;
-        setLogs(prev => [...prev, '> Extracting text metadata...']);
-        await sleep(1000);
-        if (isDone) return;
-        setLogs(prev => [...prev, '> Analyzing formatting and structure...']);
-        await sleep(1000);
-        if (isDone) return;
-        if (jobDescription && jobDescription.trim().length > 0) {
-            setLogs(prev => [...prev, '> Cross-referencing job requirements...']);
-            await sleep(1200);
-            if (isDone) return;
-            setLogs(prev => [...prev, '> Calculating relevance score...']);
-        } else {
-            setLogs(prev => [...prev, '> Checking keyword density...']);
-            await sleep(1200);
-            if (isDone) return;
-            setLogs(prev => [...prev, '> Generating baseline ATS score...']);
-        }
-        await sleep(1000);
-        if (isDone) return;
-        setLogs(prev => [...prev, '> Finalizing report...']);
+        setLogs(prev => [...prev, '> Generating baseline ATS score...']);
+      }
+      await sleep(1000);
+      if (isDone) return;
+      setLogs(prev => [...prev, '> Finalizing report...']);
     };
-    
+
     animateLogs();
-    
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('jobDescription', jobDescription);
@@ -107,10 +108,10 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
-      
+
       const elapsed = Date.now() - startTime;
       if (elapsed < 4500) {
-          await sleep(4500 - elapsed); // Minimum wait for UX polish
+        await sleep(4500 - elapsed); // Minimum wait for UX polish
       }
       isDone = true;
 
@@ -128,172 +129,190 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
 
   return (
     <div style={{ backgroundColor: '#fcf9f8', minHeight: '100vh', padding: '2rem 0' }}>
-      <div style={{ padding: '0 2rem', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px' }}>
-      
-      {/* App Bar */}
-      <NavBar userProfile={userProfile} />
-      
-      {/* Hero Section */}
-      <div 
-        style={{ 
-          backgroundColor: '#f5c445', 
-          border: '3px solid #000',
-          borderRadius: '20px',
-          padding: '48px 0 48px 48px',
-          boxShadow: '6px 6px 0px #000',
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          gap: '40px'
-        }}
-      >
-        <div style={{ flex: 1 }}>
-          <div style={{ backgroundColor: '#1c1b1b', color: 'white', display: 'inline-block', padding: '4px 12px', borderRadius: '8px', fontFamily: 'var(--mono)', fontSize: '14px', marginBottom: '24px' }}>
-            [ STATUS: SYSTEM ACTIVE ]
-          </div>
-          <h1 style={{ fontSize: '57px', fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800, marginBottom: '24px', lineHeight: 1, letterSpacing: '-0.02em', color: '#1c1b1b' }}>
-            Know exactly why you're not getting <span style={{ textDecoration: 'underline', textDecorationThickness: '4px' }}>callbacks</span>.
-          </h1>
-          <p style={{ fontSize: '18px', fontFamily: '"Plus Jakarta Sans", sans-serif', opacity: 0.8, maxWidth: '28rem', color: '#1c1b1b' }}>
-            Our AI-powered engine breaks down your resume through the eyes of an recruiter and a cold-hearted ATS.
-          </p>
-        </div>
-        <div style={{ width: '38%', position: 'relative', aspectRatio: '1 / 1', margin: '-64px -3px -51px 0' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#69509e', border: '3px solid #000', borderRadius: '20px', transform: 'rotate(3deg)', zIndex: 0 }}></div>
-          <div style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: 'white', border: '3px solid #000', borderRadius: '20px', overflow: 'hidden', zIndex: 1, boxShadow: '6px 6px 0px #000' }}>
-            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbbRIN3d9oo6oxtv5QESkikyJKfr8c8jcRefjDXipb6vvIiXNO7K_Z0GywDtuxtJr9mwSALPDRr7WB8CWOTbjvSM-sddEsOodY2xfxADCPxshit9_sNGW_hqXOm7ps3aHH6_VwycPPAZQFzQnjFtrD3HOnsMLt-Gl5Ksn61l6P3RG3huXmKkDe9zr9haoM8vQD1alzibZ1OzkY9n2KWoJ2s2GYw5bvGvZTUA5n8gXLIrUQljOiwOLe" alt="Resume Scanning Illustration" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </div>
-        </div>
-      </div>
+      <div className="home-container" style={{ padding: '0 2rem', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px' }}>
 
-      {/* Main Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '30px' }}>
-        
-        {/* Left Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-          
-          {/* Drop Resume Container */}
-          <div 
-            onMouseEnter={() => setIsHoveringDropzone(true)}
-            onMouseLeave={() => setIsHoveringDropzone(false)}
-            style={{
-              backgroundColor: 'var(--panel-white)',
-              border: '4px dashed #000',
-              borderRadius: '20px',
-              padding: '60px 40px',
-              textAlign: 'center',
-              position: 'relative',
-              transition: 'all 0.1s ease',
-              transform: isHoveringDropzone ? 'translate(6px, 6px)' : 'none',
-              boxShadow: isHoveringDropzone ? 'none' : '6px 6px 0px #000'
-            }}
-          >
-            <input 
-              id="resume-upload"
-              type="file" 
-              accept=".pdf,.docx,.doc" 
-              onChange={handleFileChange} 
-              style={{ display: 'none' }}
-            />
-            <div style={{ fontSize: '48px', color: 'var(--panel-lavender)', marginBottom: '10px' }}>📄</div>
-            <h3 style={{ margin: '0 0 10px 0' }}>Drop your Resume here</h3>
-            <p style={{ opacity: 0.6, margin: '0 0 20px 0', fontFamily: 'var(--mono)', fontSize: '14px' }}>PDF, DOCX (Max 5MB)</p>
-            <button 
-              onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => setIsHovering(false)}
-              onClick={() => document.getElementById('resume-upload')?.click()}
-              style={{ 
-                backgroundColor: 'var(--btn-coral)', 
-                cursor: 'pointer',
+        {/* App Bar */}
+        <NavBar userProfile={userProfile} />
+
+        {/* Hero Section */}
+        <div
+          className="home-hero"
+          style={{
+            backgroundColor: '#f5c445',
+            border: '3px solid #000',
+            borderRadius: '20px',
+            padding: '48px 0 48px 48px',
+            boxShadow: '6px 6px 0px #000',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '40px'
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <div style={{ backgroundColor: '#1c1b1b', color: 'white', display: 'inline-block', padding: '4px 12px', borderRadius: '8px', fontFamily: 'var(--mono)', fontSize: '14px', marginBottom: '24px' }}>
+              [ STATUS: SYSTEM ACTIVE ]
+            </div>
+            <h1 className="home-hero-title" style={{ fontSize: '57px', fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800, marginBottom: '24px', lineHeight: 1, letterSpacing: '-0.02em', color: '#1c1b1b' }}>
+              Know exactly why you're not getting <span style={{ textDecoration: 'underline', textDecorationThickness: '4px' }}>callbacks</span>.
+            </h1>
+            <p style={{ fontSize: '18px', fontFamily: '"Plus Jakarta Sans", sans-serif', opacity: 0.8, maxWidth: '28rem', color: '#1c1b1b' }}>
+              Our AI-powered engine breaks down your resume through the eyes of an recruiter and a cold-hearted ATS.
+            </p>
+          </div>
+          <div className="home-hero-image" style={{ width: '38%', position: 'relative', aspectRatio: '1 / 1', margin: '-64px -3px -51px 0' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#69509e', border: '3px solid #000', borderRadius: '20px', transform: 'rotate(3deg)', zIndex: 0 }}></div>
+            <div style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: 'white', border: '3px solid #000', borderRadius: '20px', overflow: 'hidden', zIndex: 1, boxShadow: '6px 6px 0px #000' }}>
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbbRIN3d9oo6oxtv5QESkikyJKfr8c8jcRefjDXipb6vvIiXNO7K_Z0GywDtuxtJr9mwSALPDRr7WB8CWOTbjvSM-sddEsOodY2xfxADCPxshit9_sNGW_hqXOm7ps3aHH6_VwycPPAZQFzQnjFtrD3HOnsMLt-Gl5Ksn61l6P3RG3huXmKkDe9zr9haoM8vQD1alzibZ1OzkY9n2KWoJ2s2GYw5bvGvZTUA5n8gXLIrUQljOiwOLe" alt="Resume Scanning Illustration" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Main Grid */}
+        <div className="home-main-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '30px' }}>
+
+          {/* Left Column */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+
+            {/* Drop Resume Container */}
+            <div
+              className="home-dropzone"
+              onMouseEnter={() => setIsHoveringDropzone(true)}
+              onMouseLeave={() => setIsHoveringDropzone(false)}
+              style={{
+                backgroundColor: 'var(--panel-white)',
+                border: '4px dashed #000',
+                borderRadius: '20px',
+                padding: '60px 40px',
+                textAlign: 'center',
+                position: 'relative',
                 transition: 'all 0.1s ease',
-                transform: isHovering ? 'translate(4px, 4px)' : 'none',
-                boxShadow: isHovering ? 'none' : '4px 4px 0px #000',
-                border: '3px solid #000',
-                borderRadius: '9999px',
-                padding: '12px 32px',
-                fontWeight: 800,
-                fontSize: '16px',
-                fontFamily: 'inherit'
-              }}>
-              SELECT FILE
-            </button>
-            {file && <p style={{ marginTop: '15px', fontWeight: 'bold' }}>Selected: {file.name}</p>}
-          </div>
-
-          {/* Job Description Container */}
-          <div className="neo-panel neo-panel-yellow" style={{ margin: 0 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', fontFamily: 'var(--mono)' }}>
-              <span style={{ fontWeight: 'bold' }}>PASTE JOB DESCRIPTION</span>
-              <span style={{ fontSize: '12px', opacity: 0.6 }}>OPTIONAL BUT RECOMMENDED</span>
-            </div>
-            <textarea 
-              className="jd-textarea"
-              value={jobDescription} 
-              onChange={(e) => setJobDescription(e.target.value)}
-              placeholder="Paste the target job description here for a tailored match analysis..."
-              style={{ width: '100%', height: '150px', boxSizing: 'border-box', transition: 'none', resize: 'none', backgroundColor: 'white' }}
-            />
-          </div>
-
-        </div>
-
-        {/* Right Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
-          {/* Terminal */}
-          <div className="neo-terminal" style={{ flex: 1, display: 'flex', flexDirection: 'column', margin: 0, border: '3px solid #000' }}>
-            <div style={{ borderBottom: '2px solid #333', paddingBottom: '10px', marginBottom: '15px', display: 'flex', gap: '8px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#FF5F56' }}></div>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#FFBD2E' }}></div>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#27C93F' }}></div>
-            </div>
-            <div style={{ overflowY: 'auto', flex: 1 }}>
-              {logs.map((log, idx) => (
-                <div key={idx} style={{ marginBottom: '8px' }}>{log}</div>
-              ))}
-              {loading && <div style={{ animation: 'blink 1s infinite' }}>_</div>}
-            </div>
-          </div>
-
-          {/* Analyze Button */}
-          <button 
-            className="btn-tactile"
-            onClick={handleAnalyze} 
-            disabled={loading || !file}
-            style={{ width: '100%', backgroundColor: loading || !file ? '#ccc' : 'var(--btn-coral)', fontSize: '16px', padding: '8px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', cursor: loading || !file ? 'not-allowed' : 'pointer', border: '3px solid #000', borderRadius: '20px', boxShadow: loading || !file ? 'none' : '4px 4px 0px #000', fontWeight: 800 }}
-          >
-            📊 ANALYZE MY RESUME
-          </button>
-
-          {/* Metrics */}
-          <div style={{ display: 'flex', gap: '20px' }}>
-            <div className="neo-panel" style={{ flex: 1, backgroundColor: 'var(--btn-mint)', margin: 0, padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', fontWeight: 'bold', marginBottom: '2px' }}>ACCURACY</div>
-              <div style={{ fontSize: '28px', fontWeight: 900, lineHeight: 1 }}>{accuracy !== null ? `${accuracy}%` : '--'}</div>
-            </div>
-            <div 
-              className="neo-panel btn-tactile" 
-              onClick={() => analysisResult && navigate('/report', { state: { result: analysisResult } })}
-              style={{ flex: 1, backgroundColor: analysisResult ? 'var(--panel-lavender)' : '#ccc', margin: 0, padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', cursor: analysisResult ? 'pointer' : 'not-allowed', border: '3px solid #000', boxShadow: analysisResult ? '4px 4px 0px #000' : 'none' }}
+                transform: isHoveringDropzone ? 'translate(6px, 6px)' : 'none',
+                boxShadow: isHoveringDropzone ? 'none' : '6px 6px 0px #000'
+              }}
             >
-              <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', fontWeight: 'bold', marginBottom: '2px' }}>VIEW REPORT</div>
-              <div style={{ fontSize: '16px', fontWeight: 900, lineHeight: 1 }}>DETAILED RESULT</div>
+              <input
+                id="resume-upload"
+                type="file"
+                accept=".pdf,.docx,.doc"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
+              <div style={{ fontSize: '48px', color: 'var(--panel-lavender)', marginBottom: '10px' }}>📄</div>
+              <h3 style={{ margin: '0 0 10px 0' }}>Drop your Resume here</h3>
+              <p style={{ opacity: 0.6, margin: '0 0 20px 0', fontFamily: 'var(--mono)', fontSize: '14px' }}>PDF, DOCX (Max 5MB)</p>
+              <button
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+                onClick={() => document.getElementById('resume-upload')?.click()}
+                style={{
+                  backgroundColor: 'var(--btn-coral)',
+                  cursor: 'pointer',
+                  transition: 'all 0.1s ease',
+                  transform: isHovering ? 'translate(4px, 4px)' : 'none',
+                  boxShadow: isHovering ? 'none' : '4px 4px 0px #000',
+                  border: '3px solid #000',
+                  borderRadius: '9999px',
+                  padding: '12px 32px',
+                  fontWeight: 800,
+                  fontSize: '16px',
+                  fontFamily: 'inherit'
+                }}>
+                SELECT FILE
+              </button>
+              {file && <p style={{ marginTop: '15px', fontWeight: 'bold' }}>Selected: {file.name}</p>}
             </div>
+
+            {/* Job Description Container */}
+            <div className="neo-panel neo-panel-yellow" style={{ margin: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', fontFamily: 'var(--mono)' }}>
+                <span style={{ fontWeight: 'bold' }}>PASTE JOB DESCRIPTION</span>
+                <span style={{ fontSize: '12px', opacity: 0.6 }}>OPTIONAL BUT RECOMMENDED</span>
+              </div>
+              <textarea
+                className="jd-textarea"
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value)}
+                placeholder="Paste the target job description here for a tailored match analysis..."
+                style={{ width: '100%', height: '150px', boxSizing: 'border-box', transition: 'none', resize: 'none', backgroundColor: 'white' }}
+              />
+            </div>
+
+          </div>
+
+          {/* Right Column */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+            {/* Terminal */}
+            <div className="neo-terminal" style={{ flex: 1, display: 'flex', flexDirection: 'column', margin: 0, border: '3px solid #000' }}>
+              <div style={{ borderBottom: '2px solid #333', paddingBottom: '10px', marginBottom: '15px', display: 'flex', gap: '8px' }}>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#FF5F56' }}></div>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#FFBD2E' }}></div>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#27C93F' }}></div>
+              </div>
+              <div style={{ overflowY: 'auto', flex: 1 }}>
+                {logs.map((log, idx) => (
+                  <div key={idx} style={{ marginBottom: '8px' }}>{log}</div>
+                ))}
+                {loading && <div style={{ animation: 'blink 1s infinite' }}>_</div>}
+              </div>
+            </div>
+
+            {/* Analyze Button */}
+            <button
+              className="btn-tactile"
+              onClick={handleAnalyze}
+              disabled={loading || !file}
+              style={{ width: '100%', backgroundColor: loading || !file ? '#ccc' : 'var(--btn-coral)', fontSize: '16px', padding: '8px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', cursor: loading || !file ? 'not-allowed' : 'pointer', border: '3px solid #000', borderRadius: '20px', boxShadow: loading || !file ? 'none' : '4px 4px 0px #000', fontWeight: 800 }}
+            >
+              📊 ANALYZE MY RESUME
+            </button>
+
+            {/* Metrics */}
+            <div className="home-metrics-row" style={{ display: 'flex', gap: '20px' }}>
+              <div className="neo-panel" style={{ flex: 1, backgroundColor: 'var(--btn-mint)', margin: 0, padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', fontWeight: 'bold', marginBottom: '2px' }}>ACCURACY</div>
+                <div style={{ fontSize: '28px', fontWeight: 900, lineHeight: 1 }}>{accuracy !== null ? `${accuracy}%` : '--'}</div>
+              </div>
+              <div
+                className="neo-panel btn-tactile"
+                onClick={() => analysisResult && navigate('/report', { state: { result: analysisResult } })}
+                style={{ flex: 1, backgroundColor: analysisResult ? 'var(--panel-lavender)' : '#ccc', margin: 0, padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', cursor: analysisResult ? 'pointer' : 'not-allowed', border: '3px solid #000', boxShadow: analysisResult ? '4px 4px 0px #000' : 'none' }}
+              >
+                <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', fontWeight: 'bold', marginBottom: '2px' }}>VIEW REPORT</div>
+                <div style={{ fontSize: '16px', fontWeight: 900, lineHeight: 1 }}>DETAILED RESULT</div>
+              </div>
+            </div>
+
           </div>
 
         </div>
 
-      </div>
+        {/* Footer / Trusted By */}
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          <h3 style={{ fontFamily: 'var(--sans)', fontSize: '16px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.8 }}>Trusted by candidates</h3>
+        </div>
 
-      {/* Footer / Trusted By */}
-      <div style={{ textAlign: 'center', marginTop: '40px' }}>
-        <h3 style={{ fontFamily: 'var(--sans)', fontSize: '16px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.8 }}>Trusted by candidates</h3>
-      </div>
-      
-      <style>{`
+        <style>{`
         @keyframes blink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
+        }
+
+        @media (max-width: 900px) {
+          .home-container { padding: 0 1.25rem !important; }
+          .home-hero { flex-direction: column !important; align-items: stretch !important; padding: 32px 24px !important; }
+          .home-hero-title { font-size: 40px !important; }
+          .home-hero-image { width: 100% !important; aspect-ratio: 16 / 9 !important; margin: 24px 0 0 0 !important; }
+          .home-main-grid { grid-template-columns: 1fr !important; }
+        }
+
+        @media (max-width: 480px) {
+          .home-container { padding: 0 1rem !important; gap: 20px !important; }
+          .home-hero { padding: 24px 16px !important; }
+          .home-hero-title { font-size: 30px !important; }
+          .home-dropzone { padding: 40px 20px !important; }
+          .home-metrics-row { flex-direction: column !important; }
         }
         
         .nav-link {
@@ -334,6 +353,7 @@ const Home: React.FC<HomeProps> = ({ isAuthenticated, userProfile }) => {
       `}</style>
       </div>
       <MushroomButton />
+      <Footer />
     </div>
   );
 };

@@ -82,8 +82,24 @@ const FeaturesShowcase: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
     }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .features-main { padding: 40px 16px !important; gap: 40px !important; }
+          .features-hero-card { padding: 28px !important; }
+          .features-hero-title { font-size: 36px !important; }
+          .features-grid { gap: 20px !important; }
+        }
+
+        @media (max-width: 480px) {
+          .features-header { padding: 10px 16px !important; }
+          .features-header-nav { gap: 16px !important; }
+          .features-hero-title { font-size: 28px !important; }
+          .features-hero-card { padding: 20px !important; }
+        }
+      `}</style>
+
       {/* Header */}
-      <header style={{
+      <header className="features-header" style={{
         backgroundColor: COLORS.bg,
         borderBottom: BORDER,
         padding: '12px 24px',
@@ -99,15 +115,16 @@ const FeaturesShowcase: React.FC = () => {
           <img src="/logo.png" alt="ResumeIQ Logo" style={{ height: '48px' }} />
           <span style={{ fontSize: '24px', fontWeight: 900 }}>ResumeIQ</span>
         </div>
-        <div style={{ display: 'flex', gap: '24px', fontFamily: '"JetBrains Mono", monospace', fontSize: '13px', fontWeight: 800 }}>
+        <div className="features-header-nav" style={{ display: 'flex', gap: '24px', fontFamily: '"JetBrains Mono", monospace', fontSize: '13px', fontWeight: 800 }}>
           <span style={{ cursor: 'pointer', color: COLORS.ink }} onClick={() => navigate('/home')}>HOME</span>
           <span style={{ cursor: 'pointer', color: COLORS.coral }} onClick={() => navigate('/signup')}>SIGN UP</span>
         </div>
       </header>
 
       {/* Hero Section */}
-      <main style={{ maxWidth: '1000px', margin: '0 auto', padding: '64px 24px', display: 'flex', flexDirection: 'column', gap: '64px' }}>
-        <motion.div 
+      <main className="features-main" style={{ maxWidth: '1000px', margin: '0 auto', padding: '64px 24px', display: 'flex', flexDirection: 'column', gap: '64px' }}>
+        <motion.div
+          className="features-hero-card"
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 100 }}
@@ -121,8 +138,8 @@ const FeaturesShowcase: React.FC = () => {
             transform: 'rotate(-1deg)',
           }}
         >
-          <h1 style={{ fontSize: '56px', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1.1, margin: 0 }}>
-            Supercharge Your <br/> Job Search
+          <h1 className="features-hero-title" style={{ fontSize: '56px', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1.1, margin: 0 }}>
+            Supercharge Your <br /> Job Search
           </h1>
           <p style={{ fontFamily: '"JetBrains Mono", monospace', marginTop: '24px', fontWeight: 600, fontSize: '16px', letterSpacing: '0.05em' }}>
             // DISCOVER THE TOOLS DESIGNED TO GET YOU HIRED
@@ -130,7 +147,7 @@ const FeaturesShowcase: React.FC = () => {
         </motion.div>
 
         {/* Features Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+        <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
           {features.map((feature, idx) => (
             <motion.div
               key={idx}

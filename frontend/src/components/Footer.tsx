@@ -1,6 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  showNavLinks?: boolean;
+}
+
+const Footer: React.FC<FooterProps> = ({ showNavLinks = false }) => {
+  const navigate = useNavigate();
+
   return (
     <footer style={{
       backgroundColor: '#000000',
@@ -24,6 +31,31 @@ const Footer: React.FC = () => {
       }}>
         Made with ☕, 💻, and Taylor Swift Playlist
       </p>
+
+      {showNavLinks && (
+        <div style={{
+          display: 'flex',
+          gap: '24px',
+          margin: '8px 0',
+          fontFamily: 'var(--sans)',
+          fontSize: '0.95rem',
+          fontWeight: '600'
+        }}>
+          <span 
+            onClick={() => navigate('/features')} 
+            style={{ cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            Features
+          </span>
+          <span 
+            onClick={() => navigate('/')} 
+            style={{ cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            Logout
+          </span>
+        </div>
+      )}
+
       <p style={{
         color: '#9ca3af',
         fontFamily: 'var(--sans)',
