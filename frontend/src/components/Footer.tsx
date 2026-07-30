@@ -13,15 +13,17 @@ const Footer: React.FC<FooterProps> = ({ showNavLinks = false }) => {
       backgroundColor: '#000000',
       color: '#ff9fac',
       padding: '24px 20px',
-      textAlign: 'center',
+      textAlign: 'right',
       marginTop: 'auto',
       width: '100%',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
+      alignItems: 'flex-end',
       justifyContent: 'center',
       gap: '8px',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      borderTop: '1px solid rgba(255, 159, 172, 0.4)',
+      boxShadow: '0 -8px 20px rgba(255, 159, 172, 0.15)'
     }}>
       <p style={{
         fontFamily: 'var(--sans)',
