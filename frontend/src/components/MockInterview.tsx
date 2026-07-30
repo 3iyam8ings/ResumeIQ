@@ -51,17 +51,14 @@ const ERROR_VOICE_START_MESSAGE =
 const FALLBACK_FIRST_QUESTION = "Hello! Let's begin the interview. Can you tell me about yourself?";
 const FALLBACK_FOLLOW_UP = 'Could you elaborate on that?';
 
-// NOTE: These two constants are intentionally separate. `GEMINI_MODEL_TEXT` is passed
-// straight to Google's own SDK (which accepts the latest Gemini model slugs). Vapi's
-// "google" model provider only accepts a whitelist of model names it explicitly supports,
-// which historically lags behind Google's own releases (e.g. gemini-1.5-pro,
-// gemini-1.5-flash-002, gemini-1.0-pro). Passing an unsupported slug like
-// "gemini-2.5-flash" to Vapi causes assistant creation to fail silently (a rejected
-// promise with no UI feedback), which is why the voice interview previously did nothing
-// when clicked. Re-check Vapi's dashboard/docs for their current supported list before
-// changing this value.
+// NOTE: These two constants are intentionally separate — one goes straight to Google's
+// own SDK, the other is passed through Vapi's "google" model provider to Google.
+// IMPORTANT: gemini-1.0-* and gemini-1.5-* have been fully shut down by Google — every
+// request to them now 404s, regardless of which client calls them. If you swap either
+// of these, first confirm the model is still live (check Google's Gemini API release
+// notes / model list), since Google has been retiring model generations quickly.
 const GEMINI_MODEL_TEXT = 'gemini-2.5-flash';
-const GEMINI_MODEL_VAPI = 'gemini-1.5-pro';
+const GEMINI_MODEL_VAPI = 'gemini-2.5-flash';
 
 const MAX_CONTEXT_MESSAGES = 16;
 const KICKOFF_PROMPT = 'Please introduce yourself briefly and ask the very first interview question.';
@@ -594,6 +591,15 @@ const MockInterview: React.FC = () => {
             // "pipeline-error-...") only shows up here. Logging it is what lets
             // us diagnose *why* a call ended instead of guessing.
             console.log('[Vapi] Call ended. Reason:', message.endedReason, message);
+
+            // A reason other than "customer-ended-call" / "assistant-ended-call" means
+            // something went wrong mid-call (bad model config, pipeline error, etc.) —
+            // surface it so it's visible without opening the browser console.
+            const reason = message.endedReason as string | undefined;
+            const expectedReasons = ['customer-ended-call', 'assistant-ended-call'];
+            if (reason && !expectedReasons.includes(reason)) {
+              alert(`The interview call ended unexpectedly (reason: ${reason}). Check the browser console for details.`);
+            }
           }
         });
 
