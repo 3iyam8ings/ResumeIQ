@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import * as VapiPackage from '@vapi-ai/web';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import NavBar from './NavBar';
 import MushroomButton from './MushroomButton';
 
 // `@vapi-ai/web`'s build output has shipped the Vapi class in different shapes across
@@ -834,13 +833,6 @@ const MockInterview: React.FC = () => {
   return (
     <div style={styles.page}>
       <ResponsiveStyles />
-      {/* NOTE: `NavBar` was imported but not rendered anywhere in this file
-          before this pass — that looked like an accidental drop rather than
-          an intentional omission (MushroomButton, imported the same way, IS
-          rendered below). Re-enabling it here since NavBar takes no required
-          props elsewhere in this codebase; remove this line if this page is
-          meant to be nav-less on purpose. */}
-      <NavBar />
 
       {/* Side Tabs */}
       <div className="mi-mode-tab-wrap" style={styles.modeTabWrap} ref={modeTabRef}>

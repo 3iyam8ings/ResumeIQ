@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI } from '@google/genai';
-import NavBar from './NavBar';
 import MushroomButton from './MushroomButton';
 
 // ============================================================================
@@ -467,13 +466,6 @@ Keep it concise, professional, and highlight how my skills align perfectly with 
   return (
     <div className="clg-page" style={styles.page}>
       <ResponsiveStyles />
-      {/* NOTE: `NavBar` was imported but not rendered anywhere in this file
-          before this pass — that looked like an accidental drop rather than
-          an intentional omission (MushroomButton, imported the same way, IS
-          rendered below). Re-enabling it here since NavBar takes no required
-          props elsewhere in this codebase; remove this line if this page is
-          meant to be nav-less on purpose. */}
-      <NavBar />
 
       {/* Header */}
       <div className="clg-header-wrap" style={styles.headerWrap}>
