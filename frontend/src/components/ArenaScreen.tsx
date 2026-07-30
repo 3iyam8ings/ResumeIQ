@@ -128,6 +128,9 @@ const ArenaScreen: React.FC = () => {
             <span><span style={{ color: '#E52521' }}>S</span> - Move Down / Enter Pipes!</span>
             <span><span style={{ color: '#3b82f6' }}>P</span> - Jump</span>
             <span><span style={{ color: '#43B047' }}>O</span> - Run / Sprint / Fireballs (if you have the fire flower)</span>
+            <span style={{ color: '#ffb9b7', fontSize: '8px', marginTop: '16px', maxWidth: '250px', lineHeight: '1.5' }}>
+              * DISCLAIMER: Only desktop users can play this game. Not available for mobile users. Sorry!
+            </span>
           </div>
         </div>
 
@@ -147,7 +150,11 @@ const ArenaScreen: React.FC = () => {
               textAlign: 'center',
               padding: '32px'
             }}>
-              <h2 style={{ color: '#F8E71C', marginBottom: '32px', fontSize: '24px', textShadow: '4px 4px 0px #000' }}>HOW TO PLAY</h2>
+              <h2 style={{ color: '#F8E71C', marginBottom: '16px', fontSize: '24px', textShadow: '4px 4px 0px #000' }}>HOW TO PLAY</h2>
+
+              <p style={{ color: '#ffb9b7', fontSize: '10px', marginBottom: '24px', maxWidth: '80%', lineHeight: '1.5' }}>
+                * DISCLAIMER: Only desktop users can play this game. Not available for mobile users. Sorry!
+              </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '12px', lineHeight: '2', marginBottom: '48px', textAlign: 'left', backgroundColor: 'rgba(0,0,0,0.5)', padding: '24px', border: '4px solid #fff', borderRadius: '8px' }}>
                 <div><span style={{ color: '#43B047' }}>CLICK SCREEN</span> to start / focus</div>
