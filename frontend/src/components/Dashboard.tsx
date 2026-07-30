@@ -849,7 +849,6 @@ const Dashboard: React.FC<DashboardProps> = ({ userProfile }) => {
           onClose={closeModal}
         />
       )}
-      <Footer showNavLinks={true} />
     </div>
   );
 };
