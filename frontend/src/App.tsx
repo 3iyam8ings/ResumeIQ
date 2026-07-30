@@ -58,7 +58,7 @@ function App() {
 
   useEffect(() => {
     if (location.pathname === '/') {
-      navigate('/home', { replace: true });
+      navigate('/signup', { replace: true });
     }
   }, [location.pathname, navigate]);
 
@@ -69,7 +69,32 @@ function App() {
     || location.pathname === '/arena';
 
   if (isAuthenticated === null && !isPublicView) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: 'var(--bg)' }}><h2 style={{ color: 'var(--text-primary)' }}>Loading...</h2></div>;
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #3b82f6 100%)',
+        gap: '24px',
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
+      }}>
+        <div style={{
+          width: '64px',
+          height: '64px',
+          border: '5px solid rgba(255,255,255,0.3)',
+          borderTopColor: '#fff',
+          borderRadius: '50%',
+          animation: 'spin 0.9s linear infinite',
+        }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ color: '#fff', fontSize: '28px', fontWeight: 900, letterSpacing: '-0.5px' }}>ResumeIQ</div>
+          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px', marginTop: '6px', fontWeight: 500 }}>Getting things ready...</div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -98,7 +123,7 @@ function App() {
               <Route path="results" element={<IQTestResultsScreen />} />
             </Route>
           </Route>
-          <Route path="/" element={isAuthenticated ? <Navigate to="/home" /> : <Navigate to="/signup" />} />
+          <Route path="/" element={<Navigate to="/signup" replace />} />
           <Route path="*" element={isAuthenticated ? <Navigate to="/home" /> : <Navigate to="/signup" />} />
         </Routes>
       </div>
