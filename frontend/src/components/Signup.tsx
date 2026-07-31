@@ -247,7 +247,7 @@ const Signup: React.FC = () => {
         throw new Error(data.error || 'Registration failed');
       }
 
-      navigate('/home');
+      window.location.href = '/home';
     } catch (err: any) {
       setError(err.message);
     } finally {

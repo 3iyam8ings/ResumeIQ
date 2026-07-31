@@ -436,7 +436,7 @@ const Login: React.FC = () => {
         throw new Error(data.error || 'Login failed');
       }
 
-      navigate('/home');
+      window.location.href = '/home';
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
