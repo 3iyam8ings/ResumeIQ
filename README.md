@@ -24,8 +24,11 @@ Job hunting isn't broken because of some mythical "75% of resumes are rejected b
 
 ## Meet the Agents
 
+Every session starts the same way: **[Login / Signup](https://resume-iq-teal.vercel.app)** is the first screen a visitor sees. The signup page links out to a full Features Showcase - a preview of all six core agents below — before anyone commits to creating an account. From there, authentication is a standard email signup, or one-click Google and GitHub OAuth, which registers the account directly from the provider's email. Once in, everything below is grounded in that one account.
+
 | Job-Search Step                          | Who Normally Does It                   | ResumeIQ's Agent                            |
 | ---------------------------------------- | -------------------------------------- | ------------------------------------------- |
+| Create an account & preview the product  | Trial and error, no preview            | **Login / Signup** — Features Showcase      |
 | Screen a resume against ATS rules & a JD | A recruiter, or guesswork              | **Home** — ATS Resume Analyzer & JD Matcher |
 | Rewrite weak bullet points               | The applicant, alone, with no feedback | **Job Tracker** — Kanban Dashboard          |
 | Write a tailored cover letter per role   | A blank page, every single time        | **Cover Letter Generator** (3 tones)        |
@@ -35,6 +38,7 @@ Job hunting isn't broken because of some mythical "75% of resumes are rejected b
 
 ### A closer look
 
+- **Login / Signup.** The front door of the whole app — email signup or one-click Google/GitHub OAuth. The signup screen links to a Features Showcase page so a visitor can preview all six agents before creating an account, no commitment required just to look around.
 - **Home — ATS Resume Analyzer & JD Matcher.** Upload a resume (PDF/Word). No JD → pure ATS-compatibility score. Paste a JD → a job-match score instead, with a full "what matched / what's missing / what to fix" breakdown on its own Report page.
 - **Job Tracker.** Drag-and-drop Kanban across Applied → Interviewing → Offer → Rejected, backed by real persistence, not local storage theater.
 - **Cover Letter Generator.** Three tones mapped to real situations: **Friendly** (warm referral/HR contact), **Confident** (cold application), **Formal** (traditional, buttoned-up). One click, grounded in your actual resume and the actual job.
