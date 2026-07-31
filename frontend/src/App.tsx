@@ -76,7 +76,7 @@ function App() {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #3b82f6 100%)',
+        background: '#6aaff5',
         gap: '24px',
         fontFamily: '"Plus Jakarta Sans", sans-serif',
       }}>
