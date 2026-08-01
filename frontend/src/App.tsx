@@ -165,12 +165,16 @@ function App() {
       })
   }, [])
 
-  // Redirect the root path to /signup
+  // Redirect the root path based on auth state
   useEffect(() => {
     if (location.pathname === '/') {
-      navigate('/signup', { replace: true })
+      if (isAuthenticated === true) {
+        navigate('/home', { replace: true })
+      } else if (isAuthenticated === false) {
+        navigate('/signup', { replace: true })
+      }
     }
-  }, [location.pathname, navigate])
+  }, [location.pathname, navigate, isAuthenticated])
 
   // ── Derived Values ─────────────────────────────────────────────────────
   const isPublicView = isPublicPath(location.pathname)
