@@ -55,7 +55,7 @@ const PUBLIC_PATHS = [
 /** Path-prefix / exact-match rules that don't fit a simple array lookup. */
 function isPublicPath(pathname: string): boolean {
   return (
-    PUBLIC_PATHS.includes(pathname) ||
+    PUBLIC_PATHS.filter((p) => p !== '/').includes(pathname) ||
     pathname.startsWith('/test') ||
     pathname === '/iqtest' ||
     pathname === '/arena'

@@ -19,9 +19,8 @@ public class CorsConfig {
         config.setAllowCredentials(true);
         // Explicit origins required when allowCredentials=true (wildcard not allowed)
         config.setAllowedOrigins(List.of(
-                "https://resume-iq-steel.vercel.app",
-                "http://localhost:5173"
-        ));
+                "https://resume-iq-teal.vercel.app",
+                "http://localhost:5173"));
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         // Expose Set-Cookie and Location so the browser sees OAuth2 redirects
@@ -31,4 +30,3 @@ public class CorsConfig {
         return new CorsFilter(source);
     }
 }
-
